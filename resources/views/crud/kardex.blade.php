@@ -53,7 +53,7 @@
                 <table class="table table-striped table-bordered">
                     <thead class="text-center  thead-dark">
                         <tr>
-                            <th>Insumo</th>
+                            <th>Insumo  </th>
                             <th>Inicio Mes</th>
                             <th>Ingresos</th>
                             <th>Egresos</th>
