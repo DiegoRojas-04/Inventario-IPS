@@ -2,74 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Insumo;
-use App\Models\Pedido;
 use Illuminate\Http\Request;
+use App\Models\Pedido;
+use App\Models\Insumo;
 
 class PedidoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
     public function index()
     {
-        $pedidos = Pedido::with('user')->latest()->get();
+        $pedidos = Pedido::all();
         return view('crud.pedido.index', compact('pedidos'));
     }
+
+    public function show($id)
+    {
+        $pedido = Pedido::findOrFail($id);
+        return view('crud.pedido.show', compact('pedido'));
+    }
+    public function store(Request $request)
+    {
+        dd($request);
+        $pedido = new Pedido();
+        $pedido->user_id = auth()->user()->id;
+        $pedido->fecha_hora = now();
+        $pedido->estado = 1;
+        $pedido->save();
+    
+        $insumos = $request->input('insumos');
+        $cantidades = $request->input('cantidades');
+    
+        // Iterar sobre los insumos seleccionados y guardar los detalles del pedido
+        foreach ($insumos as $key => $insumoId) {
+                $insumo = Insumo::findOrFail($insumoId);
+            $cantidad = $cantidades[$key];
+    
+            // Asociar el insumo al pedido y guardar la cantidad
+            $pedido->insumos()->attach($insumoId, ['cantidad' => $cantidad]);
+        }
+    
+        return redirect()->route('pedido.index')->with('success', 'Pedido realizado con éxito.');
+    }
+    
 
     public function create()
     {
         $insumos = Insumo::all();
         return view('crud.pedido.create', compact('insumos'));
     }
-
-
-    public function store(Request $request)
-    {
-        $pedido = Pedido::create([
-            'fecha_hora' => now(),
-            'user_id' => auth()->id()
-        ]);
-
-        $insumos = $request->input('insumos');
-        $cantidades = $request->input('cantidades');
-
-        for ($i = 0; $i < count($insumos); $i++) {
-            $pedido->insumos()->attach($insumos[$i], ['cantidad' => $cantidades[$i]]);
-        }
-
-        return redirect()->route('pedido.index');
-    }
-
-    public function show(string $id)
-    {
-        $pedido = Pedido::with('insumos')->findOrFail($id);
-        return view('crud.pedido.show', compact('pedido'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-    
 }

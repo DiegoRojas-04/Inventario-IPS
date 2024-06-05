@@ -63,7 +63,7 @@
                                     <th>Cantidad</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody> 
                                 @foreach ($pedido->insumos as $insumo)
                                     <tr>
                                         <td>{{ $insumo->nombre }}</td>

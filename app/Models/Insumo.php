@@ -87,4 +87,9 @@ class Insumo extends Model
     {
         return $this->hasMany(DetalleTransaccion::class, 'insumo_id');
     }
+
+    public function insumos()
+{
+    return $this->belongsToMany(Insumo::class)->withPivot('cantidad')->withTimestamps();
+}
 }

@@ -10,14 +10,14 @@ class Pedido extends Model
 
     protected $fillable = [
         'fecha_hora',
-        'user_id'
+        'user_id',
+        'estado',
     ];
 
     public function insumos()
     {
-        return $this->belongsToMany(Insumo::class)->withPivot('cantidad')->withTimestamps();
+        return $this->belongsToMany(Insumo::class)->withPivot('cantidad');
     }
-    
 
     public function user()
     {

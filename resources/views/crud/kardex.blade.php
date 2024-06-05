@@ -7,13 +7,11 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <h3>Kardex Mes de
-                        {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} de {{ $selectedYear }}</h1>
+                    <h3>Kardex Mes de {{ DateTime::createFromFormat('!m', $selectedMonth)->format('F') }} de
+                        {{ $selectedYear }}</h3>
                 </div>
-
                 <div class="col-md-3">
                     <form action="{{ route('kardex.index') }}" method="GET">
-
                         <label for="id_categoria" class="sr-only">Categoría</label>
                         <select name="id_categoria" id="id_categoria" class="form-control">
                             <option value="">Todas las Categorias</option>
@@ -49,11 +47,44 @@
     </div>
     <div class="card">
         <div class="card-body">
+
+            <div class="mb-3 row">
+                <div class="col-md-11">
+                    <div class="">
+                        <button type="button" class="btn btn-success">
+                            <a href="{{ route('export.excel', ['mes' => $selectedMonth, 'anno' => $selectedYear, 'id_categoria' => request('id_categoria')]) }}"
+                                style="color: white; text-decoration: none;">
+                                <i class="fa fa-file-excel" aria-hidden="true"></i> Excel
+                            </a>
+                        </button>
+                        <button type="button" class="btn btn-danger">
+                            <a href="{{ route('export.pdf', ['mes' => $selectedMonth, 'anno' => $selectedYear, 'id_categoria' => request('id_categoria')]) }}"
+                                style="color: white; text-decoration: none;">
+                                <i class="fa fa-file-pdf" aria-hidden="true"></i> PDF
+                            </a>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-1 text-right">
+                    <div class="form-group">
+                        <select class="form-control" id="pageSize" name="page_size">
+                            <option value="10">#</option>
+                            <option value="5" {{ request('page_size') == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ request('page_size') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
+                            <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
+                            <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="table-responsive">
                 <table class="table table-striped table-bordered">
-                    <thead class="text-center  thead-dark">
+                    <thead class="text-center thead-dark">
                         <tr>
-                            <th>Insumo  </th>
+                            <th>Insumo</th>
                             <th>Inicio Mes</th>
                             <th>Ingresos</th>
                             <th>Egresos</th>
@@ -70,12 +101,10 @@
                                 <td>{{ round($insumo->egresos_mes) }}</td>
                                 <td>{{ round($insumo->saldo_final_mes) }}</td>
                                 <td>
-                                    <!-- Botón para mostrar detalles de ingresos -->
                                     <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                         data-bs-target="#modalIngresos{{ $insumo->id }}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                     </button>
-                                    <!-- Botón para mostrar detalles de egresos -->
                                     <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                         data-bs-target="#modalEgresos{{ $insumo->id }}">
                                         <i class="fa fa-arrow-right" aria-hidden="true"></i>
@@ -85,13 +114,7 @@
                         @endforeach
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-success">
-                    <i class="fa fa-file-excel" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="btn btn-danger">
-                    <i class="fa fa-file-pdf" aria-hidden="true"></i>
-                </button>
-                {{-- {{ $insumos->links()}} --}}
+                {{ $insumos->links() }}
             </div>
         </div>
     </div>
@@ -119,14 +142,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($insumo->entregaInsumo as $entrega)
-                                    @if (\Carbon\Carbon::parse($entrega->created_at)->month == $selectedMonth)
+                                @foreach ($insumo->caracteristicas as $caracteristica)
+                                    @if (\Carbon\Carbon::parse($caracteristica->created_at)->month == $selectedMonth)
                                         <tr class="text-center">
-                                            <td>{{ $entrega->invima }}</td>
-                                            <td>{{ $entrega->lote }}</td>
-                                            <td>{{ $entrega->vencimiento }}</td>
-                                            <td>{{ $entrega->cantidad }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($entrega->created_at)->format('d/m/Y') }}</td>
+                                            <td>{{ $caracteristica->invima }}</td>
+                                            <td>{{ $caracteristica->lote }}</td>
+                                            <td>{{ $caracteristica->vencimiento }}</td>
+                                            <td>{{ $caracteristica->cantidad_compra }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($caracteristica->created_at)->format('d/m/Y') }}
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -138,12 +162,10 @@
                             <h6>Total Ingresos: <td>{{ round($insumo->ingresos_mes) }}</td>
                             </h6>
                         </div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
         </div>
-
         <!-- Modal de egresos -->
         <div class="modal fade" id="modalEgresos{{ $insumo->id }}" tabindex="-1"
             aria-labelledby="modalEgresosLabel{{ $insumo->id }}" aria-hidden="true">
@@ -162,29 +184,29 @@
                                     <th>Lote</th>
                                     <th>Fecha de Vencimiento</th>
                                     <th>Cantidad</th>
-                                    <th>Entrega</th>
+                                    <th>Fecha de Entrega</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Mostrar detalles de egresos -->
                                 @foreach ($insumo->entregaInsumo as $entrega)
-                                    @if (\Carbon\Carbon::parse($caracteristica->created_at)->month == $selectedMonth)
+                                    @if (\Carbon\Carbon::parse($entrega->created_at)->month == $selectedMonth)
                                         <tr class="text-center">
                                             <td>{{ $entrega->invima }}</td>
                                             <td>{{ $entrega->lote }}</td>
                                             <td>{{ $entrega->vencimiento }}</td>
                                             <td>{{ $entrega->cantidad }}</td>
                                             <td>{{ \Carbon\Carbon::parse($entrega->created_at)->format('d/m/Y') }}</td>
-                                        </tr>
                                     @endif
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <h6>Total Egresos: <td>{{ round($insumo->egresos_mes) }}</td>
-                        </h6>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <div>
+                            <h6>Total Egresos: <td>{{ round($insumo->egresos_mes) }}</td>
+                            </h6>
+                        </div>
                     </div>
                 </div>
             </div>

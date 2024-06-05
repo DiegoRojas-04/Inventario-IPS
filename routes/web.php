@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('kardex', KardexController::class);
     });
 });
+Route::get('/export/excel', [KardexController::class, 'exportToExcel'])->name('export.excel');
+Route::get('/export/pdf', [KardexController::class, 'exportToPdf'])->name('export.pdf');
 
 // Rutas adicionales fuera del grupo middleware
 Route::get('/obtener-detalles-pedido/{idPedido}', [PedidoController::class, 'obtenerDetallesPedido']);

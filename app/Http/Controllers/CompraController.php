@@ -112,7 +112,7 @@ class CompraController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Ocurrió un error al procesar la solicitud: ' . $e->getMessage());
+            // Log::error('Ocurrió un error al procesar la solicitud: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al procesar la solicitud.']);
         }
 
@@ -152,9 +152,6 @@ class CompraController extends Controller
             ]);
         }
     }
-
-
-
 
     /**
      * Display the specified resource.

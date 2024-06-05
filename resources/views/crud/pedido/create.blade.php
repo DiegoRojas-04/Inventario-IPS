@@ -22,8 +22,7 @@
                             </div>
                         </div>
                         <div class="col-sm-12">
-                            <input type="text" id="usuario" class="form-control" value="{{ auth()->user()->name }}"
-                                readonly>
+                            <input type="text" id="usuario" class="form-control" value="{{ auth()->user()->name }}" readonly>
                         </div>  
                     </div>
 
@@ -40,12 +39,11 @@
 
                         <div class="col-sm-12">
                             <label for="cantidad">Cantidad:</label>
-                            <input type="number" id="cantidades[]" class="form-control" min="1" required>
+                            <input type="number"  name="cantidades[]" id="cantidad" class="form-control" min="1" required>
                         </div>
                     </div>
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary mt-3 mb-3" onclick="agregarInsumo()">Agregar
-                            Insumo</button>
+                        <button type="button" class="btn btn-primary mt-3 mb-3" onclick="agregarInsumo()">Agregar Insumo</button>
                     </div>
                 </form>
             </div>
@@ -65,15 +63,14 @@
                     </table>
                 </div>
                 <div class="text-center">
-                    <button type="button" class="btn btn-success mt-3 mb-3" onclick="confirmAndSubmit()">Realizar
-                        Pedido</button>
+                    <button type="button" class="btn btn-success mt-3 mb-3" onclick="confirmAndSubmit()">Realizar Pedido</button>
                 </div>
             </div>
         </div>
     </div>
     <style>
-        #centrar{
-            width: 180px
+        #centrar {
+            width: 180px;
         }
     </style>
 @stop
@@ -81,10 +78,11 @@
 @section('css')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @stop
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 
     <script>
@@ -94,32 +92,26 @@
             var cantidad = $('#cantidad').val();
 
             if (insumoId && cantidad) {
-                // Agregar una nueva fila a la tabla con el insumo seleccionado
                 var fila = '<tr class="text-center">' +
                     '<td>' + insumoNombre + '<input type="hidden" name="insumos[]" value="' + insumoId + '"></td>' +
                     '<td class="text-center" id="centrar">' +
                     '<div class="input-group text-center">' +
                     '<button type="button" class="btn btn-outline-danger" onclick="disminuirCantidad(this)"><i class="fa fa-minus"></i></button>' +
-                    '<input type="number" name="cantidades[]" value="' + cantidad +
-                    '" class="form-control text-center" readonly>' +
+                    '<input type="number" name="cantidades[]" value="' + cantidad + '" class="form-control text-center" readonly>' +
                     '<button type="button" class="btn btn-outline-success" onclick="aumentarCantidad(this)"><i class="fa fa-plus"></i></button>' +
                     '</div>' +
                     '</td>' +
-                    '<td><button type="button" class="btn btn-danger" onclick="eliminarFila(this)"><i class="fa fa-trash"></i> </button></td>' +
+                    '<td><button type="button" class="btn btn-danger" onclick="eliminarFila(this)"><i class="fa fa-trash"></i></button></td>' +
                     '</tr>';
 
                 $('#tabla-insumos').append(fila);
-
-                // Limpiar los campos después de agregar el insumo
                 limpiarCampos();
             } else {
-                // Mostrar la alerta de campos obligatorios
                 showModal('Completa los campos Obligatorios.', 'error');
             }
         }
 
         function eliminarFila(btn) {
-            // Eliminar la fila de la tabla
             $(btn).closest('tr').remove();
         }
 
@@ -140,7 +132,6 @@
                 confirmButtonText: 'Confirmar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Enviar el formulario si el usuario confirma
                     $('#pedido-form').submit();
                 }
             });
@@ -173,7 +164,6 @@
                 cantidad--;
                 inputCantidad.val(cantidad);
             } else {
-                // Si la cantidad es cero o menos, eliminar la fila de la tabla
                 $(btn).closest('tr').remove();
             }
         }
