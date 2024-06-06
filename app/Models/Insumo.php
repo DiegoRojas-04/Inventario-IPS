@@ -44,7 +44,6 @@ class Insumo extends Model
         return $this->hasMany(Kardex::class);
     }
 
-    
     public function compras()
     {
         return $this->belongsToMany(Compra::class)->withTimestamps()->withPivot('cantidad');
@@ -88,8 +87,8 @@ class Insumo extends Model
         return $this->hasMany(DetalleTransaccion::class, 'insumo_id');
     }
 
-    public function insumos()
-{
-    return $this->belongsToMany(Insumo::class)->withPivot('cantidad')->withTimestamps();
-}
+    public function pedidos()
+    {
+        return $this->belongsToMany(Pedido::class)->withPivot('cantidad');
+    }
 }

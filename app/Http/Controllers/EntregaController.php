@@ -10,6 +10,7 @@ use App\Models\Insumo;
 use App\Models\Kardex;
 use Carbon\Carbon;
 use App\Models\Servicio;
+use Dompdf\Dompdf;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -138,12 +139,17 @@ class EntregaController extends Controller
     public function show($id)
     {
         $insumo = Insumo::all();
-        $entrega = Entrega::with('insumos')->findOrFail($id);
+        $entrega = Entrega::with(['insumos' => function ($query) {
+            $query->orderBy('nombre', 'asc'); // Ordenar por nombre
+        }])->findOrFail($id);
+
         $detalleEntrega = $entrega->insumos()->with(['caracteristicas' => function ($query) {
             $query->select('insumo_id', 'invima', 'lote', 'vencimiento');
         }])->get();
+
         return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega'));
     }
+
 
     public function edit(string $id)
     {
@@ -158,5 +164,65 @@ class EntregaController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function exportToPdf($id)
+    {
+        $entrega = Entrega::with('insumos.marca', 'insumos.presentacione', 'user', 'comprobante', 'servicio')->findOrFail($id);
+
+        // Ordenar los insumos por nombre
+        $insumosOrdenados = $entrega->insumos->sortBy('nombre');
+
+        // HTML para el contenido del PDF
+        $html = '
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+        </style>
+        <h1 style="text-align: center;">Detalle de Entrega</h1>
+        <p><strong>Entrega realizada a:</strong> ' . $entrega->servicio->nombre . '</p>
+        <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($entrega->fecha_hora)->format('d-m-Y') . '</p>
+        <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($entrega->fecha_hora)->format('H:i:s') . '</p>
+        <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; text-align: center;">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Marca</th>
+                    <th>Presentacion</th>
+                    <th>Invima</th>
+                    <th>Lote</th>
+                    <th>Vencimiento</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        // Agregar los insumos y cantidades a la tabla
+        foreach ($insumosOrdenados as $insumo) {
+            $html .= '
+            <tr>
+                <td>' . $insumo->nombre . '</td>
+                <td>' . $insumo->marca->nombre . '</td>
+                <td>' . $insumo->presentacione->nombre . '</td>
+                <td>' . $insumo->pivot->invima . '</td>
+                <td>' . $insumo->pivot->lote . '</td>
+                <td>' . \Carbon\Carbon::parse($insumo->pivot->vencimiento)->format('d-m-Y') . '</td>
+                <td>' . $insumo->pivot->cantidad . '</td>
+            </tr>';
+        }
+
+        $html .= '
+            </tbody>
+        </table>';
+
+        // Configurar el PDF
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Descargar el PDF
+        return $dompdf->stream('Detalle_entrega_' . $entrega->user->name . '.pdf');
     }
 }

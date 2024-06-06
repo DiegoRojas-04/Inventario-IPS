@@ -321,7 +321,7 @@ return [
         ],
 
         [
-            'text' => 'Dashboard',
+            'text' => 'Panel de Control',
             'url' => 'dashboard',
             'icon' => 'far fa fa-table',
             'can' => 'Administrador',
@@ -517,16 +517,6 @@ return [
 
         ], 
         
-
-            
-        [
-            'text' => 'Home',
-            'url' => 'home',
-            'icon' => 'far fa fa-home',
-            'can' => '',
-
-        ],
-
         [
             'text' => 'Pedidos',
             'url' => 'pedido',
@@ -540,12 +530,22 @@ return [
                 [
                     'text' => 'Realizar Pedido',
                     'url' => 'pedido/create',
-                    'can' => '',
+                    'can' => 'entrega',
 
                 ],
             ],
 
         ], 
+            
+        [
+            'text' => 'Home',
+            'url' => 'home',
+            'icon' => 'far fa fa-home',
+            'can' => '',
+
+        ],
+
+      
 
         ['header' => 'account_settings',
         'can' => 'Administrador',

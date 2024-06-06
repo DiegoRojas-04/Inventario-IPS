@@ -75,9 +75,13 @@
                         <button type="button" class="btn btn-success">
                             <i class="fa fa-file-excel" aria-hidden="true"></i>
                         </button>
-                        <button type="button" class="btn btn-danger">
-                            <i class="fa fa-file-pdf" aria-hidden="true"></i>
-                        </button>
+                        <form method="GET" action="{{ route('export.compra.pdf', ['id' => $compra->id]) }}"
+                            style="display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger" style="color: white; text-decoration: none;">
+                                <i class="fa fa-file-pdf" aria-hidden="true"></i> PDF
+                            </button>
+                        </form>
                     </div>
                     <table class="table table-striped text-center">
                         <thead class="bg-primary text-white">

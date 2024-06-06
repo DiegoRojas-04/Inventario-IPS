@@ -116,13 +116,6 @@
                             <td>{{ $user->id }}</td>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            {{-- <td>
-                                @if ($rol->estado == 1)
-                                    <span class="fw-bolder rounded bg-success text-white p-1">Activo</span>
-                                @else
-                                    <span class="fw-bolder rounded bg-danger text-white p-1">Eliminado</span>
-                                @endif
-                            </td> --}}
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ url('/usuario/' . $user->id . '/edit') }}"
@@ -131,22 +124,15 @@
                                                 aria-hidden="true"></i></button></a>
                                 </div>
                                 <div class="btn-group" role="group">
-                                    @if ($user->estado == 1)
-                                        <button type="submit" class="btn btn-danger" data-toggle="modal"
-                                            data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
-                                                aria-hidden="true"></i></button>
-                                    @else
-                                        <button type="submit" class="btn btn-danger" data-toggle="modal"
-                                            data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
-                                                aria-hidden="true"></i></button>
-                                    @endif
+                                    <button type="submit" class="btn btn-danger" data-toggle="modal"
+                                        data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
+                                            aria-hidden="true"></i></button>
                                 </div>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            {{-- {{ $roles->links() }} --}}
 
             <!-- Modal -->
             <div class="modal fade" id="agregar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -162,20 +148,42 @@
                             </button>
                         </div>
                         <div class="modal-body">
-
                             <div class="card">
-                              
                                 <div class="card-body">
                                     <form action="{{ url('/usuario') }}" method="POST">
                                         {{ csrf_field() }}
-
-                                        <label>Nombre:</label>
-                                        <input type="text" name="nombre"
-                                            class="form-control @error('nombre') is-invalid @enderror"
-                                            value="{{ old('nombre') }}" placeholder="Nuevo Usuario">
-                                        @error('nombre')
-                                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                                        @enderror
+                                        <div class="form-group">
+                                            <label>Nombre:</label>
+                                            <input type="text" name="name"
+                                                class="form-control @error('name') is-invalid @enderror"
+                                                value="{{ old('name') }}" required placeholder="Nuevo Usuario">
+                                            @error('name')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Correo Electrónico:</label>
+                                            <input type="email" name="email"
+                                                class="form-control @error('email') is-invalid @enderror"
+                                                value="{{ old('email') }}" required placeholder="Correo Electrónico">
+                                            @error('email')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Contraseña:</label>
+                                            <input type="password" name="password"
+                                                class="form-control @error('password') is-invalid @enderror" required
+                                                placeholder="Contraseña">
+                                            @error('password')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Confirmar Contraseña:</label>
+                                            <input type="password" name="password_confirmation" class="form-control"
+                                                required placeholder="Confirmar Contraseña">
+                                        </div>
                                         <br>
                                         <button type="submit" class="btn bg-blue">{{ 'Agregar' }}</button>
                                     </form>

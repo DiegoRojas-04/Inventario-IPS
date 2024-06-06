@@ -3,13 +3,33 @@
 @section('title', 'Pedidos')
 
 @section('content_header')
-<div class="form-row">
-    <div class="col-sm-12 d-flex align-items-center justify-content-between">
-        <a href="{{ url('/pedido/create') }}" class="text-decoration-none text-white">
-            <button type="submit" class="btn btn-primary">Agregar Pedido</button>
-        </a>
+    <div class="form-row">
+        <div class="col-sm-12 d-flex align-items-center justify-content-between">
+            <a href="{{ url('/pedido/create') }}" class="text-decoration-none text-white">
+                <button type="submit" class="btn btn-primary">Agregar Pedido</button>
+            </a>
+        </div>
     </div>
-</div>@stop
+    @if (session('Mensaje'))
+        <script>
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "error",
+                title: "Insumo Eliminado"
+            });
+        </script>
+    @endif
+@stop
 
 @section('content')
     <div class="card">
@@ -56,8 +76,8 @@
                                 <td>{{ \Carbon\Carbon::parse($pedido->fecha_hora)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($pedido->fecha_hora)->format('H:i:s') }}</td>
                                 <td>
-                                    <a href="{{ route('pedido.show', $pedido->id) }}" class="btn btn-info"><i class="fa fa-eye"
-                                        aria-hidden="true"></i></a>
+                                    <a href="{{ route('pedido.show', $pedido->id) }}" class="btn btn-info"><i
+                                            class="fa fa-eye" aria-hidden="true"></i></a>
                                 </td>
                             </tr>
                         @endforeach
@@ -65,4 +85,12 @@
                 </table>
             @endif
         </div>
+    @stop
+
+    @section('css')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stop
+
+    @section('js')
+
     @stop

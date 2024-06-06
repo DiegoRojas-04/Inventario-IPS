@@ -54,8 +54,16 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('rol', RolController::class);
         Route::resource('permiso', PermisoController::class);
         Route::resource('kardex', KardexController::class);
+        Route::get('/pedido', [PedidoController::class, 'index'])->name('pedido');
     });
 });
+Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])->name('export.compra.pdf');
+
+Route::get('/export/entrega/pdf/{id}', [EntregaController::class, 'exportToPdf'])->name('export.entrega.pdf');
+
+Route::get('/export/pedido/pdf/{id}', [PedidoController::class, 'exportToPdf'])->name('export.pedido.pdf');
+
+
 Route::get('/export/excel', [KardexController::class, 'exportToExcel'])->name('export.excel');
 Route::get('/export/pdf', [KardexController::class, 'exportToPdf'])->name('export.pdf');
 

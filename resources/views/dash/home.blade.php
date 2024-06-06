@@ -3,6 +3,25 @@
 @section('title', 'Home')
 
 @section('content_header')
+@if (session('Mensaje'))
+        <script>
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: "Pedido Realizado"
+            });
+        </script>
+    @endif
     <div class="card-header">
         <div class="absolute inset-x-0 top-0 flex justify-center -mt-20 text-center" style="padding-bottom: 15px;">
             <img src="{{ asset('images/logo.png') }}" alt="Logo"
@@ -37,6 +56,7 @@
 
 @section('css')
     <link rel="stylesheet" href="/css/admin_custom.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Asegúrate de incluir Font Awesome si aún no está incluido -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 @stop
@@ -48,7 +68,7 @@
         function updateCountdown() {
             var now = new Date();
             var currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-            var allowOrder = (currentDay === 2 && now.getHours() >= 6 && now.getHours() <
+            var allowOrder = (currentDay === 4 && now.getHours() >= 6 && now.getHours() <
                 16); // Permitir pedidos solo los jueves entre las 6 AM y las 4 PM
 
             if (allowOrder) {

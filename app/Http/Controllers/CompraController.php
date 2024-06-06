@@ -13,6 +13,7 @@ use App\Models\Presentacione;
 use App\Models\Proveedore;
 use App\Models\Servicio;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -157,18 +158,22 @@ class CompraController extends Controller
      * Display the specified resource.
      */
 
-    public function show($id)
-    {
-        $compra = Compra::findOrFail($id);
-
-        // Obtener los insumos con las características específicas de esa compra
-        $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
-            $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
-            return $insumo;
-        });
-
-        return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas'));
-    }
+     public function show($id)
+     {
+         $compra = Compra::findOrFail($id);
+     
+         // Obtener los insumos con las características específicas de esa compra
+         $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
+             $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
+             return $insumo;
+         });
+     
+         // Ordenar los insumos por nombre
+         $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
+     
+         return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas'));
+     }
+     
 
     /**
      * Show the form for editing the specified resource.
@@ -196,4 +201,77 @@ class CompraController extends Controller
     {
         //
     }
+
+    public function exportToPdf($id)
+{
+    $compra = Compra::with('insumos.marca', 'insumos.presentacione', 'proveedor', 'comprobante')->findOrFail($id);
+
+    // Obtener los insumos con las características específicas de esa compra
+    $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
+        $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
+        if ($insumo->caracteristicasCompra->isEmpty()) {
+            $insumo->caracteristicasCompra = collect(); // Asegurarse de que siempre sea una colección
+        }
+        return $insumo;
+    });
+
+    // Ordenar los insumos por nombre
+    $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
+
+    // HTML para el contenido del PDF
+    $html = '
+   <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+    <h1 style="text-align: center;">Detalle de Compra</h1>
+    <p><strong>Proveedor:</strong> ' . $compra->proveedor->nombre . '</p>
+    <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('d-m-Y') . '</p>
+    <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('H:i:s') . '</p>
+    <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; text-align: center;">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Presentación</th>
+                <th>Invima</th>
+                <th>Lote</th>
+                <th>Vencimiento</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+    // Agregar los insumos y cantidades a la tabla
+    foreach ($insumosConCaracteristicas as $insumo) {
+        foreach ($insumo->caracteristicasCompra as $caracteristica) {
+            $html .= '
+            <tr>
+                <td>' . $insumo->nombre . '</td>
+                <td>' . $insumo->marca->nombre . '</td>
+                <td>' . $insumo->presentacione->nombre . '</td>
+                <td>' . $caracteristica->invima . '</td>
+                <td>' . $caracteristica->lote . '</td>
+                <td>' . \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') . '</td>
+                <td>' . $caracteristica->cantidad_compra . '</td>
+            </tr>';
+        }
+    }
+
+    $html .= '
+        </tbody>
+    </table>';
+
+    // Configurar el PDF
+    $dompdf = new Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Descargar el PDF
+    return $dompdf->stream('Detalle_compra_' . $compra->proveedor->nombre . '.pdf');
+}
+ 
+
 }
