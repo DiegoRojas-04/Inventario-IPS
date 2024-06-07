@@ -74,7 +74,7 @@
             if (allowOrder) {
                 var deadline = new Date();
                 deadline.setHours(16, 0, 0, 0); // Establecer la fecha límite a las 4 PM
-                var diff = deadline - now;
+                var diff = deadline - now; 
 
                 if (diff > 0) {
                     var hours = Math.floor(diff / (1000 * 60 * 60));

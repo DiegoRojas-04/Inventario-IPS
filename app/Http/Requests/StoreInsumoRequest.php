@@ -23,7 +23,7 @@ class StoreInsumoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required | max:60 | unique:categorias,nombre',
+            'nombre' => 'required | max:60 | unique:insumos,nombre',
             'descripcion' => 'nullable | max:255',
             'stock' => 'required | numeric | min:0',
             'riesgo' => 'required',

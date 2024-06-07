@@ -201,8 +201,10 @@ public function exportToPdf(Request $request)
 
     // Crear el HTML para el PDF
     $titulo = 'Kardex Medicare IPS (' . $selectedMonth . ' ' . $selectedYear . ($categoriaNombre ? ' - ' . $categoriaNombre : '') . ')';
-    $html = '<style>';
-    $html .= 'table { width: 100%; border-collapse: collapse; }';
+    $html = '<style>  body {
+            font-family: Arial, sans-serif;
+        }';
+    $html .= 'table { width: 100%; border-collapse: collapse; font-size:  }';
     $html .= 'th, td { border: 1px solid black; text-align: center; padding: 8px; }';
     $html .= 'th { background-color: #f2f2f2; }';
     $html .= '</style>';

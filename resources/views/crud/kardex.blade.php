@@ -26,8 +26,7 @@
                 <div class="col-md-2">
                     <label for="mes" class="sr-only">Mes</label>
                     <select name="mes" id="mes" class="form-control">
-                        <option value="">Selecciona un Mes</option>
-                        @foreach (range(1, 12) as $month)
+                         @foreach (range(1, 12) as $month)
                             <option value="{{ $month }}" @if ($month == $selectedMonth) selected @endif>
                                 {{ DateTime::createFromFormat('!m', $month)->format('F') }}</option>
                         @endforeach

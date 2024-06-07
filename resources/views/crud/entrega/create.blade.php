@@ -23,8 +23,10 @@
                                 <select data-size="8" title="Seleccionar Insumos..." data-live-search="true" name="nombre"
                                     id="nombre" data-style="btn-white" class="form-control selectpicker show-tick">
                                     @foreach ($insumos as $item)
-                                        <option value="{{ $item->id }}">{{ $item->nombre }}</option>
+                                        <option value="{{ $item->id }}" data-barcode="{{ $item->vida_util }}">
+                                            {{ $item->nombre }}</option>
                                     @endforeach
+
                                 </select>
                             </div>
                             <div class="col-md-12 mb-2">
@@ -165,102 +167,148 @@
 
     <script>
         $(document).ready(function() {
-            // Función para manejar el cambio en la selección de insumos
-            $('#nombre').change(function() {
-                let insumoId = $('#nombre').val();
-                let stockInput = $('#stock_actual'); // Input para mostrar el stock
+            let barcode = ''; // Variable para almacenar el código de barras
 
-                $('#variante').selectpicker('destroy');
-                $('#variante').empty();
+            // Capturar el evento de keydown en todo el documento
+            $(document).keydown(function(e) {
+                // Verificar si el foco está en el área de entrada de cantidad, insumos, variante o número de comprobante
+                if (!$('#stock').is(':focus') && !$('#numero_comprobante').is(':focus') && !$('#nombre').is(
+                        ':focus') && !$('#variante').is(':focus')) {
+                    // Si la tecla presionada es 'Enter', buscar y seleccionar el insumo
+                    if (e.key === 'Enter') {
+                        let matchedOption = $('#nombre option').filter(function() {
+                            // Buscar el código de barras en los datos personalizados del option
+                            return $(this).data('barcode') == barcode;
+                        });
 
-                // Realizar la llamada AJAX para obtener las características del insumo
-                $.ajax({
-                    url: "{{ url('/get-caracteristicas') }}",
-                    type: "GET",
-                    data: {
-                        insumo_id: insumoId
-                    },
-                    success: function(response) {
-                        // Si el insumo tiene variantes disponibles
-                        if (response.caracteristicas && response.caracteristicas.length > 0) {
-                            // Ocultar el input de stock general
-                            stockInput.prop('readonly', true);
+                        if (matchedOption.length > 0) {
+                            // Seleccionar el insumo encontrado
+                            $('#nombre').val(matchedOption.val());
+                            $('#nombre').selectpicker('refresh'); // Actualizar el selectpicker
+                            $('#nombre').trigger('change'); // Simular el evento de cambio en el select
 
-                            // Limpiar el valor del input de stock general
-                            stockInput.val('');
+                            // Cerrar automáticamente el menú desplegable del select
+                            $('#nombre').selectpicker('toggle');
 
-                            // Filtrar las características para eliminar aquellas con cantidad 0
-                            let caracteristicasDisponibles = response.caracteristicas.filter(
-                                function(caracteristica) {
-                                    return caracteristica.cantidad > 0;
-                                });
-
-                            // Ordenar las variantes por fecha de vencimiento (más cercana a la actual primero)
-                            caracteristicasDisponibles.sort((a, b) => {
-                                const fechaA = new Date(a.vencimiento);
-                                const fechaB = new Date(b.vencimiento);
-                                return fechaA - fechaB;
-                            });
-
-                            // Mostrar la cantidad de la variante seleccionada en el input de stock
-                            $('#variante').change(function() {
-                                let varianteId = $(this).val();
-                                let caracteristica = caracteristicasDisponibles.find(
-                                    function(caracteristica) {
-                                        return caracteristica.id == varianteId;
-                                    });
-                                if (caracteristica) {
-                                    stockInput.val(caracteristica.cantidad);
-                                }
-                            });
-
-                            // Agregar las nuevas opciones al select de variantes
-                            caracteristicasDisponibles.forEach(function(caracteristica) {
-                                $('#variante').append('<option value="' + caracteristica
-                                    .id + '">' +
-                                    caracteristica.invima + ' - ' + caracteristica
-                                    .lote + ' - ' + caracteristica.vencimiento +
-                                    '</option>');
-                            });
-
-                            $('#variante').selectpicker();
-                        } else { // Si el insumo no tiene variantes
-                            // Mostrar el stock general del insumo en el input de stock
-                            stockInput.prop('readonly', false);
-
-                            // Actualizar el valor del input de stock con el stock general del insumo
-                            $.ajax({
-                                url: "{{ url('/get-stock') }}",
-                                type: "GET",
-                                data: {
-                                    insumo_id: insumoId
-                                },
-                                success: function(response) {
-                                    let stock = response.stock;
-                                    // Actualizar el valor del input de "En Stock"
-                                    stockInput.val(stock);
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error(error);
-                                    // Manejar el error según tu lógica
-                                }
-                            });
+                            // Activar automáticamente el select de variantes después de 1.5 segundos
+                            setTimeout(function() {
+                                $('#variante').selectpicker('toggle');
+                            }, 1000);
+                        } else {
+                            showModal('Código de barras no encontrado');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(error);
-                        // Manejar el error según tu lógica
+
+                        barcode = ''; // Limpiar el código de barras después de la búsqueda
+                    } else {
+                        // Agregar la tecla presionada al código de barras
+                        barcode += e.key;
+
+                        // Enfocar automáticamente el input del insumo principal cuando se detecta la entrada del código de barras
+                        $('#nombre').focus();
                     }
-                }).done(function() {
-                    $('#variante').selectpicker('val', '');
-                });
+                }
             });
 
-            // Función para agregar un insumo a la lista de detalles
-            $('#btn_agregar').click(function() {
-                agregarInsumo();
+            // Resto del código...
+        });
+
+
+        // Función para manejar el cambio en la selección de insumos
+        $('#nombre').change(function() {
+            let insumoId = $('#nombre').val();
+            let stockInput = $('#stock_actual'); // Input para mostrar el stock
+
+            $('#variante').selectpicker('destroy');
+            $('#variante').empty();
+
+            // Realizar la llamada AJAX para obtener las características del insumo
+            $.ajax({
+                url: "{{ url('/get-caracteristicas') }}",
+                type: "GET",
+                data: {
+                    insumo_id: insumoId
+                },
+                success: function(response) {
+                    // Si el insumo tiene variantes disponibles
+                    if (response.caracteristicas && response.caracteristicas.length > 0) {
+                        // Ocultar el input de stock general
+                        stockInput.prop('readonly', true);
+
+                        // Limpiar el valor del input de stock general
+                        stockInput.val('');
+
+                        // Filtrar las características para eliminar aquellas con cantidad 0
+                        let caracteristicasDisponibles = response.caracteristicas.filter(
+                            function(caracteristica) {
+                                return caracteristica.cantidad > 0;
+                            });
+
+                        // Ordenar las variantes por fecha de vencimiento (más cercana a la actual primero)
+                        caracteristicasDisponibles.sort((a, b) => {
+                            const fechaA = new Date(a.vencimiento);
+                            const fechaB = new Date(b.vencimiento);
+                            return fechaA - fechaB;
+                        });
+
+                        // Mostrar la cantidad de la variante seleccionada en el input de stock
+                        $('#variante').change(function() {
+                            let varianteId = $(this).val();
+                            let caracteristica = caracteristicasDisponibles.find(
+                                function(caracteristica) {
+                                    return caracteristica.id == varianteId;
+                                });
+                            if (caracteristica) {
+                                stockInput.val(caracteristica.cantidad);
+                            }
+                        });
+
+                        // Agregar las nuevas opciones al select de variantes
+                        caracteristicasDisponibles.forEach(function(caracteristica) {
+                            $('#variante').append('<option value="' + caracteristica
+                                .id + '">' +
+                                caracteristica.invima + ' - ' + caracteristica
+                                .lote + ' - ' + caracteristica.vencimiento +
+                                '</option>');
+                        });
+
+                        $('#variante').selectpicker();
+                    } else { // Si el insumo no tiene variantes
+                        // Mostrar el stock general del insumo en el input de stock
+                        stockInput.prop('readonly', false);
+
+                        // Actualizar el valor del input de stock con el stock general del insumo
+                        $.ajax({
+                            url: "{{ url('/get-stock') }}",
+                            type: "GET",
+                            data: {
+                                insumo_id: insumoId
+                            },
+                            success: function(response) {
+                                let stock = response.stock;
+                                // Actualizar el valor del input de "En Stock"
+                                stockInput.val(stock);
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error);
+                                // Manejar el error según tu lógica
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Manejar el error según tu lógica
+                }
+            }).done(function() {
+                $('#variante').selectpicker('val', '');
             });
         });
+
+        // Función para agregar un insumo a la lista de detalles
+        $('#btn_agregar').click(function() {
+            agregarInsumo();
+        });
+
 
         let cont = 0;
         let total = 0;
@@ -359,13 +407,13 @@
             }
         }
 
-
         function eliminarInsumo(indice) {
             let cantidadEliminada = parseInt($('#fila' + indice).find('input[name="arraycantidad[]"]').val());
             total -= cantidadEliminada;
             $('#fila' + indice).remove();
             $('#total').html(total);
         }
+
 
         function limpiarCampos() {
             let selectNombre = $('#nombre');
