@@ -6,7 +6,7 @@
 @stop
 
 @section('content')
-    <div class="row">
+    {{-- <div class="row">
         <!-- Tarjeta de ejemplo 1 -->
         <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
@@ -62,11 +62,38 @@
                 <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
-    </div>
+    </div> --}}
 
-    <div class="text-center" style="margin-top: 250px">
+<h4>Pendientes</h4>
+<p>* Que los insumos de la entrega no se dupliquen al momento de scanear un codigo de barras</p>
+<p>* Poner para agreagr el codigo de barras (al momento de crear el insumo)</p>
+<p>* Ver lo de si un mismo insumo viene en diferente marca o presentacion y acomodarlo</p>
+<p>* Que no salga el home y realizar pedido al admin</p>
+<p>* Al realizar La entrega, tener en cuenta el stock si se escoge una misma variante en la misma entrega</p>
+<p>* Lo del comprobante sus numeros y fechas</p>
+<p>* Editar Perfil de usuarios</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {{-- <div class="text-center" style="margin-top: 250px">
         <img src="{{ asset('images/muñeco.jpg') }}" alt="Logo">
-    </div>  
+    </div>   --}}
 @stop
 
 @section('css')

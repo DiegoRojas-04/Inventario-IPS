@@ -36,10 +36,15 @@ Route::middleware([
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::resource('pedido', PedidoController::class);
-    
+
+    // Restricción de acceso a la creación de pedidos mediante URL
+    Route::get('pedido/create', [PedidoController::class, 'create'])
+        ->middleware(['check.time'])
+        ->name('pedido.create');
+
     // Aplica el middleware 'role' a las rutas protegidas por roles
     Route::middleware(['role'])->group(function () {
+        Route::resource('pedido', PedidoController::class)->except(['create']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::resource('categoria', CategoriaController::class);
         Route::resource('servicio', ServicioController::class);
@@ -57,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pedido', [PedidoController::class, 'index'])->name('pedido');
     });
 });
+
 Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])->name('export.compra.pdf');
 
 Route::get('/export/entrega/pdf/{id}', [EntregaController::class, 'exportToPdf'])->name('export.entrega.pdf');
