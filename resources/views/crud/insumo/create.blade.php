@@ -133,6 +133,15 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
+  
+                <div class="col-md-4">
+                    <label>Codigo:</label>
+                    <input type="text" name="codigo" class="form-control  @error('codigo') is-invalid @enderror"
+                        value="{{ old('codigo') }}">
+                    @error('codigo')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
 
                 <div class="col-12">
                     <br>

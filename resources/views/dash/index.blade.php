@@ -65,17 +65,14 @@
     </div> --}}
 
 <h4>Pendientes</h4>
-<p>* Que los insumos de la entrega no se dupliquen al momento de scanear un codigo de barras</p>
-<p>* Poner para agreagr el codigo de barras (al momento de crear el insumo)</p>
+<p>
 <p>* Ver lo de si un mismo insumo viene en diferente marca o presentacion y acomodarlo</p>
 <p>* Que no salga el home y realizar pedido al admin</p>
-<p>* Al realizar La entrega, tener en cuenta el stock si se escoge una misma variante en la misma entrega</p>
+<p>* Al realizar La entrega, tener en cuenta el stock si se escoge una misma variante en la misma entrega, Hacer que se sume y si se pasa le diga en un alert</p>
 <p>* Lo del comprobante sus numeros y fechas</p>
 <p>* Editar Perfil de usuarios</p>
-
-
-
-
+<h4>Ideas</h4>
+<p>Que si el insumo solo tiene una variante al scanear, se seleecione automáticamente y se agregue a la tabla cada scaneada uno mas</p>
 
 
 

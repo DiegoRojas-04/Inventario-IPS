@@ -160,7 +160,7 @@ class KardexController extends Controller
                     'startColor' => ['argb' => $rowColor],
                 ],
             ]);
-    
+            
             $row++;
         }
     

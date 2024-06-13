@@ -24,8 +24,7 @@
                                         name="nombre" id="nombre" data-style="btn-white"
                                         class="form-control selectpicker show-tick">
                                         @foreach ($insumos as $item)
-                                            <option value="{{ $item->id }}"
-                                                data-barcode="{{ $item->vida_util }}">
+                                            <option value="{{ $item->id }}" data-barcode="{{ $item->codigo }}">
                                                 {{ $item->nombre }}</option>
                                         @endforeach
                                     </select>
@@ -34,7 +33,7 @@
                                     <label class="form-label">Variante de Insumo:</label>
                                     <select data-size="10" title="Seleccionar Variante..." data-live-search="true"
                                         name="variante" id="variante" data-style="btn-white"
-                                            class="form-control selectpicker show-tick">
+                                        class="form-control selectpicker show-tick">
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-2">
@@ -178,8 +177,7 @@
                     if (!isBarcodeProcessing) {
                         // Verificar si el foco está en el área de entrada de cantidad, insumos, variante o número de comprobante
                         if (!$('#stock').is(':focus') && !$('#numero_comprobante').is(':focus') && !$('#nombre')
-                            .is(
-                                ':focus') && !$('#variante').is(':focus')) {
+                            .is(':focus') && !$('#variante').is(':focus')) {
                             // Si la tecla presionada es 'Enter', buscar y seleccionar el insumo
                             if (e.key === 'Enter') {
                                 // Desactivar temporalmente el evento keydown
@@ -192,16 +190,14 @@
 
                                 if (matchedOption.length > 0) {
                                     // Limpiar selección previa antes de seleccionar el nuevo insumo
-
                                     $('#nombre').selectpicker('val', '');
+
                                     // Seleccionar el insumo encontrado
-                                    $('#nombre').val(matchedOption.val());
+                                    $('#nombre').selectpicker('val', matchedOption.val());
 
-                                    $('#nombre').selectpicker('refresh'); // Actualizar el selectpicker
+                                    // Simular el evento de cambio en el select
+                                    $('#nombre').trigger('change');
 
-                                    $('#nombre').trigger('change'); // Simular el evento de cambio en el select
-                                    // Cerrar automáticamente el menú desplegable del select
-                                    $('#nombre').selectpicker('toggle');
                                     // Activar automáticamente el select de variantes después de 1.0 segundos
                                     setTimeout(function() {
                                         $('#variante').selectpicker('toggle');
@@ -218,17 +214,14 @@
                             } else {
                                 // Agregar la tecla presionada al código de barras
                                 barcode += e.key;
-
-                                // Enfocar automáticamente el input del insumo principal cuando se detecta la entrada del código de barras
-                                $('#nombre').focus();
                             }
                         }
                     }
                 });
+
                 // Resto del código...
             });
 
-            
             // Función para manejar el cambio en la selección de insumos
             $('#nombre').change(function() {
                 let insumoId = $('#nombre').val();

@@ -101,6 +101,15 @@
                     <input type="text" class="form-control bg-white" value="{{ $insumo->stock }}" readonly>  
                 </div>
 
+                <div class="col-md-4">
+                    <label>Codigo:</label>
+                    <input type="text" name="codigo"  value="{{ old('codigo', $insumo->codigo)}}"
+                        class="form-control  @error('codigo') is-invalid @enderror">
+                    @error('codigo')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+
                 <div class="col-12">
                     <br>
                     <button type="submit" class="btn bg-blue">{{ 'Actualizar' }}</button>
