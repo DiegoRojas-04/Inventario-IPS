@@ -66,27 +66,11 @@
 
 <h4>Pendientes</h4>
 <p>
-<p>* Ver lo de si un mismo insumo viene en diferente marca o presentacion y acomodarlo</p>
+<p>* Ver lo de si un mismo insumo viene en diferente marca
+o presentacion y acomodarlo</p>
 <p>* Que no salga el home y realizar pedido al admin</p>
-<p>* Al realizar La entrega, tener en cuenta el stock si se escoge una misma variante en la misma entrega, Hacer que se sume y si se pasa le diga en un alert</p>
 <p>* Lo del comprobante sus numeros y fechas</p>
 <p>* Editar Perfil de usuarios</p>
-<h4>Ideas</h4>
-<p>Que si el insumo solo tiene una variante al scanear, se seleecione automáticamente y se agregue a la tabla cada scaneada uno mas</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     {{-- <div class="text-center" style="margin-top: 250px">
         <img src="{{ asset('images/muñeco.jpg') }}" alt="Logo">
@@ -97,7 +81,7 @@
     {{-- Add here extra stylesheets --}}
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
 @stop
-
+sdsdasd adsasdasd assdadsads asdasd 
 @section('js')
     <script>
         console.log("Hi, I'm using the Laravel-AdminLTE package!");

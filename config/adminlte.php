@@ -517,7 +517,7 @@ return [
 
         ], 
         
-           
+        
         [
             'text' => 'Home',
             'url' => 'home',
@@ -526,24 +526,22 @@ return [
 
         ],
         
+             
         [
             'text' => 'Pedidos',
             'url' => 'pedido',
             'icon' => 'far fa fa-comments',
-            'submenu' => [
-                [
-                    'text' => 'Pedido',
-                    'url' => 'pedido',
-                    'can' => 'Entregas',
-                ],
-                [
-                    'text' => 'Realizar Pedido',
-                    'url' => 'pedido/create',
+            'can' => 'Entregas',
 
-                ],
-            ],
+        ],
+             
+        [
+            'text' => 'Realizar Pedido',
+            'url' => 'pedido/create',
+            'icon' => 'far fa fa-comments',
+            'can' => '',
 
-        ], 
+        ],
 
         ['header' => 'account_settings',
         'can' => 'Administrador',

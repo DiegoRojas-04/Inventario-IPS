@@ -107,8 +107,8 @@
                     @enderror
                 </div>
 
-                <div class="col-md-4">
-                    <label>Clasificacion de Riesgo:</label>
+                <div class="col-md-2">
+                    <label>Riesgo:</label>
                     <input type="text" name="riesgo" class="form-control  @error('riesgo') is-invalid @enderror"
                         value="{{ old('riesgo') }}">
                     @error('riesgo')
@@ -116,7 +116,7 @@
                     @enderror
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <label>Vida Util:</label>
                     <input type="text" name="vida_util" class="form-control   @error('vida_util') is-invalid @enderror"
                         value="{{ old('vida_util') }}">

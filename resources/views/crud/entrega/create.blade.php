@@ -222,7 +222,6 @@
                 // Resto del código...
             });
 
-            // Función para manejar el cambio en la selección de insumos
             $('#nombre').change(function() {
                 let insumoId = $('#nombre').val();
                 let stockInput = $('#stock_actual'); // Input para mostrar el stock
@@ -319,8 +318,8 @@
             });
 
 
-            let cont = 0;
-            let total = 0;
+            let cont = 1; // Contador para identificar las filas
+            let total = 0; // Total de cantidades de insumos
 
             function agregarInsumo() {
                 let idInsumo = $('#nombre').val();
@@ -328,6 +327,8 @@
                 let cantidad = parseInt($('#stock').val());
                 let variante = $('#variante').val();
                 let stockActual = parseInt($('#stock_actual').val());
+
+                console.log('Datos ingresados:', idInsumo, nombreInsumo, cantidad, variante, stockActual);
 
                 // Capturar las características de la variante seleccionada
                 let varianteText = $('#variante option:selected').text();
@@ -341,52 +342,80 @@
                     return; // Detener la ejecución de la función si no se ha seleccionado una variante
                 }
 
-                if (idInsumo != '' && nombreInsumo != '' && cantidad != '') {
-                    if (cantidad > 0 && (cantidad % 1 == 0)) {
+                if (idInsumo !== '' && nombreInsumo !== '' && !isNaN(cantidad)) {
+                    if (cantidad > 0 && (cantidad % 1 === 0)) {
                         if (cantidad <= stockActual) {
-                            let fila = '<tr id="fila' + cont + '">' +
-                                // '<th>' + (cont + 1) + '</th>' +
-                                '<td><input type="hidden" name="arrayidinsumo[]" value="' + idInsumo + '">' +
-                                nombreInsumo +
-                                '</td>' +
-                                '<td><input type="hidden" name="arrayvariante[]" value="' + variante + '">' +
-                                '<input type="hidden" name="arrayinvima[]" value="' + invima + '">' + invima + // Agregado
-                                '</td>' +
-                                '<td><input type="hidden" name="arraylote[]" value="' + lote + '">' + lote + // Agregado
-                                '</td>' +
-                                '<td><input type="hidden" name="arrayvencimiento[]" value="' + vencimiento + '">' +
-                                vencimiento + // Agregado
-                                '</td>' +
-                                '<td id="centrar">' +
-                                '<div class="input-group">' +
-                                '<button class="btn btn-outline-danger btn-sm" type="button" onClick="restarCantidad(' + cont +
-                                ')"><i class="fa fa-minus"></i></button>' +
-                                '<input type="number" name="arraycantidad[]" id="cantidad' + cont + '" value="' + cantidad +
-                                '" class="form-control" readonly>' +
-                                '<button class="btn btn-outline-success btn-sm" type="button" onClick="sumarCantidad(' + cont +
-                                ', ' +
-                                stockActual + ')"><i class="fa fa-plus"></i></button>' +
-                                '</div>' +
-                                '</td>' +
-                                '<td><button class="btn btn-danger" type="button" onClick="eliminarInsumo(' + cont +
-                                ')"><i class="fa fa-trash"></i></button></td>' +
-                                '</tr>';
+                            // Verificar si el insumo con la misma variante ya está en la tabla
+                            let encontrado = false;
+                            $('#tabla_detalle tbody tr').each(function() {
+                                let idInsumoTabla = $(this).find('input[name="arrayidinsumo[]"]').val();
+                                let varianteTabla = $(this).find('input[name="arrayvariante[]"]').val();
+                                if (idInsumoTabla === idInsumo && varianteTabla === variante) {
+                                    encontrado = true;
+                                    let cantidadExistente = parseInt($(this).find('input[name="arraycantidad[]"]')
+                                        .val());
+                                    let nuevaCantidad = cantidadExistente + cantidad;
+                                    if (nuevaCantidad <= stockActual) {
+                                        $(this).find('input[name="arraycantidad[]"]').val(nuevaCantidad);
+                                        total += cantidad;
+                                        $('#total').html(total);
+                                        limpiarCampos(); // Mover aquí para limpiar solo cuando se agrega correctamente
+                                    } else {
+                                        showModal('Cantidad Insuficiente');
+                                    }
+                                    return false; // Salir del bucle each
+                                }
+                            });
 
-                            $('#tabla_detalle tbody').append(fila);
-                            limpiarCampos();
-                            cont++;
-                            total += cantidad;
-                            $('#total').html(total);
+                            if (!encontrado) {
+                                agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad,
+                                    stockActual);
+                                limpiarCampos(); // Mover aquí para limpiar solo cuando se agrega correctamente
+                            }
                         } else {
                             showModal('Cantidad No Disponible');
                         }
-
                     } else {
                         showModal('Valores Incorrectos');
                     }
                 } else {
                     showModal('Campos Obligatorios');
                 }
+            }
+
+            function agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad, stockActual) {
+                let fila = '<tr id="fila' + cont + '">' +
+                    '<td><input type="hidden" name="arrayidinsumo[]" value="' + idInsumo + '">' +
+                    nombreInsumo +
+                    '</td>' +
+                    '<td><input type="hidden" name="arrayvariante[]" value="' + variante + '">' +
+                    '<input type="hidden" name="arrayinvima[]" value="' + invima + '">' + invima +
+                    '</td>' +
+                    '<td><input type="hidden" name="arraylote[]" value="' + lote + '">' + lote +
+                    '</td>' +
+                    '<td><input type="hidden" name="arrayvencimiento[]" value="' + vencimiento + '">' +
+                    vencimiento +
+                    '</td>' +
+                    '<td id="centrar">' +
+                    '<div class="input-group">' +
+                    '<button class="btn btn-outline-danger btn-sm" type="button" onClick="restarCantidad(' + cont +
+                    ')"><i class="fa fa-minus"></i></button>' +
+                    '<input type="number" name="arraycantidad[]" id="cantidad' + cont + '" value="' + cantidad +
+                    '" class="form-control" readonly>' +
+                    '<button class="btn btn-outline-success btn-sm" type="button" onClick="sumarCantidad(' + cont +
+                    ', ' +
+                    stockActual + ')"><i class="fa fa-plus"></i></button>' +
+                    '</div>' +
+                    '</td>' +
+                    '<td><button class="btn btn-danger" type="button" onClick="eliminarInsumo(' + cont +
+                    ')"><i class="fa fa-trash"></i></button></td>' +
+                    '</tr>';
+
+                $('#tabla_detalle tbody').append(fila);
+                cont++;
+                total += cantidad;
+                $('#total').html(total);
+                console.log('Fila agregada:', fila);
             }
 
             function sumarCantidad(indice, stockActual) {
@@ -400,6 +429,7 @@
                 } else {
                     showModal('Cantidad Insuficiente');
                 }
+                console.log('Cantidad sumada:', cantidadInput.val());
             }
 
             function restarCantidad(indice) {
@@ -414,6 +444,7 @@
                     // Si la cantidad es 1, eliminar el insumo de la tabla
                     eliminarInsumo(indice);
                 }
+                console.log('Cantidad restada:', cantidadInput.val());
             }
 
             function eliminarInsumo(indice) {
@@ -421,17 +452,18 @@
                 total -= cantidadEliminada;
                 $('#fila' + indice).remove();
                 $('#total').html(total);
+                console.log('Insumo eliminado:', indice);
             }
 
-
             function limpiarCampos() {
-                let selectNombre = $('#nombre');
-                let selectVariante = $('#variante');
+                $('#nombre').selectpicker('val', ''); // Limpiar el select de insumos
+                $('#variante').selectpicker('val', ''); // Limpiar el select de variantes
+                $('#stock_actual').val(''); // Limpiar el input de stock actual
+                $('#stock').val(''); // Limpiar el input de cantidad
 
-                selectNombre.selectpicker('val', ''); // Limpiar select de nombre
-                selectVariante.selectpicker('val', ''); // Limpiar select de variante
-                $('#stock').val(''); // Limpiar campo de cantidad
-                $('#stock_actual').val(''); // Limpiar campo de stock actual
+                // Refrescar select pickers después de limpiar los valores
+                $('#nombre').selectpicker('val', '');
+                $('#variante').selectpicker('val', '');
             }
 
             function showModal(message, icon = 'error') {
@@ -442,8 +474,8 @@
                     timer: 3000,
                     timerProgressBar: true,
                     didOpen: (toast) => {
-                        toast.onmouseenter = Swal.stopTimer;
-                        toast.onmouseleave = Swal.resumeTimer;
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
                     }
                 });
                 Toast.fire({

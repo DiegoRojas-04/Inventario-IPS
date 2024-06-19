@@ -59,6 +59,9 @@ class ProveedorController extends Controller
         $request->validate([
             'nombre' => 'required|max:60|unique:proveedores,nombre,' . $id,
             'descripcion' => 'nullable|max:255',
+            'telefono' => 'required',
+            'direccion' => 'required',
+            'email' => 'required',
         ]);
         $datosProveedor = request()->except(['_token', '_method']);
         Proveedore::where('id', $id)->update($datosProveedor);

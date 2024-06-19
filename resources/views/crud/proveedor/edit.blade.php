@@ -16,21 +16,57 @@
                 {{ csrf_field() }}
                 {{ method_field('PATCH') }}
 
-                <label>Nombre del Proveedor:</label>
-                <input type="text" name="nombre" value="{{ $proveedor->nombre }}"
-                    class="form-control @error('nombre') is-invalid @enderror">
-                @error('nombre')
-                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                @enderror
-                <br>
-                <label>Descripcion del Proveedor:</label>
-                <input type="text" name="descripcion" value="{{ $proveedor->descripcion }}"
-                    class="form-control @error('descripcion') is-invalid @enderror">
-                @error('descripcion')
-                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                @enderror
-                <br>
-                <button type="submit" class="btn bg-blue">{{ 'Actualizar' }}</button>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Nombre del Proveedor:</label>
+                        <input type="text" name="nombre" value="{{ $proveedor->nombre }}"
+                            class="form-control @error('nombre') is-invalid @enderror">
+                        @error('nombre')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Descripcion del Proveedor:</label>
+                        <input type="text" name="descripcion" value="{{ $proveedor->descripcion }}"
+                            class="form-control @error('descripcion') is-invalid @enderror">
+                        @error('descripcion')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Telefono:</label>
+                        <input type="number" name="telefono" value="{{ $proveedor->telefono }}"
+                            class="form-control @error('telefono') is-invalid @enderror">
+                        @error('telefono')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Correo Electronico:</label>
+                        <input type="email" name="email" value="{{ $proveedor->email }}"
+                            class="form-control @error('email') is-invalid @enderror">
+                        @error('email')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Direccion:</label>
+                        <input type="text" name="direccion" value="{{ $proveedor->direccion }}"
+                            class="form-control @error('direccion') is-invalid @enderror">
+                        @error('direccion')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-12">
+                        <br>
+                        <button type="submit" class="btn bg-blue">{{ 'Agregar' }}</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>

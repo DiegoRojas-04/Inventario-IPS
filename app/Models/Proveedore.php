@@ -11,6 +11,9 @@ class Proveedore extends Model
     protected $fillable= [
         'nombre',
         'descripcion',
+        'telefono',
+        'email',
+        'direccion',
     ];
 
     public function compras(){
