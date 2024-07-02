@@ -543,18 +543,6 @@ return [
 
         ],
 
-        ['header' => 'account_settings',
-        'can' => 'Administrador',
-        ]
-        ,
-        [
-            'text' => 'Perfil',
-            'url' => 'profile',
-            'icon' => 'fas fa-fw fa-user',
-            'can' => 'Administrador',
-            
-        ],
-
     ],
 
     /*

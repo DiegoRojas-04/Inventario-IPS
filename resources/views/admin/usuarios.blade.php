@@ -3,25 +3,6 @@
 @section('title', 'Usuarios')
 
 @section('content_header')
-    @if (session('Mensaje'))
-        <script>
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            });
-            Toast.fire({
-                icon: "error",
-                title: "Marca Eliminada"
-            });
-        </script>
-    @endif
 
     @if (session('Mensaje2'))
         <script>
@@ -38,29 +19,11 @@
             });
             Toast.fire({
                 icon: "success",
-                title: "Marca Actualizada"
+                title: "Usuario Actualizado"
             });
         </script>
     @endif
-    @if (session('Mensaje3'))
-        <script>
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            });
-            Toast.fire({
-                icon: "success",
-                title: "Marca Restaurada"
-            });
-        </script>
-    @endif
+
     <div class="form-row">
         <div class="col-sm-12 d-flex align-items-center justify-content-between">
             <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#agregar">Agregar Usuario</button>
@@ -86,8 +49,6 @@
                 <div class="col-md-6">
 
                 </div>
-
-
 
 
                 <div class="col-md-5 input-group">
@@ -127,6 +88,11 @@
                                     <button type="submit" class="btn btn-danger" data-toggle="modal"
                                         data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
                                             aria-hidden="true"></i></button>
+                                </div>
+
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url('/usuario/' . $user->id . '/edit') }}" class="btn btn-warning"><i
+                                            class="fa fa-edit"></i></a>
                                 </div>
                             </td>
                         </tr>

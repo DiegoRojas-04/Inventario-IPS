@@ -6,82 +6,150 @@
 @stop
 
 @section('content')
-    {{-- <div class="row">
-        <!-- Tarjeta de ejemplo 1 -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>150</h3>
-                    <p>Nuevas Ordenes</p>
-                </div>
-                <div class="icon">
-                    <i class="ion ion-bag"></i>
-                </div>
-                <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
+    <br>
+    <div class="row">
 
-        <!-- Tarjeta de ejemplo 2 -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>53<sup style="font-size: 20px">%</sup></h3>
-                    <p>Tasa de conversión</p>
-                </div>
-                <div class="icon">
-                    <i class="ion ion-stats-bars"></i>
-                </div>
-                <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
+        <style>
+            .small-box {
+                margin: 15px;
+            }
+        </style>
 
-        <!-- Tarjeta de ejemplo 3 -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
                 <div class="inner">
-                    <h3>44</h3>
-                    <p>Usuarios registrados</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $usuarioCount }}</h3>
+                        <i class="far fa fa-users size-5"></i>
+                    </div>
+                    <h5>Usuarios</h5>
                 </div>
                 <div class="icon">
                     <i class="ion ion-person-add"></i>
                 </div>
-                <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+                <a href="usuario" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
+                <div class="inner">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $preveedoresCount }}</h3>
+                        <i class="far fa-user-circle size-5"></i>
+                    </div>
+                    <h5>Proveedores</h5>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                </div>
+                <a href="proveedor" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
 
-        <!-- Tarjeta de ejemplo 4 -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
                 <div class="inner">
-                    <h3>65</h3>
-                    <p>Visitantes únicos</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $serviciosCount }}</h3>
+                        <i class="far fa fa-medkit size-5"></i>
+                    </div>
+                    <h5>Servicios</h5>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                </div>
+                <a href="servicio" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box  bg-white">
+                <div class="inner">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $categoriaCount }}</h3>
+                        <i class="far fa fa-list size-5"></i>
+                    </div>
+                    <h5>Categorias</h5>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-bag"></i>
+                </div>
+                <a href="categoria" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
+                <div class="inner">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $marcaCount }}</h3>
+                        <i class="far fa fa-tags size-5"></i>
+                    </div>
+                    <h5>Marcas</h5>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                </div>
+                <a href="marca" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
+                <div class="inner">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $presentacionCount }}</h3>
+                        <i class="far fa fa-cubes size-5"></i>
+                    </div>
+                    <h5>Presentacion</h5>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                </div>
+                <a href="presentacion" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-white">
+                <div class="inner">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>{{ $insumoCount }}</h3>
+                        <i class="far fa fa-stethoscope size-5"></i>
+                    </div>
+                    <h5>Insumos</h5>
                 </div>
                 <div class="icon">
                     <i class="ion ion-pie-graph"></i>
                 </div>
-                <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+                <a href="insumo" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
-    </div> --}}
 
+
+        <div class="text-center col-lg-8 col-6">
+            <img src="{{ asset('images/muñeco.jpg') }}" alt="Logo">
+        </div>
+    </div>
+
+{{-- 
 <h4>Pendientes</h4>
 <p>
 <p>* Ver lo de si un mismo insumo viene en diferente marca
 o presentacion y acomodarlo</p>
 <p>* Que no salga el home y realizar pedido al admin</p>
-<p>* Lo del comprobante sus numeros y fechas</p>
-<p>* Editar Perfil de usuarios</p>
+<p>* Lo del comprobante sus numeros y fechas</p> 
+--}}
 
-    {{-- <div class="text-center" style="margin-top: 250px">
-        <img src="{{ asset('images/muñeco.jpg') }}" alt="Logo">
-    </div>   --}}
+
 @stop
 
 @section('css')
     {{-- Add here extra stylesheets --}}
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
 @stop
-sdsdasd adsasdasd assdadsads asdasd 
+
 @section('js')
     <script>
         console.log("Hi, I'm using the Laravel-AdminLTE package!");
