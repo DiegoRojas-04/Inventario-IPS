@@ -77,27 +77,28 @@ class KardexController extends Controller
         $selectedYear = $request->input('anno');
         $idCategoria = $request->input('id_categoria');
 
-        $query = Kardex::with('insumo')
-            ->where('mes', $selectedMonth)
-            ->where('anno', $selectedYear);
+        $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
 
         if ($idCategoria) {
-            $query->whereHas('insumo', function ($q) use ($idCategoria) {
-                $q->where('id_categoria', $idCategoria);
-            });
+            $query->where('id_categoria', $idCategoria);
         }
 
-        return $query->get();
+        $insumos = $query->get();
+
+        $insumos->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
+            $insumo->cantidad_inicial_mes = $this->calcularCantidadInicialMes($insumo, $selectedMonth, $selectedYear);
+            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
+            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
+            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
+            return $insumo;
+        });
+
+        return $insumos;
     }
 
     public function exportToExcel(Request $request)
     {
         $data = $this->ObtenerDatosParaExportar($request);
-
-        // Ordenar por nombre del insumo alfabéticamente
-        $data = $data->sortBy(function ($item) {
-            return $item->insumo->nombre;
-        });
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -152,11 +153,11 @@ class KardexController extends Controller
         // Escribir datos
         $row = 3;
         foreach ($data as $item) {
-            $sheet->setCellValue('A' . $row, $item->insumo->nombre);
-            $sheet->setCellValue('B' . $row, $item->cantidad_inicial);
-            $sheet->setCellValue('C' . $row, $item->ingresos);
-            $sheet->setCellValue('D' . $row, $item->egresos);
-            $sheet->setCellValue('E' . $row, $item->saldo);
+            $sheet->setCellValue('A' . $row, $item->nombre);
+            $sheet->setCellValue('B' . $row, $item->cantidad_inicial_mes);
+            $sheet->setCellValue('C' . $row, $item->ingresos_mes);
+            $sheet->setCellValue('D' . $row, $item->egresos_mes);
+            $sheet->setCellValue('E' . $row, $item->saldo_final_mes);
 
             // Estilo para los nombres de insumos en negrilla
             $sheet->getStyle('A' . $row)->getFont()->setBold(true);
@@ -200,9 +201,7 @@ class KardexController extends Controller
         $data = $this->ObtenerDatosParaExportar($request);
 
         // Ordenar por nombre del insumo alfabéticamente
-        $data = $data->sortBy(function ($item) {
-            return $item->insumo->nombre;
-        });
+        $data = $data->sortBy('nombre');
 
         // Obtener el nombre del mes y categoría
         $selectedMonthNumber = $request->input('mes');
@@ -213,10 +212,8 @@ class KardexController extends Controller
 
         // Crear el HTML para el PDF
         $titulo = 'Kardex Medicare IPS (' . $selectedMonth . ' ' . $selectedYear . ($categoriaNombre ? ' - ' . $categoriaNombre : '') . ')';
-        $html = '<style>  body {
-            font-family: Arial, sans-serif;
-        }';
-        $html .= 'table { width: 100%; border-collapse: collapse; font-size:  }';
+        $html = '<style>body { font-family: Arial, sans-serif; }';
+        $html .= 'table { width: 100%; border-collapse: collapse; font-size: 12px; }';
         $html .= 'th, td { border: 1px solid black; text-align: center; padding: 8px; }';
         $html .= 'th { background-color: #f2f2f2; }';
         $html .= '</style>';
@@ -225,11 +222,11 @@ class KardexController extends Controller
         $html .= '<tr><th>Nombre del Insumo</th><th>Inicio Mes</th><th>Ingresos</th><th>Egresos</th><th>Saldo Final</th></tr>';
         foreach ($data as $item) {
             $html .= '<tr>';
-            $html .= '<td>' . $item->insumo->nombre . '</td>';
-            $html .= '<td>' . $item->cantidad_inicial . '</td>';
-            $html .= '<td>' . $item->ingresos . '</td>';
-            $html .= '<td>' . $item->egresos . '</td>';
-            $html .= '<td>' . $item->saldo . '</td>';
+            $html .= '<td>' . $item->nombre . '</td>';
+            $html .= '<td>' . $item->cantidad_inicial_mes . '</td>';
+            $html .= '<td>' . $item->ingresos_mes . '</td>';
+            $html .= '<td>' . $item->egresos_mes . '</td>';
+            $html .= '<td>' . $item->saldo_final_mes . '</td>';
             $html .= '</tr>';
         }
         $html .= '</table>';

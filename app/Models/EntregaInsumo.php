@@ -15,6 +15,7 @@ class EntregaInsumo extends Model
         'entrega_id',
         'insumo_id',
         'cantidad',
+        'restante',
     ];
 
     public function entrega()

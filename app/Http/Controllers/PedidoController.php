@@ -21,26 +21,28 @@ class PedidoController extends Controller
     public function show($id)
     {
         $pedido = Pedido::with(['insumos' => function ($query) {
-            $query->orderBy('nombre', 'asc'); 
+            $query->orderBy('nombre', 'asc');
         }])->findOrFail($id);
-    
+
         return view('crud.pedido.show', compact('pedido'));
     }
-    
+
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'insumos' => 'required|string',
-            'cantidades' => 'required|string'
+            'cantidades' => 'required|string',
+            'restantes' => 'required|string'
         ]);
 
         $insumos = json_decode($data['insumos'], true);
         $cantidades = json_decode($data['cantidades'], true);
+        $restantes = json_decode($data['restantes'], true);
 
-        // Verifica que insumos y cantidades son arrays
-        if (!is_array($insumos) || !is_array($cantidades)) {
-            return redirect()->back()->withErrors(['msg' => 'Los datos de insumos y cantidades no son válidos.']);
+        // Verifica que insumos, cantidades y restantes son arrays
+        if (!is_array($insumos) || !is_array($cantidades) || !is_array($restantes)) {
+            return redirect()->back()->withErrors(['msg' => 'Los datos de insumos, cantidades y restantes no son válidos.']);
         }
 
         $pedido = new Pedido;
@@ -50,7 +52,10 @@ class PedidoController extends Controller
         $pedido->save();
 
         for ($i = 0; $i < count($insumos); $i++) {
-            $pedido->insumos()->attach($insumos[$i], ['cantidad' => $cantidades[$i]]);
+            $pedido->insumos()->attach($insumos[$i], [
+                'cantidad' => $cantidades[$i],
+                'restante' => $restantes[$i]
+            ]);
         }
         return redirect('home')->with('Mensaje', 'Insumo');
         // return redirect()->route('pedido.index')->with('success', 'Pedido realizado con éxito.');
@@ -83,6 +88,7 @@ class PedidoController extends Controller
             <thead>
                 <tr>
                     <th>Insumo</th>
+                    <th>Restante</th>
                     <th>Cantidad</th>
                     <th>Check</th>
                 </tr>
@@ -94,6 +100,7 @@ class PedidoController extends Controller
             $html .= '
             <tr>
                 <td>' . $insumo->nombre . '</td>
+                <td>' . $insumo->pivot->restante . '</td>
                 <td>' . $insumo->pivot->cantidad . '</td>
                 <td>' . '' . '</td>
 

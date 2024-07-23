@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('pedido_id')->constrained('pedidos')->onDelete('cascade');
             $table->foreignId('insumo_id')->constrained('insumos')->onDelete('cascade');
             $table->integer('cantidad')->unsigned();
+            $table->integer('restante')->unsigned();
             $table->timestamps();
         });
     }

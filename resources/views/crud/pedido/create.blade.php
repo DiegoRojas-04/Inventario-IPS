@@ -39,6 +39,11 @@
                         </div>
 
                         <div class="col-sm-12">
+                            <label for="restante">Restante:</label>
+                            <input type="number" id="restantes" class="form-control" min="1" required>
+                        </div>
+
+                        <div class="col-sm-12">
                             <label for="cantidad">Cantidad:</label>
                             <input type="number" id="cantidades" class="form-control" min="1" required>
                         </div>
@@ -55,6 +60,7 @@
                         <thead class="text-center thead-dark">
                             <tr>
                                 <th>Insumo</th>
+                                <th>Restante</th>
                                 <th>Cantidad</th>
                                 <th>Eliminar</th>
                             </tr>
@@ -91,9 +97,11 @@
             var insumoId = $('#insumos').val();
             var insumoNombre = $('#insumos option:selected').text();
             var cantidad = $('#cantidades').val();
-            if (insumoId && cantidad) {
+            var restante = $('#restantes').val();
+            if (insumoId && cantidad && restante) {
                 var fila = '<tr>' +
                     '<td>' + insumoNombre + '<input type="hidden" name="arrayinsumos[]" value="' + insumoId + '"></td>' +
+                    '<td>' + restante + '<input type="hidden" name="arrayrestantes[]" value="' + restante + '"></td>' +
                     '<td id="centrar">' +
                     '<div class="input-group">' +
                     '<button type="button" class="btn btn-outline-danger" onclick="disminuirCantidad(this)"><i class="fa fa-minus"></i></button>' +
@@ -131,38 +139,30 @@
                 confirmButtonText: 'Confirmar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Acción Exitosa',
-                            icon: 'success',
-                            showConfirmButton: false,
-                            timer: 5000
-                        });
-                        setTimeout(() => {
-                            document.querySelector('#entrega-form').submit();
-                        }, 500);
-                    }
                     var insumos = JSON.stringify(getInsumos());
                     var cantidades = JSON.stringify(getCantidades());
+                    var restantes = JSON.stringify(getRestantes());
                     $('#pedido-form').append('<input type="hidden" name="insumos" value=\'' + insumos + '\'>');
                     $('#pedido-form').append('<input type="hidden" name="cantidades" value=\'' + cantidades +
                         '\'>');
+                    $('#pedido-form').append('<input type="hidden" name="restantes" value=\'' + restantes + '\'>');
                     $('#pedido-form').submit();
                 }
             });
         }
 
-        function showModal(message, icon) {
-            Swal.fire({
-                icon: icon,
-                title: 'Error',
-                text: message
+        function getRestantes() {
+            var restantes = [];
+            $('input[name="arrayrestantes[]"]').each(function() {
+                restantes.push($(this).val());
             });
+            return restantes;
         }
 
         function limpiarCampos() {
             $('#insumos').val('');
             $('#cantidades').val('');
+            $('#restantes').val('');
         }
 
         function getInsumos() {

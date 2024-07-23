@@ -62,6 +62,7 @@
                             <thead class="bg-primary text-white">
                                 <tr class="text-center">
                                     <th>Insumo</th>
+                                    <th>Restante</th>
                                     <th>Cantidad</th>
                                 </tr>
                             </thead>
@@ -69,6 +70,7 @@
                                 @foreach ($pedido->insumos as $insumo)
                                     <tr>
                                         <td>{{ $insumo->nombre }}</td>
+                                        <td>{{ $insumo->pivot->restante }}</td>
                                         <td>{{ $insumo->pivot->cantidad }}</td>
                                     </tr>
                                 @endforeach

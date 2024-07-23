@@ -16,7 +16,7 @@ class Pedido extends Model
 
     public function insumos()
     {
-        return $this->belongsToMany(Insumo::class)->withPivot('cantidad');
+        return $this->belongsToMany(Insumo::class)->withPivot('cantidad', 'restante');
     }
 
     public function user()

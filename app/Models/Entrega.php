@@ -19,6 +19,7 @@ class Entrega extends Model
 
     ];
 
+   
     public function servicio(){ 
         return $this->belongsTo(Servicio::class,'servicio_id');
     }

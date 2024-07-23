@@ -119,7 +119,7 @@ class InsumoController extends Controller
         $request->validate([
             'nombre' => 'required|max:60|unique:insumos,nombre,' . $id,
             'descripcion' => 'nullable|max:255',
-            'codigo' => 'numeric',
+            'codigo' => 'nullable|numeric',
         ]);
         $insumo = Insumo::findOrFail($id);
         $insumo->fill([

@@ -166,13 +166,11 @@
             </div>
         </div>
         <!-- Modal de egresos -->
-        <div class="modal fade" id="modalEgresos{{ $insumo->id }}" tabindex="-1"
-            aria-labelledby="modalEgresosLabel{{ $insumo->id }}" aria-hidden="true">
+        <div class="modal fade" id="modalEgresos{{ $insumo->id }}" tabindex="-1" aria-labelledby="modalEgresosLabel{{ $insumo->id }}" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalEgresosLabel{{ $insumo->id }}">Detalles de Egresos -
-                            {{ $insumo->nombre }}</h5>
+                        <h5 class="modal-title" id="modalEgresosLabel{{ $insumo->id }}">Detalles de Egresos - {{ $insumo->nombre }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -184,27 +182,28 @@
                                     <th>Fecha de Vencimiento</th>
                                     <th>Cantidad</th>
                                     <th>Fecha de Entrega</th>
+                                    <th>Servicio</th> <!-- New Column -->
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($insumo->entregaInsumo as $entrega)
+                                @foreach ($insumo->entregas as $entrega) <!-- Adjusted loop -->
                                     @if (\Carbon\Carbon::parse($entrega->created_at)->month == $selectedMonth)
                                         <tr class="text-center">
-                                            <td>{{ $entrega->invima }}</td>
-                                            <td>{{ $entrega->lote }}</td>
-                                            <td>{{ $entrega->vencimiento }}</td>
-                                            <td>{{ $entrega->cantidad }}</td>
+                                            <td>{{ $entrega->pivot->invima }}</td>
+                                            <td>{{ $entrega->pivot->lote }}</td>
+                                            <td>{{ $entrega->pivot->vencimiento }}</td>
+                                            <td>{{ $entrega->pivot->cantidad }}</td>
                                             <td>{{ \Carbon\Carbon::parse($entrega->created_at)->format('d/m/Y') }}</td>
+                                            <td>{{ $entrega->servicio->nombre }}</td> <!-- Show the service name -->
+                                        </tr>
                                     @endif
-                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                     <div class="modal-footer">
                         <div>
-                            <h6>Total Egresos: <td>{{ round($insumo->egresos_mes) }}</td>
-                            </h6>
+                            <h6>Total Egresos: <td>{{ round($insumo->egresos_mes) }}</td></h6>
                         </div>
                     </div>
                 </div>
