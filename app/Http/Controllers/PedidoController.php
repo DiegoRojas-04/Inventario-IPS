@@ -33,7 +33,8 @@ class PedidoController extends Controller
         $data = $request->validate([
             'insumos' => 'required|string',
             'cantidades' => 'required|string',
-            'restantes' => 'required|string'
+            'restantes' => 'required|string',
+            'observacion' => 'nullable|min:3' // Validar observacion
         ]);
 
         $insumos = json_decode($data['insumos'], true);
@@ -49,6 +50,7 @@ class PedidoController extends Controller
         $pedido->fecha_hora = now();
         $pedido->user_id = auth()->id();
         $pedido->estado = 1;
+        $pedido->observacion = $data['observacion']; // Asigna la observación
         $pedido->save();
 
         for ($i = 0; $i < count($insumos); $i++) {
@@ -57,8 +59,8 @@ class PedidoController extends Controller
                 'restante' => $restantes[$i]
             ]);
         }
+
         return redirect('home')->with('Mensaje', 'Insumo');
-        // return redirect()->route('pedido.index')->with('success', 'Pedido realizado con éxito.');
     }
 
 
@@ -73,9 +75,10 @@ class PedidoController extends Controller
     {
         $pedido = Pedido::with('insumos', 'user')->findOrFail($id);
         $insumosOrdenados = $pedido->insumos->sortBy('nombre');
+
         // HTML para el contenido del PDF
         $html = '
-       <style>
+        <style>
             body {
                 font-family: Arial, sans-serif;
             }
@@ -84,6 +87,7 @@ class PedidoController extends Controller
         <p><strong>Usuario:</strong> ' . $pedido->user->name . '</p>
         <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($pedido->fecha_hora)->format('d-m-Y') . '</p>
         <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($pedido->fecha_hora)->format('H:i:s') . '</p>
+        <p><strong>Observación:</strong> ' . $pedido->observacion . '</p>
         <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; text-align: center;">
             <thead>
                 <tr>
@@ -103,7 +107,6 @@ class PedidoController extends Controller
                 <td>' . $insumo->pivot->restante . '</td>
                 <td>' . $insumo->pivot->cantidad . '</td>
                 <td>' . '' . '</td>
-
             </tr>';
         }
 

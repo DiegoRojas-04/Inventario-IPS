@@ -48,4 +48,11 @@ class Compra extends Model
             'insumo_id'
         )->whereIn('insumo_id', $this->insumos->pluck('id'));
     }
+
+    public static function generarNumeroComprobante()
+    {
+        $ultimo = self::latest('numero_comprobante')->first();
+        $ultimoNumero = $ultimo ? $ultimo->numero_comprobante : 0;
+        return $ultimoNumero + 1;
+    }
 }

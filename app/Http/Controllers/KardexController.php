@@ -13,6 +13,9 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpWord\PhpWord;
+use Illuminate\Support\Facades\Log; // Importa el facade Log
+use PhpOffice\PhpWord\IOFactory;
 
 class KardexController extends Controller
 {
@@ -95,6 +98,7 @@ class KardexController extends Controller
 
         return $insumos;
     }
+
 
     public function exportToExcel(Request $request)
     {
@@ -223,10 +227,10 @@ class KardexController extends Controller
         foreach ($data as $item) {
             $html .= '<tr>';
             $html .= '<td>' . $item->nombre . '</td>';
-            $html .= '<td>' . $item->cantidad_inicial_mes . '</td>';
-            $html .= '<td>' . $item->ingresos_mes . '</td>';
-            $html .= '<td>' . $item->egresos_mes . '</td>';
-            $html .= '<td>' . $item->saldo_final_mes . '</td>';
+            $html .= '<td>' . round($item->cantidad_inicial_mes) . '</td>';
+            $html .= '<td>' . round($item->ingresos_mes) . '</td>';
+            $html .= '<td>' . round($item->egresos_mes) . '</td>';
+            $html .= '<td>' . round($item->saldo_final_mes) . '</td>';
             $html .= '</tr>';
         }
         $html .= '</table>';
@@ -241,5 +245,69 @@ class KardexController extends Controller
 
         // Descargar PDF
         return $dompdf->stream('Kardex_Medicare_IPS.pdf');
+    }
+
+
+
+    public function exportOrderToPdf(Request $request)
+    {
+        $data = $this->ObtenerDatosParaExportar($request);
+    
+        // Ordenar por nombre del insumo alfabéticamente
+        $data = $data->sortBy('nombre');
+    
+        // Obtener el nombre del mes y categoría
+        $selectedMonthNumber = $request->input('mes');
+        $selectedYear = $request->input('anno');
+        $selectedMonth = Carbon::create()->month($selectedMonthNumber)->format('F');
+        $idCategoria = $request->input('id_categoria');
+        $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : '';
+    
+        // Crear el HTML para el PDF
+        $titulo = 'Pedido de Insumos - ' . $categoriaNombre;
+        $html = '<style>
+                    body { font-family: Arial, sans-serif; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
+                    th, td { border: 1px solid black; text-align: center; padding: 8px; }
+                    th { background-color: #f2f2f2; }
+                    .cantidad { color: red; font-weight: bold; }
+                </style>';
+        $html .= '<h2 style="text-align: center;">' . $titulo . '</h2>';
+        $html .= '<p><strong>TIPO DE PEDIDO:</strong> ' . $categoriaNombre . '</p>';
+        $html .= '<p><strong>PROVEEDOR:</strong> ' . '</p>';
+        $html .= '<p><strong>FECHA DE PEDIDO:</strong> ' . $selectedMonth . ' ' . $selectedYear . '</p>';
+        $html .= '<p><strong>NUMERO DE FACURA:</strong> ' . '</p>';
+        $html .= '<br>';
+        $html .= '<table>';
+        $html .= '<tr><th>Nombre de Insumo</th><th>Presentación</th><th>Cantidad a Pedir</th></tr>';
+    
+        foreach ($data as $item) {
+            // Calcular la cantidad a pedir
+            $cantidadInicioMes = $item->cantidad_inicial_mes;
+            $ingresos = $item->ingresos_mes;
+            $egresos = $item->egresos_mes;
+            $saldoFinal = $item->saldo_final_mes;
+            $saldo = $cantidadInicioMes + $ingresos;
+            $cantidadPedir = $saldo - $saldoFinal;
+    
+            // Añadir fila a la tabla
+            $html .= '<tr>';
+            $html .= '<td>' . $item->nombre . '</td>';
+            $html .= '<td>' . $item->presentacione->nombre . '</td>';
+            $html .= '<td class="cantidad">' . round($cantidadPedir) . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</table>';
+    
+        // Configurar Dompdf para renderizar HTML
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+    
+        // Renderizar PDF
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    
+        // Descargar PDF
+        return $dompdf->stream('Pedido_Insumos_' . $categoriaNombre . '_' . $selectedMonth . '.pdf');
     }
 }

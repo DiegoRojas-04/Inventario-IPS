@@ -48,4 +48,10 @@ class Entrega extends Model
                     ->withPivot('cantidad', 'invima', 'lote', 'vencimiento')
                     ->withTimestamps();
     }
+
+    public static function generarNumeroComprobante() {
+        $ultimo = self::latest('numero_comprobante')->first();
+        $ultimoNumero = $ultimo ? $ultimo->numero_comprobante : 0;
+        return $ultimoNumero + 1;
+    }
 }

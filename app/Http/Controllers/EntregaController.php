@@ -43,7 +43,7 @@ class EntregaController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $entregas = $query->latest()->paginate(5);
+        $entregas = $query->latest()->paginate(10);
         return view('crud.entrega.index', compact('entregas'));
     }
 
@@ -55,12 +55,14 @@ class EntregaController extends Controller
         $comprobantes = Comprobante::all();
         $todasVariantes = collect();
 
+        $numeroComprobante = Entrega::generarNumeroComprobante();
+
         foreach ($insumos as $insumo) {
             $todasVariantes = $todasVariantes->merge($insumo->caracteristicas);
         }
 
         $varianteIndex = 0;
-        return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias'));
+        return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias','numeroComprobante'));
     }
 
     public function store(StoreEntregaRequest $request)

@@ -41,7 +41,7 @@ class InsumoController extends Controller
     }
 
     // Filtrar y ordenar por estado (primero estado 1, luego estado 0)
-    $insumos = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 10));
+    $insumos = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 20));
 
     return view('crud.insumo.index', compact('insumos', 'categorias'));
 }

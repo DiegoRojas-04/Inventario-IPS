@@ -123,7 +123,7 @@
                                 <div class="col-md-12 mb-2">
                                     <label>Numero de Comprobante:</label>
                                     <input required type="text" name="numero_comprobante" id="numero_comprobante"
-                                        class="form-control" required>
+                                        class="form-control" value="{{ $numeroComprobante }}" readonly>
                                 </div>
 
                                 <div class="col-md-12 mb-2">

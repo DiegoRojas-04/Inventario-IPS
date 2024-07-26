@@ -18,7 +18,7 @@
                 <div class="form-group col-md-6">
                     <label for="cantidad">Cantidad:</label>
                     <input type="text" id="cantidad" name="cantidad"
-                        value="{{ $caracteristica->cantidad }}" class="form-control  @error('cantidad') is-invalid @enderror">
+                        value="{{ $caracteristica->cantidad }}" class="form-control  @error('cantidad') is-invalid @enderror" readonly>
                         @error('cantidad')
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror

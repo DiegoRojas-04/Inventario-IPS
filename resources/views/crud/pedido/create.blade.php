@@ -47,6 +47,12 @@
                             <label for="cantidad">Cantidad:</label>
                             <input type="number" id="cantidades" class="form-control" min="1" required>
                         </div>
+
+                        <div class="col-sm-12">
+                            <label for="observacion">Observacion:</label>
+                            <input type="text" id="observacion" name="observacion" class="form-control" required>
+                        </div>
+
                     </div>
                     <div class="text-center">
                         <button type="button" class="btn btn-primary mt-3 mb-3" onclick="agregarInsumo()">Agregar

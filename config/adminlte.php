@@ -517,21 +517,19 @@ return [
 
         ], 
         
+        [
+            'text' => 'Pedidos',
+            'url' => 'pedido',
+            'icon' => 'far fa fa-comments',
+            'can' => 'Entregas',
+
+        ],
         
         [
             'text' => 'Home',
             'url' => 'home',
             'icon' => 'far fa fa-home',
             'can' => '',
-
-        ],
-        
-             
-        [
-            'text' => 'Pedidos',
-            'url' => 'pedido',
-            'icon' => 'far fa fa-comments',
-            'can' => 'Entregas',
 
         ],
              

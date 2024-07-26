@@ -22,7 +22,7 @@ class Insumo extends Model
         'id_marca',
         'id_presentacion',
         'estado'
-    ];
+    ];  
 
     public function ingresosDelMes($mes, $anno)
     {

@@ -39,7 +39,7 @@ class CompraController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $compras = $query->latest()->paginate(5);
+        $compras = $query->latest()->paginate(10);
 
         return view('crud.compra.index', compact('compras'));
     }
@@ -50,11 +50,16 @@ class CompraController extends Controller
      */
     public function create()
     {
-        $insumos = Insumo::where('estado', 1)->orderBy('nombre', 'asc')->get();
-        $proveedores = Proveedore::where('estado', 1)->get();
+        $insumos = Insumo::all();
+        $proveedores = Proveedore::all();
         $comprobantes = Comprobante::all();
-        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes',));
+    
+        // Generar el siguiente número de comprobante
+        $numero_comprobante = Compra::generarNumeroComprobante();
+    
+        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante'));
     }
+    
 
     /**
      * Store a newly created resource in storage.

@@ -64,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])->name('export.compra.pdf');
-
+// Route::get('/export-order-pdf', [KardexController::class, 'exportOrderToPdf'])->name('generate.order');
 Route::get('/export/entrega/pdf/{id}', [EntregaController::class, 'exportToPdf'])->name('export.entrega.pdf');
 
 Route::get('/export/pedido/pdf/{id}', [PedidoController::class, 'exportToPdf'])->name('export.pedido.pdf');
@@ -72,6 +72,7 @@ Route::get('/export/pedido/pdf/{id}', [PedidoController::class, 'exportToPdf'])-
 
 Route::get('/export/excel', [KardexController::class, 'exportToExcel'])->name('export.excel');
 Route::get('/export/pdf', [KardexController::class, 'exportToPdf'])->name('export.pdf');
+Route::get('/exporto/pdf', [KardexController::class, 'exportOrderToPdf'])->name('exporto.pdf');
 
 // Rutas adicionales fuera del grupo middleware
 Route::get('/obtener-detalles-pedido/{idPedido}', [PedidoController::class, 'obtenerDetallesPedido']);

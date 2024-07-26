@@ -140,14 +140,14 @@
                                             aria-hidden="true"></i>
                                     </button>
                                 </div>
-                               
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ url('/insumo/' . $insumo->id . '/edit') }}"
-                                            class="text-decoration-none text-white">
-                                            <button type="submit" class="btn btn-warning"><i class="fa fa-file"
-                                                    aria-hidden="true"></i></button></a>
-                                    </div>
-                            
+
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url('/insumo/' . $insumo->id . '/edit') }}"
+                                        class="text-decoration-none text-white">
+                                        <button type="submit" class="btn btn-warning"><i class="fa fa-file"
+                                                aria-hidden="true"></i></button></a>
+                                </div>
+
                                 <div class="btn-group" role="group">
                                     @if ($insumo->estado == 1)
                                         <form id="delete-form-{{ $insumo->id }}"
@@ -203,11 +203,12 @@
                                         <th>Lote</th>
                                         <th>Fecha de Vencimiento</th>
                                         <th>Cantidad</th>
+                                        <th>Estado</th>
                                         <th>Accion</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-center">
-                                    @foreach ($insumo->caracteristicas as $caracteristica)
+                                    @foreach ($insumo->caracteristicas->sortBy('vencimiento') as $caracteristica)
                                         @if ($caracteristica->cantidad > 0)
                                             <tr>
                                                 <td>{{ $caracteristica->invima }}</td>
@@ -215,6 +216,25 @@
                                                 <td>{{ \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') }}
                                                 </td>
                                                 <td>{{ $caracteristica->cantidad }}</td>
+                                                <td>
+                                                    @php
+                                                        $fechaVencimiento = \Carbon\Carbon::parse(
+                                                            $caracteristica->vencimiento,
+                                                        );
+                                                        $hoy = \Carbon\Carbon::now();
+                                                        $diferenciaMeses = $hoy->diffInMonths($fechaVencimiento);
+                                                        $estado = '';
+
+                                                        if ($fechaVencimiento->lessThanOrEqualTo($hoy->addMonth())) {
+                                                            $estado = 'status-red'; // Menos de un mes
+                                                        } elseif ($diferenciaMeses <= 3) {
+                                                            $estado = 'status-yellow'; // Menos de 3 meses
+                                                        } else {
+                                                            $estado = 'status-green'; // Más de 4 meses
+                                                        }
+                                                    @endphp
+                                                    <div class="status-circle {{ $estado }}"></div>
+                                                </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
                                                         <a href="{{ url('/insumo/' . $insumo->id . '/caracteristica/' . $caracteristica->id . '/edit') }}"
@@ -243,6 +263,7 @@
 
 @section('css')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
 @stop
 
 @section('js')

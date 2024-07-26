@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->dateTime('fecha_hora');
             $table->tinyInteger('estado')->default(1);
+            $table->string('observacion', 255)->nullable();
             $table->timestamps();        
         });
     }

@@ -12,6 +12,7 @@ class Pedido extends Model
         'fecha_hora',
         'user_id',
         'estado',
+        'observacion', 
     ];
 
     public function insumos()
