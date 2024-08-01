@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Entrega;
 use Illuminate\Http\Request;
 use App\Models\Pedido;
 use App\Models\Insumo;
@@ -18,15 +19,36 @@ class PedidoController extends Controller
         $pedidos = Pedido::with('user')->latest()->get();
         return view('crud.pedido.index', compact('pedidos'));
     }
+
+    // Dentro de tu controlador PedidoController
     public function show($id)
     {
-        $pedido = Pedido::with(['insumos' => function ($query) {
-            $query->orderBy('nombre', 'asc');
-        }])->findOrFail($id);
+        $pedido = Pedido::with('insumos', 'user')->findOrFail($id);
+        $servicio = $pedido->user->servicio;
 
-        return view('crud.pedido.show', compact('pedido'));
+        // Verificar que el usuario tenga un servicio
+        if (!$servicio) {
+            return redirect()->back()->withErrors(['msg' => 'El usuario no tiene un servicio asociado.']);
+        }
+
+        // Obtener la última entrega para cada insumo en la semana pasada
+        $insumosConUltimaEntrega = $pedido->insumos->map(function ($insumo) use ($servicio) {
+            $ultimaEntregaSemanaPasada = Entrega::where('servicio_id', $servicio->id)
+                ->whereHas('insumos', function ($query) use ($insumo) {
+                    $query->where('insumo_id', $insumo->id);
+                })
+                ->whereBetween('fecha_hora', [now()->subWeek(), now()])
+                ->orderBy('fecha_hora', 'desc')
+                ->first();
+
+            // Pasar la entrega a los insumos
+            $insumo->ultima_entrega = $ultimaEntregaSemanaPasada ? $ultimaEntregaSemanaPasada->insumos->find($insumo->id) : null;
+
+            return $insumo;
+        });
+
+        return view('crud.pedido.show', compact('pedido', 'insumosConUltimaEntrega'));
     }
-
 
     public function store(Request $request)
     {
@@ -70,17 +92,41 @@ class PedidoController extends Controller
         return view('crud.pedido.create', compact('insumos'));
     }
 
-
     public function exportToPdf($id)
     {
         $pedido = Pedido::with('insumos', 'user')->findOrFail($id);
-        $insumosOrdenados = $pedido->insumos->sortBy('nombre');
-
+        $servicio = $pedido->user->servicio;
+    
+        if (!$servicio) {
+            return redirect()->back()->withErrors(['msg' => 'El usuario no tiene un servicio asociado.']);
+        }
+    
+        $insumosConUltimaEntrega = $pedido->insumos->map(function ($insumo) use ($servicio) {
+            $ultimaEntregaSemanaPasada = Entrega::where('servicio_id', $servicio->id)
+                ->whereHas('insumos', function ($query) use ($insumo) {
+                    $query->where('insumo_id', $insumo->id);
+                })
+                ->whereBetween('fecha_hora', [now()->subWeek(), now()])
+                ->orderBy('fecha_hora', 'desc')
+                ->first();
+    
+            $insumo->ultima_entrega = $ultimaEntregaSemanaPasada ? $ultimaEntregaSemanaPasada->insumos->find($insumo->id) : null;
+            $insumo->cantidad_anterior = $insumo->ultima_entrega ? $insumo->ultima_entrega->pivot->cantidad : 'Sin pedido';
+    
+            return $insumo;
+        });
+    
+        $insumosOrdenados = $insumosConUltimaEntrega->sortBy('nombre');
+    
         // HTML para el contenido del PDF
         $html = '
         <style>
             body {
                 font-family: Arial, sans-serif;
+            }
+            .cantidad {
+                color: red;
+                font-weight: bold;
             }
         </style>
         <h1 style="text-align: center;">Detalles del Pedido</h1>
@@ -92,35 +138,38 @@ class PedidoController extends Controller
             <thead>
                 <tr>
                     <th>Insumo</th>
+                    <th>Anterior</th>
                     <th>Restante</th>
                     <th>Cantidad</th>
                     <th>Check</th>
                 </tr>
             </thead>
             <tbody>';
-
-        // Agregar los insumos y cantidades a la tabla
+    
         foreach ($insumosOrdenados as $insumo) {
             $html .= '
             <tr>
                 <td>' . $insumo->nombre . '</td>
+                <td>' . ($insumo->cantidad_anterior === 'Sin pedido' ? 'Sin pedido' : $insumo->cantidad_anterior) . '</td>
                 <td>' . $insumo->pivot->restante . '</td>
-                <td>' . $insumo->pivot->cantidad . '</td>
-                <td>' . '' . '</td>
+                <td class="cantidad">' . $insumo->pivot->cantidad . '</td>
+                <td></td>
             </tr>';
         }
-
+    
         $html .= '
             </tbody>
         </table>';
-
+    
         // Configurar el PDF
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-
+    
         // Descargar el PDF
         return $dompdf->stream('Detalle_Pedido_' . $pedido->user->name . '.pdf');
     }
+    
+
 }

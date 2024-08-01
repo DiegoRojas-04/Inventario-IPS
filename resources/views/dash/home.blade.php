@@ -68,12 +68,12 @@
         function updateCountdown() {
             var now = new Date();
             var currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-            var allowOrder = (currentDay === 3 && now.getHours() >= 6 && now.getHours() <
-                16); // Permitir pedidos solo los jueves entre las 6 AM y las 4 PM
+            var allowOrder = (currentDay === 2 && now.getHours() >= 6 && now.getHours() <
+                18); // Permitir pedidos solo los jueves entre las 6 AM y las 4 PM
 
             if (allowOrder) {
                 var deadline = new Date();
-                deadline.setHours(16, 0, 0, 0); // Establecer la fecha límite a las 4 PM
+                deadline.setHours(18, 0, 0, 0); // Establecer la fecha límite a las 4 PM
                 var diff = deadline - now; 
 
                 if (diff > 0) {

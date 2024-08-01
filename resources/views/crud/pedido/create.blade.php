@@ -18,7 +18,7 @@
                         <div class="col-sm-6">
                             <div class="input-group mb-3">
                                 <span class="input-group-text"><i class="fa fa-users"></i></span>
-                                <input disabled type="text" class="form-control" value="Usuario:">
+                                <input disabled type="text" class="form-control" value="Area">
                             </div>
                         </div>
                         <div class="col-sm-6">

@@ -117,16 +117,18 @@
                             <div class="card">
                                 <div class="card-body">
                                     <form action="{{ url('/usuario') }}" method="POST">
-                                        {{ csrf_field() }}
+                                        @csrf
+
                                         <div class="form-group">
                                             <label>Nombre:</label>
                                             <input type="text" name="name"
                                                 class="form-control @error('name') is-invalid @enderror"
-                                                value="{{ old('name') }}" required placeholder="Nuevo Usuario">
+                                                value="{{ old('name') }}" required placeholder="Nombre del Usuario">
                                             @error('name')
                                                 <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                             @enderror
                                         </div>
+
                                         <div class="form-group">
                                             <label>Correo Electrónico:</label>
                                             <input type="email" name="email"
@@ -136,6 +138,7 @@
                                                 <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                             @enderror
                                         </div>
+
                                         <div class="form-group">
                                             <label>Contraseña:</label>
                                             <input type="password" name="password"
@@ -145,13 +148,28 @@
                                                 <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                             @enderror
                                         </div>
+
                                         <div class="form-group">
                                             <label>Confirmar Contraseña:</label>
                                             <input type="password" name="password_confirmation" class="form-control"
                                                 required placeholder="Confirmar Contraseña">
                                         </div>
-                                        <br>
-                                        <button type="submit" class="btn bg-blue">{{ 'Agregar' }}</button>
+
+                                        <div class="form-group">
+                                            <label>Servicio:</label>
+                                            <select name="servicio_id"
+                                                class="form-control @error('servicio_id') is-invalid @enderror" required>
+                                                <option value="">Seleccionar Servicio</option>
+                                                @foreach ($servicios as $servicio)
+                                                    <option value="{{ $servicio->id }}">{{ $servicio->nombre }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('servicio_id')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Agregar Usuario</button>
                                     </form>
                                 </div>
                             </div>

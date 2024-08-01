@@ -16,13 +16,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'servicio_id', // Asegúrate de incluir esto
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     protected $casts = [
@@ -30,11 +29,16 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function servicio()
+    {
+        return $this->belongsTo(Servicio::class);
+    }
+
     public function pedidos()
     {
-        return $this->hasMany(Pedido::class, 'servicio_id');
+        return $this->hasMany(Pedido::class);
     }
-    
+
     public function entregas()
     {
         return $this->hasMany(Entrega::class);
@@ -43,14 +47,6 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
 
     public function adminlte_image()
     {

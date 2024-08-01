@@ -111,6 +111,18 @@
                 <input type="hidden" name="page_size" id="pageSizeHidden">
             </form>
         </div>
+        <style>
+            .table-danger {
+                background-color: #f8d7da !important;
+                color: #721c24 !important;
+            }
+
+            .table-danger td,
+            .table-danger th {
+                border-color: #f5c6cb !important;
+            }
+        </style>
+
         <div class="card-body">
             <table class="table table-striped" id="datos">
                 <thead class="thead-dark">
@@ -126,7 +138,7 @@
                 </thead>
                 <tbody class="text-center">
                     @foreach ($insumos as $insumo)
-                        <tr>
+                        <tr class="{{ $insumo->alertClass }}">
                             <td>{{ $insumo->nombre }}</td>
                             <td>{{ $insumo->marca->nombre }}</td>
                             <td>{{ $insumo->presentacione->nombre }}</td>
@@ -140,14 +152,12 @@
                                             aria-hidden="true"></i>
                                     </button>
                                 </div>
-
                                 <div class="btn-group" role="group">
                                     <a href="{{ url('/insumo/' . $insumo->id . '/edit') }}"
                                         class="text-decoration-none text-white">
                                         <button type="submit" class="btn btn-warning"><i class="fa fa-file"
                                                 aria-hidden="true"></i></button></a>
                                 </div>
-
                                 <div class="btn-group" role="group">
                                     @if ($insumo->estado == 1)
                                         <form id="delete-form-{{ $insumo->id }}"
@@ -178,6 +188,7 @@
             </table>
             {{ $insumos->appends(request()->query())->links() }}
         </div>
+
     </div>
     @foreach ($insumos as $insumo)
         <div class="modal fade bd-example-modal-lg" id="modalInsumo-{{ $insumo->id }}" tabindex="-1"
@@ -210,6 +221,24 @@
                                 <tbody class="text-center">
                                     @foreach ($insumo->caracteristicas->sortBy('vencimiento') as $caracteristica)
                                         @if ($caracteristica->cantidad > 0)
+                                            @php
+                                                // Parse la fecha de vencimiento
+                                                $fechaVencimiento = \Carbon\Carbon::parse($caracteristica->vencimiento);
+                                                $hoy = \Carbon\Carbon::now();
+                                                $diferenciaMeses = $hoy->diffInMonths($fechaVencimiento);
+                                                $estado = '';
+
+                                                // Verifica si la fecha de vencimiento es '01-01-0001'
+                                                if ($fechaVencimiento->format('d-m-Y') === '01-01-0001') {
+                                                    $estado = 'status-blue'; // Fecha no válida
+                                                } elseif ($fechaVencimiento->lessThanOrEqualTo($hoy->addMonth())) {
+                                                    $estado = 'status-red'; // Menos de un mes
+                                                } elseif ($diferenciaMeses <= 3) {
+                                                    $estado = 'status-yellow'; // Menos de 3 meses
+                                                } else {
+                                                    $estado = 'status-green'; // Más de 4 meses
+                                                }
+                                            @endphp
                                             <tr>
                                                 <td>{{ $caracteristica->invima }}</td>
                                                 <td>{{ $caracteristica->lote }}</td>
@@ -217,22 +246,6 @@
                                                 </td>
                                                 <td>{{ $caracteristica->cantidad }}</td>
                                                 <td>
-                                                    @php
-                                                        $fechaVencimiento = \Carbon\Carbon::parse(
-                                                            $caracteristica->vencimiento,
-                                                        );
-                                                        $hoy = \Carbon\Carbon::now();
-                                                        $diferenciaMeses = $hoy->diffInMonths($fechaVencimiento);
-                                                        $estado = '';
-
-                                                        if ($fechaVencimiento->lessThanOrEqualTo($hoy->addMonth())) {
-                                                            $estado = 'status-red'; // Menos de un mes
-                                                        } elseif ($diferenciaMeses <= 3) {
-                                                            $estado = 'status-yellow'; // Menos de 3 meses
-                                                        } else {
-                                                            $estado = 'status-green'; // Más de 4 meses
-                                                        }
-                                                    @endphp
                                                     <div class="status-circle {{ $estado }}"></div>
                                                 </td>
                                                 <td>
@@ -240,8 +253,8 @@
                                                         <a href="{{ url('/insumo/' . $insumo->id . '/caracteristica/' . $caracteristica->id . '/edit') }}"
                                                             class="text-decoration-none text-white">
                                                             <button type="submit" class="btn btn-warning"><i
-                                                                    class="fa fa-file"
-                                                                    aria-hidden="true"></i></button></a>
+                                                                    class="fa fa-file" aria-hidden="true"></i></button>
+                                                        </a>
                                                     </div>
                                                 </td>
                                             </tr>
