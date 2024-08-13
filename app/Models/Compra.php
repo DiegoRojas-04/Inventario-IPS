@@ -51,8 +51,12 @@ class Compra extends Model
 
     public static function generarNumeroComprobante()
     {
-        $ultimo = self::latest('numero_comprobante')->first();
-        $ultimoNumero = $ultimo ? $ultimo->numero_comprobante : 0;
-        return $ultimoNumero + 1;
+        // Obtén el máximo ID actual de la tabla
+        $ultimoId = self::max('id');
+        
+        // Si no hay registros, comienza con el ID 1
+        $numero = $ultimoId ? $ultimoId + 1 : 1;
+        
+        return $numero;
     }
 }

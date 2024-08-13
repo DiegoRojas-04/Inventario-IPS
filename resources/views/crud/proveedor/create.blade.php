@@ -23,7 +23,7 @@
         </script>
     @endif
     <a href="{{ url('/proveedor') }}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary ">Proveedores</button></a>
+        <button type="submit" class="btn btn-primary ">Ver Proveedores</button></a>
 @stop
 {{--  --}}
 @section('content')

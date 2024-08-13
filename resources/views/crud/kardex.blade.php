@@ -70,58 +70,58 @@
                         </button>
                     </div>
                 </div>
-                    <div class="col-md-1">
-                        <div class="form-group">
-                            <select class="form-control" id="pageSize" name="page_size">
-                                <option value="10">#</option>
-                                <option value="5" {{ request('page_size') == 5 ? 'selected' : '' }}>5</option>
-                                <option value="10" {{ request('page_size') == 10 ? 'selected' : '' }}>10</option>
-                                <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
-                                <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
-                                <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
-                            </select>
-                        </div>
+                <div class="col-md-1">
+                    <div class="form-group">
+                        <select class="form-control" id="pageSize" name="page_size">
+                            <option value="10">#</option>
+                            <option value="5" {{ request('page_size') == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ request('page_size') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
+                            <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
+                            <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
+                        </select>
                     </div>
                 </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered">
-                    <thead class="text-center thead-dark">
-                        <tr>
-                            <th>Insumo</th>
-                            <th>Inicio Mes</th>
-                            <th>Ingresos</th>
-                            <th>Egresos</th>
-                            <th>Saldo</th>
-                            <th>Informe</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        @foreach ($insumos as $insumo)
-                            <tr>
-                                <td>{{ $insumo->nombre }}</td>
-                                <td>{{ round($insumo->cantidad_inicial_mes) }}</td>
-                                <td>{{ round($insumo->ingresos_mes) }}</td>
-                                <td>{{ round($insumo->egresos_mes) }}</td>
-                                <td>{{ round($insumo->saldo_final_mes) }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#modalIngresos{{ $insumo->id }}">
-                                        <i class="fa fa-plus" aria-hidden="true"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#modalEgresos{{ $insumo->id }}">
-                                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                {{ $insumos->links() }}
-            </div>
         </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="text-center thead-dark">
+                    <tr>
+                        <th>Insumo</th>
+                        <th>Inicio Mes</th>
+                        <th>Ingresos</th>
+                        <th>Egresos</th>
+                        <th>Saldo</th>
+                        <th>Informe</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @foreach ($insumos as $insumo)
+                        <tr>
+                            <td>{{ $insumo->nombre }}</td>
+                            <td>{{ round($insumo->cantidad_inicial_mes) }}</td>
+                            <td>{{ round($insumo->ingresos_mes) }}</td>
+                            <td>{{ round($insumo->egresos_mes) }}</td>
+                            <td>{{ round($insumo->saldo_final_mes) }}</td>
+                            <td>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#modalIngresos{{ $insumo->id }}">
+                                    <i class="fa fa-plus" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#modalEgresos{{ $insumo->id }}">
+                                    <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            {{ $insumos->links() }}
+        </div>
+    </div>
     </div>
 
     @foreach ($insumos as $insumo)
@@ -190,7 +190,7 @@
                                     <th>Fecha de Vencimiento</th>
                                     <th>Cantidad</th>
                                     <th>Fecha de Entrega</th>
-                                    <th>Servicio</th> <!-- New Column -->
+                                    <th>Area</th> <!-- New Column -->
                                 </tr>
                             </thead>
                             <tbody>

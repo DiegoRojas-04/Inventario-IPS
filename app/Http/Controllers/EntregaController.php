@@ -56,13 +56,14 @@ class EntregaController extends Controller
         $todasVariantes = collect();
 
         $numeroComprobante = Entrega::generarNumeroComprobante();
+        $comprobanteEntrega = Comprobante::where('tipo_comprobante', 'Entrega')->first();
 
         foreach ($insumos as $insumo) {
             $todasVariantes = $todasVariantes->merge($insumo->caracteristicas);
         }
 
         $varianteIndex = 0;
-        return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias','numeroComprobante'));
+        return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias', 'numeroComprobante', 'comprobanteEntrega'));
     }
 
     public function store(StoreEntregaRequest $request)
@@ -152,20 +153,19 @@ class EntregaController extends Controller
         return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega'));
     }
 
-
     public function edit(string $id)
     {
-        //
+        // Implementar según las necesidades
     }
 
     public function update(Request $request, string $id)
     {
-        //
+        // Implementar según las necesidades
     }
 
     public function destroy(string $id)
     {
-        //
+        // Implementar según las necesidades
     }
 
     public function exportToPdf($id)

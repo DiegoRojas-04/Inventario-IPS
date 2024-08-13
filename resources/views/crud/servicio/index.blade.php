@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Servicio')
+@section('title', 'Area')
 
 @section('content_header')
 @if (session('Mensaje'))
@@ -18,7 +18,7 @@
     });
     Toast.fire({
         icon: "error",
-        title: "Servicio Eliminado"
+        title: "Area Eliminado"
     });
 </script>
 @endif
@@ -38,7 +38,7 @@
     });
     Toast.fire({
         icon: "success",
-        title: "Servicio Actualizado"
+        title: "Area Actualizado"
     });
 </script>
 @endif
@@ -63,7 +63,7 @@
 </script>
 @endif
     <a href="{{ url('/servicio/create')}}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary ">Agregar Servicio</button></a>
+        <button type="submit" class="btn btn-primary ">Agregar Area</button></a>
     <br>
 @stop
 
@@ -154,7 +154,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            {{ $servicio->estado == 1 ? ' ¿Estas seguro que quieres Eliminar esta servicio?' : '¿Estas seguro que quieres Restaurar esta servicio?' }}
+                            {{ $servicio->estado == 1 ? ' ¿Estas seguro que quieres Eliminar este area?' : '¿Estas seguro que quieres Restaurar esta area?' }}
                             <br>
                             <h5>{{ $servicio->nombre }}</h5>
                         </div>

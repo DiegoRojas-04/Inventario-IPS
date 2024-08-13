@@ -376,22 +376,24 @@ return [
         ],
 
         [
-            'text' => 'Servicios',
+            'text' => 'Areas',
             'url' => 'servicio',
             'icon' => 'far fa fa-medkit',
             'can' => 'Servicios',
 
             'submenu' => [
                 [
-                    'text' => 'Servicio',
+                    'text' => 'Area',
                     'url' => 'servicio',
                 ],
                 [
-                    'text' => 'Crear Servicio',
+                    'text' => 'Crear Area',
                     'url' => 'servicio/create',
                 ],
             ],
 
+            
+           
         ],
 
         [

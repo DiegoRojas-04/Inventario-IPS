@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Insumo extends Model
 {
@@ -91,5 +92,21 @@ class Insumo extends Model
     public function pedidos()
     {
         return $this->belongsToMany(Pedido::class)->withPivot('cantidad');
+    }
+
+    public function getAlertClassAttribute()
+    {
+        foreach ($this->caracteristicas as $caracteristica) {
+            $fechaVencimiento = Carbon::parse($caracteristica->vencimiento);
+            $hoy = Carbon::now();
+            $diferenciaDias = $hoy->diffInDays($fechaVencimiento, false);
+
+            if ($fechaVencimiento->format('d-m-Y') !== '01-01-0001') {
+                if ($caracteristica->cantidad > 0 && ($diferenciaDias <= 9 || $diferenciaDias < 0)) {
+                    return 'table-danger';
+                }
+            }
+        }
+        return '';
     }
 }

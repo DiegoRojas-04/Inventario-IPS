@@ -110,15 +110,12 @@
                                 </div>
 
                                 <div class="col-md-12 mb-2">
-                                    <label>Comprobante:</label>
-                                    <select data-size="5" title="Seleccionar Comprobante..." data-live-search="true"
-                                        data-style="btn-white" name="comprobante_id" id="comprobante_id"
-                                        class="form-control selectpicker show-tick" required>
-                                        @foreach ($comprobantes as $item)
-                                            <option value="{{ $item->id }}">{{ $item->tipo_comprobante }}</option>
-                                        @endforeach
-                                    </select>
+                                    <label for="comprobante_id" class="form-label">Comprobante:</label>
+                                    <input type="text" id="comprobante_id" class="form-control" 
+                                           value="{{ $comprobanteEntrega->tipo_comprobante }}" readonly>
+                                    <input type="hidden" name="comprobante_id" value="{{ $comprobanteEntrega->id }}">
                                 </div>
+                                
 
                                 <div class="col-md-12 mb-2">
                                     <label>Numero de Comprobante:</label>

@@ -23,7 +23,7 @@
 </script>
 @endif
     <a href="{{ url('/presentacion')}}" class="text-decoration-none text-white">
-    <button type="submit" class="btn btn-primary ">Presentacion</button></a>
+    <button type="submit" class="btn btn-primary ">Ver Presentaciones</button></a>
 @stop
 
 @section('content')

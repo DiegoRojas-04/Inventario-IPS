@@ -56,8 +56,9 @@ class CompraController extends Controller
     
         // Generar el siguiente número de comprobante
         $numero_comprobante = Compra::generarNumeroComprobante();
-    
-        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante'));
+        $comprobanteCompra = Comprobante::where('tipo_comprobante', 'Compra')->first();
+
+        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra'));
     }
     
 

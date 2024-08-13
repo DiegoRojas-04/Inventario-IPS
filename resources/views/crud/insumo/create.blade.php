@@ -23,7 +23,7 @@
         </script>
     @endif
     <a href="{{ url('/insumo') }}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary ">Insumos</button></a>
+        <button type="submit" class="btn btn-primary ">Ver Insumos</button></a>
 @stop
 
 @section('content')

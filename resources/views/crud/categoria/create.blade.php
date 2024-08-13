@@ -4,7 +4,7 @@
 
 @section('content_header')
     <a href="{{ url('/categoria') }}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary ">Categorias</button></a>
+        <button type="submit" class="btn btn-primary ">Ver Categorias</button></a>
 @stop
 
 @section('content')

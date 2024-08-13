@@ -23,7 +23,7 @@
 </script>
 @endif
     <a href="{{ url('/marca')}}" class="text-decoration-none text-white">
-    <button type="submit" class="btn btn-primary ">Marcas</button></a>
+    <button type="submit" class="btn btn-primary ">Ver Marcas</button></a>
 @stop
 
 @section('content')

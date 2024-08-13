@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Servicio')
+@section('title', 'Area')
 
 @section('content_header')
     @if (session('Mensaje'))
@@ -18,30 +18,30 @@
             });
             Toast.fire({
                 icon: "success",
-                title: "Servicio Agregado"
+                title: "Area Agregada"
             });
         </script>
     @endif
     <a href="{{ url('/servicio') }}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary ">Servicios</button></a>
+        <button type="submit" class="btn btn-primary ">Ver Areas</button></a>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h1 class="card-title">Crear Servicio</h1>
+            <h1 class="card-title">Crear Area</h1>
         </div>
         <div class="card-body">
             <form action="{{ url('/servicio') }}" method="POST">
                 {{ csrf_field() }}
-                <label>Nombre del Servicio:</label>
+                <label>Nombre del Area:</label>
                 <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
                     value="{{ old('nombre') }}">
                 @error('nombre')
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror
                 <br>
-                <label>Descripcion del servicio:</label>
+                <label>Descripcion del Area:</label>
                 <input type="text" name="descripcion" class="form-control @error('descripcion') is-invalid @enderror"
                     value="{{ old('descripcion') }}">
                 @error('descripcion')

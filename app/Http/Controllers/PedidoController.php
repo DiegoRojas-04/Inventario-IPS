@@ -88,19 +88,20 @@ class PedidoController extends Controller
 
     public function create()
     {
-        $insumos = Insumo::all();
+        // Obtener los insumos ordenados alfabéticamente por nombre
+        $insumos = Insumo::orderBy('nombre', 'asc')->get();
         return view('crud.pedido.create', compact('insumos'));
     }
-
+    
     public function exportToPdf($id)
     {
         $pedido = Pedido::with('insumos', 'user')->findOrFail($id);
         $servicio = $pedido->user->servicio;
-    
+
         if (!$servicio) {
             return redirect()->back()->withErrors(['msg' => 'El usuario no tiene un servicio asociado.']);
         }
-    
+
         $insumosConUltimaEntrega = $pedido->insumos->map(function ($insumo) use ($servicio) {
             $ultimaEntregaSemanaPasada = Entrega::where('servicio_id', $servicio->id)
                 ->whereHas('insumos', function ($query) use ($insumo) {
@@ -109,15 +110,15 @@ class PedidoController extends Controller
                 ->whereBetween('fecha_hora', [now()->subWeek(), now()])
                 ->orderBy('fecha_hora', 'desc')
                 ->first();
-    
+
             $insumo->ultima_entrega = $ultimaEntregaSemanaPasada ? $ultimaEntregaSemanaPasada->insumos->find($insumo->id) : null;
             $insumo->cantidad_anterior = $insumo->ultima_entrega ? $insumo->ultima_entrega->pivot->cantidad : 'Sin pedido';
-    
+
             return $insumo;
         });
-    
+
         $insumosOrdenados = $insumosConUltimaEntrega->sortBy('nombre');
-    
+
         // HTML para el contenido del PDF
         $html = '
         <style>
@@ -145,7 +146,7 @@ class PedidoController extends Controller
                 </tr>
             </thead>
             <tbody>';
-    
+
         foreach ($insumosOrdenados as $insumo) {
             $html .= '
             <tr>
@@ -156,20 +157,18 @@ class PedidoController extends Controller
                 <td></td>
             </tr>';
         }
-    
+
         $html .= '
             </tbody>
         </table>';
-    
+
         // Configurar el PDF
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-    
+
         // Descargar el PDF
         return $dompdf->stream('Detalle_Pedido_' . $pedido->user->name . '.pdf');
     }
-    
-
 }

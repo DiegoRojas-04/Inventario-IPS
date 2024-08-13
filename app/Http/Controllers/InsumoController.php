@@ -10,6 +10,7 @@ use App\Models\Kardex;
 use App\Models\Marca;
 use App\Models\Presentacione;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -21,50 +22,85 @@ class InsumoController extends Controller
    * Display a listing of the resource.
    */
 
-  public function index(Request $request)
-  {
-    $query = Insumo::with(['caracteristicas', 'marca', 'presentacione']);
+   
+   public function index(Request $request)
+{
+    // Crear la consulta base con relaciones
+    $query = Insumo::with(['caracteristicas', 'marca', 'presentacione'])
+        ->orderBy('estado', 'desc'); // Ordenar por estado
+
     $categorias = Categoria::all();
 
     // Filtrar por categoría si se proporciona
     if ($request->has('id_categoria') && !empty($request->id_categoria)) {
-      $query->where('id_categoria', $request->id_categoria);
+        $query->where('id_categoria', $request->id_categoria);
     }
 
     // Filtrar por término de búsqueda si se proporciona
     if ($request->has('search') && !empty($request->search)) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('nombre', 'LIKE', "%$search%")
-          ->orWhere('descripcion', 'LIKE', "%$search%");
-      });
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('nombre', 'LIKE', "%$search%")
+              ->orWhere('descripcion', 'LIKE', "%$search%");
+        });
     }
 
-    // Filtrar y ordenar por estado (primero estado 1, luego estado 0)
-    $insumos = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 20));
+    // Obtener los insumos
+    $insumos = $query->get();
 
-    // Agregar clase de alerta para insumos con características vencidas o próximas a vencer en 10 días y que tienen stock
-    foreach ($insumos as $insumo) {
-      $insumo->alertClass = ''; // Inicialmente sin clase de alerta
-      foreach ($insumo->caracteristicas as $caracteristica) {
-        $fechaVencimiento = \Carbon\Carbon::parse($caracteristica->vencimiento);
-        $hoy = \Carbon\Carbon::now();
-        $diferenciaDias = $hoy->diffInDays($fechaVencimiento, false); // Obtiene la diferencia en días
+    // Definir el tamaño de la página y la página actual
+    $pageSize = (int) $request->input('page_size', 20);
+    if ($pageSize <= 0) {
+        $pageSize = 20; // Asegúrate de que pageSize nunca sea 0
+    }
+    
+    $currentPage = LengthAwarePaginator::resolveCurrentPage();
+    $items = collect($insumos);
 
-        // Verifica si la fecha de vencimiento es una fecha válida
-        if ($fechaVencimiento->format('d-m-Y') !== '01-01-0001') {
-          // Verifica si la fecha de vencimiento está a 10 días o menos o si ya ha vencido
-          if ($caracteristica->cantidad > 0 && ($diferenciaDias <= 9 || $diferenciaDias < 0)) {
-            $insumo->alertClass = 'table-danger'; // Marca la fila en rojo
-            break; // Sale del bucle si ya se encontró una característica que cumple la condición
-          }
+    if ($items->isEmpty()) {
+        $paginatedItems = new LengthAwarePaginator(
+            collect([]),
+            0,
+            $pageSize,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+    } else {
+        // Separar y clasificar los insumos con características próximas a vencer
+        $insumosVencidos = [];
+        $otrosInsumos = [];
+        $insumosEliminados = [];
+
+        foreach ($items as $insumo) {
+            if ($insumo->estado == 0) {
+                $insumosEliminados[] = $insumo;
+            } elseif ($insumo->alertClass === 'table-danger') {
+                $insumosVencidos[] = $insumo;
+            } else {
+                $otrosInsumos[] = $insumo;
+            }
         }
-      }
+
+        // Combinar las listas para tener primero los insumos próximos a vencer
+        // y luego los insumos eliminados
+        $items = collect(array_merge($insumosVencidos, $otrosInsumos, $insumosEliminados));
+
+        // Paginar los resultados combinados
+        $paginatedItems = new LengthAwarePaginator(
+            $items->forPage($currentPage, $pageSize),
+            $items->count(),
+            $pageSize,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
     }
 
-    return view('crud.insumo.index', compact('insumos', 'categorias'));
-  }
-
+    return view('crud.insumo.index', [
+        'insumos' => $paginatedItems,
+        'categorias' => $categorias
+    ]);
+}
+          
 
   /**
    * Show the form for creating a new resource.
