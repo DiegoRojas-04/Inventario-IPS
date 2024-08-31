@@ -22,27 +22,28 @@ class InsumoController extends Controller
    * Display a listing of the resource.
    */
 
-   
-   public function index(Request $request)
-{
+
+  public function index(Request $request)
+  {
     // Crear la consulta base con relaciones
     $query = Insumo::with(['caracteristicas', 'marca', 'presentacione'])
-        ->orderBy('estado', 'desc'); // Ordenar por estado
+      ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por nombre de A a Z
+      ->orderBy('estado', 'desc'); // Ordenar por estado
 
     $categorias = Categoria::all();
 
     // Filtrar por categoría si se proporciona
     if ($request->has('id_categoria') && !empty($request->id_categoria)) {
-        $query->where('id_categoria', $request->id_categoria);
+      $query->where('id_categoria', $request->id_categoria);
     }
 
     // Filtrar por término de búsqueda si se proporciona
     if ($request->has('search') && !empty($request->search)) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('nombre', 'LIKE', "%$search%")
-              ->orWhere('descripcion', 'LIKE', "%$search%");
-        });
+      $search = $request->search;
+      $query->where(function ($q) use ($search) {
+        $q->where('nombre', 'LIKE', "%$search%")
+          ->orWhere('descripcion', 'LIKE', "%$search%");
+      });
     }
 
     // Obtener los insumos
@@ -51,57 +52,57 @@ class InsumoController extends Controller
     // Definir el tamaño de la página y la página actual
     $pageSize = (int) $request->input('page_size', 20);
     if ($pageSize <= 0) {
-        $pageSize = 20; // Asegúrate de que pageSize nunca sea 0
+      $pageSize = 20; // Asegúrate de que pageSize nunca sea 0
     }
-    
+
     $currentPage = LengthAwarePaginator::resolveCurrentPage();
     $items = collect($insumos);
 
     if ($items->isEmpty()) {
-        $paginatedItems = new LengthAwarePaginator(
-            collect([]),
-            0,
-            $pageSize,
-            $currentPage,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+      $paginatedItems = new LengthAwarePaginator(
+        collect([]),
+        0,
+        $pageSize,
+        $currentPage,
+        ['path' => $request->url(), 'query' => $request->query()]
+      );
     } else {
-        // Separar y clasificar los insumos con características próximas a vencer
-        $insumosVencidos = [];
-        $otrosInsumos = [];
-        $insumosEliminados = [];
+      // Separar y clasificar los insumos con características próximas a vencer
+      $insumosVencidos = [];
+      $otrosInsumos = [];
+      $insumosEliminados = [];
 
-        foreach ($items as $insumo) {
-            if ($insumo->estado == 0) {
-                $insumosEliminados[] = $insumo;
-            } elseif ($insumo->alertClass === 'table-danger') {
-                $insumosVencidos[] = $insumo;
-            } else {
-                $otrosInsumos[] = $insumo;
-            }
+      foreach ($items as $insumo) {
+        if ($insumo->estado == 0) {
+          $insumosEliminados[] = $insumo;
+        } elseif ($insumo->alertClass === 'table-danger') {
+          $insumosVencidos[] = $insumo;
+        } else {
+          $otrosInsumos[] = $insumo;
         }
+      }
 
-        // Combinar las listas para tener primero los insumos próximos a vencer
-        // y luego los insumos eliminados
-        $items = collect(array_merge($insumosVencidos, $otrosInsumos, $insumosEliminados));
+      // Combinar las listas para tener primero los insumos próximos a vencer
+      // y luego los insumos eliminados
+      $items = collect(array_merge($insumosVencidos, $otrosInsumos, $insumosEliminados));
 
-        // Paginar los resultados combinados
-        $paginatedItems = new LengthAwarePaginator(
-            $items->forPage($currentPage, $pageSize),
-            $items->count(),
-            $pageSize,
-            $currentPage,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+      // Paginar los resultados combinados
+      $paginatedItems = new LengthAwarePaginator(
+        $items->forPage($currentPage, $pageSize),
+        $items->count(),
+        $pageSize,
+        $currentPage,
+        ['path' => $request->url(), 'query' => $request->query()]
+      );
     }
 
     return view('crud.insumo.index', [
-        'insumos' => $paginatedItems,
-        'categorias' => $categorias
+      'insumos' => $paginatedItems,
+      'categorias' => $categorias
     ]);
-}
-          
+  }
 
+  
   /**
    * Show the form for creating a new resource.
    */

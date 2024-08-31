@@ -30,7 +30,7 @@
                 <a href="usuario" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
         </div>
-        
+
         <div class="col-lg-4 col-6">
             <div class="small-box bg-white">
                 <div class="inner">
@@ -54,7 +54,7 @@
                         <h3>{{ $serviciosCount }}</h3>
                         <i class="far fa fa-medkit size-5"></i>
                     </div>
-                    <h5>Servicios</h5>
+                    <h5>Areas</h5>
                 </div>
                 <div class="icon">
                     <i class="ion ion-person-add"></i>
@@ -133,7 +133,7 @@
         </div>
     </div>
 
-{{-- 
+    {{-- 
 <h4>Pendientes</h4>
 <p>
 <p>* Ver lo de si un mismo insumo viene en diferente marca

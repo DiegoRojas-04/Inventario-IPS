@@ -342,14 +342,14 @@ return [
             'text' => 'Permisos',
             'url' => 'permiso',
             'icon' => 'far fa fa-cog',
-            'can' => 'Administrador'
+            'can' => 'a'
         ],
 
         [
             'text' => 'Roles',
             'url' => 'rol',
             'icon' => 'far fa fa-address-card',
-            'can' => 'Administrador'
+        'can' => 'a'
         ],
 
         ['header' => 'Gestion',

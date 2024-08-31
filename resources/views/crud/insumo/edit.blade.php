@@ -3,13 +3,12 @@
 @section('title', 'Insumo')
 
 @section('content_header')
-    <h1>Dashboard</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h1 class="card-title">Vista principal Para Agregar un insumo</h1>
+            <h1 class="card-title ">Vista para editar <b>{{ $insumo->nombre }}</b> </h1>
         </div>
         <div class="card-body">
             <form action="{{ url('insumo/' . $insumo->id) }}" method="POST" class="row g-3">
@@ -36,14 +35,14 @@
 
                 <div class="col-md-2 text-center">
                     <label>Invima</label>
-                    <input type="checkbox" name="requiere_lote" class="form-control" value="1"
-                        {{ $insumo->requiere_lote ? 'checked' : '' }}>
+                    <input type="checkbox" name="requiere_invima" class="form-control" value="1"
+                        {{ $insumo->requiere_invima ? 'checked' : '' }}>
                 </div>
 
                 <div class="col-md-2 text-center">
                     <label>Lote Y Fecha</label>
-                    <input type="checkbox" name="requiere_invima" class="form-control" value="1"
-                        {{ $insumo->requiere_invima ? 'checked' : '' }}>
+                    <input type="checkbox" name="requiere_lote" class="form-control" value="1"
+                        {{ $insumo->requiere_lote ? 'checked' : '' }}>
                 </div>
 
                 <div class="col-md-4">

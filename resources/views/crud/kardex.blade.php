@@ -119,7 +119,7 @@
                     @endforeach
                 </tbody>
             </table>
-            {{ $insumos->links() }}
+            {{ $insumos->appends(request()->input())->links() }}
         </div>
     </div>
     </div>

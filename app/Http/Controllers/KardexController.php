@@ -44,7 +44,7 @@ class KardexController extends Controller
         }
 
         // Aplicar paginación
-        $insumos = $query->paginate(20);
+        $insumos = $query->paginate(30);
 
         // Calcular los datos del Kardex para cada insumo
         $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {

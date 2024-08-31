@@ -52,20 +52,20 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-
                 <div class="col-md-2 text-center">
                     <label>Invima</label>
-                    <input type="checkbox" name="requiere_lote" class="form-control" value="1">
+                    <input type="checkbox" name="requiere_invima" class="form-control" value="1" {{ old('requiere_invima') ? 'checked' : '' }}>
                 </div>
-
+                
                 <div class="col-md-2 text-center">
                     <label>Lote Y Fecha</label>
-                    <input type="checkbox" name="requiere_invima" class="form-control" value="1">
+                    <input type="checkbox" name="requiere_lote" class="form-control" value="1" {{ old('requiere_lote') ? 'checked' : '' }}>
                 </div>
+                
                 
                 <div class="col-md-4">
                     <label>Categoria:</label>
-                    <select data-size="5" title="Seleccionar Categoria..." data-live-search="true" name="id_categoria"
+                    <select data-size="10" title="Seleccionar Categoria..." data-live-search="true" name="id_categoria"
                         id="id_categoria"
                         class="form-control selectpicker show-tick  @error('id_categoria') is-invalid @enderror"
                         value="{{ old('id_categoria') }}">
@@ -80,7 +80,7 @@
 
                 <div class="col-md-4">
                     <label>Marca:</label>
-                    <select data-size="5" title="Seleccionar Marca..." data-live-search="true" name="id_marca"
+                    <select data-size="10" title="Seleccionar Marca..." data-live-search="true" name="id_marca"
                         id="id_marca" class="form-control selectpicker show-tick  @error('id_marca') is-invalid @enderror"
                         value="{{ old('id_marca') }}">
                         @foreach ($marcas as $marca)
@@ -94,7 +94,7 @@
 
                 <div class="col-md-4">
                     <label>Presentación:</label>
-                    <select data-size="5" title="Seleccionar Presentacion..." data-live-search="true"
+                    <select data-size="10" title="Seleccionar Presentacion..." data-live-search="true"
                         name="id_presentacion" id="id_presentacion"
                         class="form-control selectpicker show-tick  @error('id_presentacion') is-invalid @enderror"
                         value="{{ old('id_presentacion') }}">

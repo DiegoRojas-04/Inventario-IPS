@@ -9,19 +9,21 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h1 class="card-title">Vista principal Para Agregar un insumo</h1>
+            <h1 class="card-title">{{ $insumo->nombre }}</h1>
         </div>
         <div class="card-body">
-            <form action="{{ route('caracteristica.update', ['insumoId' => $insumo->id, 'caracteristicaId' => $caracteristica->id]) }}" method="POST" class="row g-2">
+            <form
+                action="{{ route('caracteristica.update', ['insumoId' => $insumo->id, 'caracteristicaId' => $caracteristica->id]) }}"
+                method="POST" class="row g-2">
                 @csrf
                 @method('PATCH')
                 <div class="form-group col-md-6">
                     <label for="cantidad">Cantidad:</label>
-                    <input type="text" id="cantidad" name="cantidad"
-                        value="{{ $caracteristica->cantidad }}" class="form-control  @error('cantidad') is-invalid @enderror" readonly>
-                        @error('cantidad')
-                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                        @enderror
+                    <input type="text" id="cantidad" name="cantidad" value="{{ $caracteristica->cantidad }}"
+                        class="form-control  @error('cantidad') is-invalid @enderror" readonly>
+                    @error('cantidad')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
                 </div>
 
                 <div class="form-group col-md-6">

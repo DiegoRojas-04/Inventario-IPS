@@ -128,7 +128,7 @@
                 <thead class="thead-dark">
                     <tr class="text-center">
                         <th scope="col">Nombre</th>
-                        <th scope="col">Marca</th>
+                        {{-- <th scope="col">Marca</th> --}}
                         <th scope="col">Presentacion</th>
                         <th scope="col">Vida Util</th>
                         <th scope="col">Clasif.Riesgo</th>
@@ -138,27 +138,25 @@
                 </thead>
                 <tbody class="text-center">
                     @foreach ($insumos as $insumo)
-                        <tr class="{{ $insumo->estado == 0 ? 'table-eliminado' : ($insumo->alertClass ?? '') }}">
+                        <tr class="{{ $insumo->estado == 0 ? 'table-eliminado' : $insumo->alertClass ?? '' }}">
                             <td>{{ $insumo->nombre }}</td>
-                            <td>{{ $insumo->marca->nombre }}</td>
+                            {{-- <td>{{ $insumo->marca->nombre }}</td> --}}
                             <td>{{ $insumo->presentacione->nombre }}</td>
                             <td>{{ $insumo->vida_util }}</td>
                             <td>{{ $insumo->riesgo }}</td>
                             <td>{{ $insumo->stock }}</td>
                             <td>
-                                <div class="btn-group" role="group">
+                                <div class="btn-group" role="group"
+                                    style="gap: 5px;">
                                     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#modalInsumo-{{ $insumo->id }}"><i class="fa fa-eye"
-                                            aria-hidden="true"></i>
+                                        data-bs-target="#modalInsumo-{{ $insumo->id }}">
+                                        <i class="fa fa-eye" aria-hidden="true"></i>
                                     </button>
-                                </div>
-                                <div class="btn-group" role="group">
                                     <a href="{{ url('/insumo/' . $insumo->id . '/edit') }}"
                                         class="text-decoration-none text-white">
                                         <button type="submit" class="btn btn-warning"><i class="fa fa-file"
-                                                aria-hidden="true"></i></button></a>
-                                </div>
-                                <div class="btn-group" role="group">
+                                                aria-hidden="true"></i></button>
+                                    </a>
                                     @if ($insumo->estado == 1)
                                         <form id="delete-form-{{ $insumo->id }}"
                                             action="{{ url('/insumo/' . $insumo->id) }}" method="POST">
@@ -185,7 +183,6 @@
                         </tr>
                     @endforeach
                 </tbody>
-                
             </table>
             {{ $insumos->appends(request()->query())->links() }}
         </div>

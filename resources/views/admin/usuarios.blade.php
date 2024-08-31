@@ -79,12 +79,6 @@
                             <td>{{ $user->email }}</td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ url('/usuario/' . $user->id . '/edit') }}"
-                                        class="text-decoration-none text-white">
-                                        <button type="submit" class="btn btn-warning "><i class="fa fa-file"
-                                                aria-hidden="true"></i></button></a>
-                                </div>
-                                <div class="btn-group" role="group">
                                     <button type="submit" class="btn btn-danger" data-toggle="modal"
                                         data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
                                             aria-hidden="true"></i></button>
@@ -156,10 +150,10 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label>Servicio:</label>
+                                            <label>Area:</label>
                                             <select name="servicio_id"
                                                 class="form-control @error('servicio_id') is-invalid @enderror" required>
-                                                <option value="">Seleccionar Servicio</option>
+                                                <option value="">Seleccionar Area</option>
                                                 @foreach ($servicios as $servicio)
                                                     <option value="{{ $servicio->id }}">{{ $servicio->nombre }}</option>
                                                 @endforeach

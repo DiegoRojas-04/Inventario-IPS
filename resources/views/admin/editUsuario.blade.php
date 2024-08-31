@@ -47,9 +47,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Servicio:</label>
+                    <label>Area:</label>
                     <select name="servicio_id" class="form-control @error('servicio_id') is-invalid @enderror" required>
-                        <option value="">Seleccionar Servicio</option>
+                        <option value="">Seleccionar Area</option>
                         @foreach ($servicios as $servicio)
                             <option value="{{ $servicio->id }}" {{ $user->servicio_id == $servicio->id ? 'selected' : '' }}>
                                 {{ $servicio->nombre }}

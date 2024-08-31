@@ -12,7 +12,7 @@
     <form id="compra-form" action="{{ url('/compra') }}" method="post">
         @csrf
 
-        <div class="container mt-4">
+        <div class="container-fluid mt-4">
             <div class="row gy-4">
                 <div class="col-md-8">
                     <div class="text-white bg-primary p-1 text-center">
@@ -121,11 +121,11 @@
                                 </select>
                             </div>
 
-                           
+
                             <div class="col-md-12 mb-2">
                                 <label for="comprobante_id" class="form-label">Comprobante:</label>
-                                <input type="text" id="comprobante_id" class="form-control" 
-                                       value="{{ $comprobanteCompra->tipo_comprobante }}" readonly>
+                                <input type="text" id="comprobante_id" class="form-control"
+                                    value="{{ $comprobanteCompra->tipo_comprobante }}" readonly>
                                 <input type="hidden" name="comprobante_id" value="{{ $comprobanteCompra->id }}">
                             </div>
 
@@ -158,7 +158,7 @@
     </form>
     <style>
         #centrar {
-            width: 160px
+            width: 200px
         }
     </style>
 @stop
