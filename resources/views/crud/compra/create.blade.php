@@ -259,20 +259,19 @@
                 if (cantidad > 0 && (cantidad % 1 == 0)) {
                     let fila = '<tr id="fila' + cont + '">' +
                         '<th>' + (cont + 1) + '</th>' +
-                        '<td><input type="hidden" name="arrayidinsumo[]" value="' + id_insumo + '">' + nameinsumo +
-                        '</td>' +
+                        '<td><input type="hidden" name="arrayidinsumo[' + cont + ']" value="' + id_insumo + '">' +
+                        nameinsumo + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][invima]" value="' + invima +
                         '">' + invima + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][lote]" value="' + lote + '">' +
                         lote + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][vencimiento]" value="' +
                         vencimiento + '">' + vencimiento + '</td>' +
-                        '<td  id="centrar">' +
-
+                        '<td>' +
                         '<div class="input-group">' +
                         '<button class="btn btn-outline-danger btn-sm" type="button" onclick="disminuirCantidad(' + cont +
                         ')"><i class="fa fa-minus"></i></button>' +
-                        '<input type="number" name="arraycantidad[]" value="' + cantidad +
+                        '<input type="number" name="arraycantidad[' + cont + ']" value="' + cantidad +
                         '" class="form-control text-center" readonly>' +
                         '<button class="btn btn-outline-success btn-sm" type="button" onclick="aumentarCantidad(' + cont +
                         ')"><i class="fa fa-plus"></i></button>' +
@@ -288,10 +287,10 @@
                     total += cantidad;
                     $('#total').html(total);
                 } else {
-                    showModal('Valores Incorrectos')
+                    showModal('Valores Incorrectos');
                 }
             } else {
-                showModal('Campos Obligatorios')
+                showModal('Campos Obligatorios');
             }
         }
 

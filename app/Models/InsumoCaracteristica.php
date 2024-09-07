@@ -17,6 +17,8 @@ class InsumoCaracteristica extends Model
         'vencimiento',
         'cantidad',
         'cantidad_compra',
+        'id_marca',
+        'id_presentacion',
     ];
 
     public function insumo()
@@ -28,4 +30,15 @@ class InsumoCaracteristica extends Model
     {
         return $this->belongsTo(Compra::class, 'compra_id');
     }
+
+    public function marca()
+{
+    return $this->belongsTo(Marca::class, 'id_marca');
+}
+
+public function presentacion()
+{
+    return $this->belongsTo(Presentacione::class, 'id_presentacion');
+}
+
 }

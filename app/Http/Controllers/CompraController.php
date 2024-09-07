@@ -53,20 +53,21 @@ class CompraController extends Controller
         $insumos = Insumo::all();
         $proveedores = Proveedore::all();
         $comprobantes = Comprobante::all();
-    
+
         // Generar el siguiente número de comprobante
         $numero_comprobante = Compra::generarNumeroComprobante();
         $comprobanteCompra = Comprobante::where('tipo_comprobante', 'Compra')->first();
 
         return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra'));
     }
-    
+
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCompraRequest $request)
     {
+        // dd($request);
         try {
             DB::beginTransaction();
 
@@ -75,56 +76,49 @@ class CompraController extends Controller
             $arrayCantidad = $request->get('arraycantidad');
             $arrayCaracteristicas = $request->get('arraycaracteristicas');
 
-            $size = count($arrayInsumo);
-            $cont = 0;
-            while ($cont < $size) {
-                $insumo = Insumo::find($arrayInsumo[$cont]);
+            // Verificar que todos los arrays tengan la misma longitud
+            if (count($arrayInsumo) !== count($arrayCantidad) || count($arrayInsumo) !== count($arrayCaracteristicas)) {
+                return redirect()->back()->withErrors(['error' => 'Los datos de entrada son inconsistentes.']);
+            }
 
-                // Verificar si el insumo tiene al menos una característica
-                $tieneCaracteristicas = false;
-                foreach ($arrayCaracteristicas[$cont] as $caracteristica) {
-                    if (!empty($caracteristica)) {
-                        $tieneCaracteristicas = true;
-                        break;
-                    }
-                }
+            foreach ($arrayInsumo as $key => $insumoId) {
+                $insumo = Insumo::find($insumoId);
+
+                // Verificar si el insumo tiene características
+                $tieneCaracteristicas = isset($arrayCaracteristicas[$key]) && is_array($arrayCaracteristicas[$key])
+                    && !empty(array_filter($arrayCaracteristicas[$key]));
 
                 if (!$tieneCaracteristicas) {
-                    // Si el insumo no tiene características, se crea la relación sin características
-                    $compra->insumos()->attach($arrayInsumo[$cont], ['cantidad' => $arrayCantidad[$cont]]);
-                    $insumo->update(['stock' => $insumo->stock + intval($arrayCantidad[$cont])]);
+                    // Relación sin características
+                    $compra->insumos()->attach($insumoId, ['cantidad' => $arrayCantidad[$key]]);
+                    $insumo->increment('stock', intval($arrayCantidad[$key]));
                 } else {
-                    // Si el insumo tiene al menos una característica, se crea la relación con características
-                    $compra->insumos()->syncWithoutDetaching([
-                        $arrayInsumo[$cont] => ['cantidad' => $arrayCantidad[$cont]]
-                    ]);
-                    $insumo->update(['stock' => $insumo->stock + intval($arrayCantidad[$cont])]);
+                    // Relación con características
+                    $compra->insumos()->syncWithoutDetaching([$insumoId => ['cantidad' => $arrayCantidad[$key]]]);
+                    $insumo->increment('stock', intval($arrayCantidad[$key]));
 
                     $insumo->caracteristicas()->create([
-                        'invima' => $arrayCaracteristicas[$cont]['invima'],
-                        'lote' => $arrayCaracteristicas[$cont]['lote'],
-                        'vencimiento' => $arrayCaracteristicas[$cont]['vencimiento'],
-                        'cantidad' => $arrayCantidad[$cont],
-                        'cantidad_compra' => $arrayCantidad[$cont],
+                        'invima' => $arrayCaracteristicas[$key]['invima'] ?? null,
+                        'lote' => $arrayCaracteristicas[$key]['lote'] ?? null,
+                        'vencimiento' => $arrayCaracteristicas[$key]['vencimiento'] ?? null,
+                        'cantidad' => $arrayCantidad[$key],
+                        'cantidad_compra' => $arrayCantidad[$key],
                         'compra_id' => $compra->id,
                     ]);
                 }
 
                 // Agregar entrada al kardex
-                $this->agregarEntradaKardex($insumo->id, $request->input('fecha'), intval($arrayCantidad[$cont]));
-
-                $cont++;
+                $this->agregarEntradaKardex($insumo->id, $request->input('fecha'), intval($arrayCantidad[$key]));
             }
 
             DB::commit();
+            return redirect('compra')->with('Mensaje', 'Compra registrada con éxito.');
         } catch (Exception $e) {
             DB::rollBack();
-            // Log::error('Ocurrió un error al procesar la solicitud: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al procesar la solicitud.']);
         }
-
-        return redirect('compra')->with('Mensaje', 'Compra registrada con éxito.');
     }
+
 
     /**
      * Agregar una entrada al Kardex para un insumo específico.
@@ -164,22 +158,22 @@ class CompraController extends Controller
      * Display the specified resource.
      */
 
-     public function show($id)
-     {
-         $compra = Compra::findOrFail($id);
-     
-         // Obtener los insumos con las características específicas de esa compra
-         $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
-             $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
-             return $insumo;
-         });
-     
-         // Ordenar los insumos por nombre
-         $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
-     
-         return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas'));
-     }
-     
+    public function show($id)
+    {
+        $compra = Compra::findOrFail($id);
+
+        // Obtener los insumos con las características específicas de esa compra
+        $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
+            $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
+            return $insumo;
+        });
+
+        // Ordenar los insumos por nombre
+        $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
+
+        return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas'));
+    }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -209,23 +203,23 @@ class CompraController extends Controller
     }
 
     public function exportToPdf($id)
-{
-    $compra = Compra::with('insumos.marca', 'insumos.presentacione', 'proveedor', 'comprobante')->findOrFail($id);
+    {
+        $compra = Compra::with('insumos.marca', 'insumos.presentacione', 'proveedor', 'comprobante')->findOrFail($id);
 
-    // Obtener los insumos con las características específicas de esa compra
-    $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
-        $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
-        if ($insumo->caracteristicasCompra->isEmpty()) {
-            $insumo->caracteristicasCompra = collect(); // Asegurarse de que siempre sea una colección
-        }
-        return $insumo;
-    });
+        // Obtener los insumos con las características específicas de esa compra
+        $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
+            $insumo->caracteristicasCompra = $insumo->caracteristicas()->where('compra_id', $compra->id)->get();
+            if ($insumo->caracteristicasCompra->isEmpty()) {
+                $insumo->caracteristicasCompra = collect(); // Asegurarse de que siempre sea una colección
+            }
+            return $insumo;
+        });
 
-    // Ordenar los insumos por nombre
-    $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
+        // Ordenar los insumos por nombre
+        $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
 
-    // HTML para el contenido del PDF
-    $html = '
+        // HTML para el contenido del PDF
+        $html = '
    <style>
         body {
             font-family: Arial, sans-serif;
@@ -249,10 +243,10 @@ class CompraController extends Controller
         </thead>
         <tbody>';
 
-    // Agregar los insumos y cantidades a la tabla
-    foreach ($insumosConCaracteristicas as $insumo) {
-        foreach ($insumo->caracteristicasCompra as $caracteristica) {
-            $html .= '
+        // Agregar los insumos y cantidades a la tabla
+        foreach ($insumosConCaracteristicas as $insumo) {
+            foreach ($insumo->caracteristicasCompra as $caracteristica) {
+                $html .= '
             <tr>
                 <td>' . $insumo->nombre . '</td>
                 <td>' . $insumo->marca->nombre . '</td>
@@ -262,22 +256,20 @@ class CompraController extends Controller
                 <td>' . \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') . '</td>
                 <td>' . $caracteristica->cantidad_compra . '</td>
             </tr>';
+            }
         }
-    }
 
-    $html .= '
+        $html .= '
         </tbody>
     </table>';
 
-    // Configurar el PDF
-    $dompdf = new Dompdf();
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
+        // Configurar el PDF
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
 
-    // Descargar el PDF
-    return $dompdf->stream('Detalle_compra_' . $compra->proveedor->nombre . '.pdf');
-}
- 
-
+        // Descargar el PDF
+        return $dompdf->stream('Detalle_compra_' . $compra->proveedor->nombre . '.pdf');
+    }
 }

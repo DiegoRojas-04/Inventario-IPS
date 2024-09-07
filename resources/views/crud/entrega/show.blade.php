@@ -113,7 +113,6 @@
 
 
 
-
                                     <td>{{ $item->presentacione->nombre }}</td>
                                     <td>{{ $item->pivot->invima }}</td>
                                     <td>{{ $item->pivot->lote }}</td>
