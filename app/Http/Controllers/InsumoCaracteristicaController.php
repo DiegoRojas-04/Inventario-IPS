@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Insumo;
 use App\Models\InsumoCaracteristica;
+use App\Models\Marca;
+use App\Models\Presentacione;
 use Illuminate\Http\Request;
 
 class InsumoCaracteristicaController extends Controller
@@ -44,12 +46,14 @@ class InsumoCaracteristicaController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit($insumoId, $caracteristicaId)
-    {
-        $insumo = Insumo::findOrFail($insumoId);
-        $caracteristica = $insumo->caracteristicas()->findOrFail($caracteristicaId);
+{
+    $insumo = Insumo::findOrFail($insumoId);
+    $caracteristica = InsumoCaracteristica::findOrFail($caracteristicaId);
+    $marcas = Marca::all();
+    $presentaciones = Presentacione::all();
 
-        return view('crud.caracteristica.edit', compact('insumo', 'caracteristica'));
-    }
+    return view('crud.caracteristica.edit', compact('insumo', 'caracteristica', 'marcas', 'presentaciones'));
+}
 
 
 

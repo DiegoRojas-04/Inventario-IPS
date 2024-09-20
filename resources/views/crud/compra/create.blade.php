@@ -32,25 +32,46 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Marca:</label>
+                                <select data-size="10" title="Seleccionar Marca..." data-live-search="true"
+                                    name="arraycaracteristicas[0][id_marca]" id="id_marca"
+                                    class="form-control selectpicker show-tick">
+                                    @foreach ($marcas as $marca)
+                                        <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                            <div class="col-md-6 mb-2" id="campos_invima" style="display: none;">
+                            <div class="col-md-4 mb-3">
+                                <label>Presentación:</label>
+                                <select data-size="10" title="Seleccionar Presentación..." data-live-search="true"
+                                    name="arraycaracteristicas[0][id_presentacion]" id="id_presentacion"
+                                    class="form-control selectpicker show-tick">
+                                    @foreach ($presentaciones as $presentacion)
+                                        <option value="{{ $presentacion->id }}">{{ $presentacion->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3" id="campos_invima" style="display: none;">
                                 <label for="invima" class="form-label">Invima:</label>
                                 <input type="text" id="invima" name="arraycaracteristicas[0][invima]"
                                     class="form-control">
                             </div>
 
-                            <div class="col-md-6 mb-2" id="campos_lote_fecha" style="display: none;">
+                            <div class="col-md-4 mb-3" id="campos_lote_fecha" style="display: none;">
                                 <label for="lote">Lote:</label>
                                 <input type="text" id="lote" name="arraycaracteristicas[0][lote]"
                                     class="form-control">
                             </div>
-                            <div class="col-md-6 mb-2" id="campos_vencimiento" style="display: none;">
+                            <div class="col-md-4 mb-3" id="campos_vencimiento" style="display: none;">
                                 <label for="vencimiento">Fecha de Vencimiento:</label>
                                 <input type="date" id="vencimiento" name="arraycaracteristicas[0][vencimiento]"
                                     class="form-control">
                             </div>
 
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Cantidad:</label>
                                 <input type="number" name="stock" id="stock" class="form-control" placeholder="0">
                             </div>
@@ -69,6 +90,8 @@
                                                 <th>Invima</th>
                                                 <th>Lote</th>
                                                 <th>Fecha</th>
+                                                <th>Marca</th>
+                                                <th>Presentacion</th>
                                                 <th>Cantidad</th>
                                                 <th><i class="fa fa-trash"></i></th>
                                             </tr>
@@ -82,6 +105,7 @@
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
+
                                             </tr>
                                         </tbody>
                                         <tfoot>
@@ -158,7 +182,7 @@
     </form>
     <style>
         #centrar {
-            width: 200px
+            width: 80px;
         }
     </style>
 @stop
@@ -226,6 +250,9 @@
         let cont = 0;
         let total = 0;
 
+        let marcas = @json($marcas); // Esto pasa el array de marcas de PHP a JavaScript
+        let presentaciones = @json($presentaciones); // Esto pasa el array de presentaciones de PHP a JavaScript
+
         function agregarinsumo() {
             let id_insumo = $('#nombre').val();
             let nameinsumo = $('#nombre option:selected').text();
@@ -233,30 +260,35 @@
             let lote = $('#lote').val();
             let vencimiento = $('#vencimiento').val();
             let invima = $('#invima').val();
+            let marcaId = $('#id_marca').val();
+            let presentacionId = $('#id_presentacion').val();
 
-            // Verificar si todos los campos lote, vencimiento e invima están vacíos
-            // Si están vacíos, asignarles los valores 'NR' y '0001-01-01' respectivamente
-            if (lote.trim() === '' && vencimiento.trim() === '' && invima.trim() === '') {
+            // Lógica para manejar valores predeterminados
+            if (lote.trim() === '') {
                 lote = 'NR';
+            }
+            if (vencimiento.trim() === '') {
                 vencimiento = '0001-01-01';
+            }
+            if (invima.trim() === '') {
                 invima = 'NR';
-            } else {
-                // Verificar y asignar valores predeterminados para cada campo individualmente
-                if (lote.trim() === '') {
-                    lote = 'NR';
-                }
-
-                if (vencimiento.trim() === '') {
-                    vencimiento = '0001-01-01';
-                }
-
-                if (invima.trim() === '') {
-                    invima = 'NR';
-                }
             }
 
+            if (marcaId.trim() === '') {
+                marcaId = 104;
+            }
+
+            if (presentacionId.trim() === '') {
+                presentacionId = 102;
+            }
+
+            // Validar que la cantidad sea un número positivo
             if (id_insumo != '' && nameinsumo != '' && cantidad != '') {
-                if (cantidad > 0 && (cantidad % 1 == 0)) {
+                if (cantidad > 0 && (cantidad % 1 === 0)) {
+                    // Obtener los nombres de marca y presentación a partir de sus IDs
+                    let marcaNombre = marcas.find(m => m.id == marcaId).nombre;
+                    let presentacionNombre = presentaciones.find(p => p.id == presentacionId).nombre;
+
                     let fila = '<tr id="fila' + cont + '">' +
                         '<th>' + (cont + 1) + '</th>' +
                         '<td><input type="hidden" name="arrayidinsumo[' + cont + ']" value="' + id_insumo + '">' +
@@ -267,6 +299,10 @@
                         lote + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][vencimiento]" value="' +
                         vencimiento + '">' + vencimiento + '</td>' +
+                        '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][id_marca]" value="' +
+                        marcaId + '">' + marcaNombre + '</td>' +
+                        '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][id_presentacion]" value="' +
+                        presentacionId + '">' + presentacionNombre + '</td>' +
                         '<td>' +
                         '<div class="input-group">' +
                         '<button class="btn btn-outline-danger btn-sm" type="button" onclick="disminuirCantidad(' + cont +
@@ -304,6 +340,8 @@
             $('#invima').val('');
             $('#lote').val('');
             $('#vencimiento').val('');
+            $('#id_marca').val('');
+            $('#id_presentacion').val('');
 
         }
 

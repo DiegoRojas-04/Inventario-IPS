@@ -36,7 +36,7 @@
                 @csrf
 
                 <div class="col-md-4">
-                    <label>Nombre:</label>
+                    <label id="label-nombre">Nombre:</label>
                     <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
                         value="{{ old('nombre') }}">
                     @error('nombre')
@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label>Descripcion:</label>
+                    <label id="label-descripcion">Descripcion:</label>
                     <input type="text" name="descripcion" class="form-control @error('descripcion') is-invalid @enderror"
                         value="{{ old('descripcion') }}">
                     @error('descripcion')
@@ -54,15 +54,17 @@
                 </div>
                 <div class="col-md-2 text-center">
                     <label>Invima</label>
-                    <input type="checkbox" name="requiere_invima" class="form-control" value="1" {{ old('requiere_invima') ? 'checked' : '' }}>
+                    <input type="checkbox" name="requiere_invima" class="form-control" value="1"
+                        {{ old('requiere_invima') ? 'checked' : '' }}>
                 </div>
-                
+
                 <div class="col-md-2 text-center">
                     <label>Lote Y Fecha</label>
-                    <input type="checkbox" name="requiere_lote" class="form-control" value="1" {{ old('requiere_lote') ? 'checked' : '' }}>
+                    <input type="checkbox" name="requiere_lote" class="form-control" value="1"
+                        {{ old('requiere_lote') ? 'checked' : '' }}>
                 </div>
-                
-                
+
+
                 <div class="col-md-4">
                     <label>Categoria:</label>
                     <select data-size="10" title="Seleccionar Categoria..." data-live-search="true" name="id_categoria"
@@ -79,36 +81,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label>Marca:</label>
-                    <select data-size="10" title="Seleccionar Marca..." data-live-search="true" name="id_marca"
-                        id="id_marca" class="form-control selectpicker show-tick  @error('id_marca') is-invalid @enderror"
-                        value="{{ old('id_marca') }}">
-                        @foreach ($marcas as $marca)
-                            <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
-                        @endforeach
-                    </select>
-                    @error('id_marca')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label>Presentación:</label>
-                    <select data-size="10" title="Seleccionar Presentacion..." data-live-search="true"
-                        name="id_presentacion" id="id_presentacion"
-                        class="form-control selectpicker show-tick  @error('id_presentacion') is-invalid @enderror"
-                        value="{{ old('id_presentacion') }}">
-                        @foreach ($presentaciones as $presentacione)
-                            <option value="{{ $presentacione->id }}">{{ $presentacione->nombre }}</option>
-                        @endforeach
-                    </select>
-                    @error('id_presentacion')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-
-                <div class="col-md-2">
-                    <label>Riesgo:</label>
+                    <label id="label-clasificacion">Riesgo:</label>
                     <input type="text" name="riesgo" class="form-control  @error('riesgo') is-invalid @enderror"
                         value="{{ old('riesgo') }}">
                     @error('riesgo')
@@ -116,8 +89,8 @@
                     @enderror
                 </div>
 
-                <div class="col-md-2">
-                    <label>Vida Util:</label>
+                <div class="col-md-4">
+                    <label id="label-vida">Vida Util:</label>
                     <input type="text" name="vida_util" class="form-control   @error('vida_util') is-invalid @enderror"
                         value="{{ old('vida_util') }}">
                     @error('vida_util')
@@ -133,7 +106,7 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-  
+
                 <div class="col-md-4">
                     <label>Codigo:</label>
                     <input type="text" name="codigo" class="form-control  @error('codigo') is-invalid @enderror"
@@ -161,4 +134,22 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script>
+        document.getElementById('id_categoria').addEventListener('change', function() {
+            var categoriaId = this.value; // Obtiene el id de la categoría seleccionada
+
+            if (categoriaId == 11) { // Si la categoría es Medicamentos (id 11)
+                document.getElementById('label-nombre').textContent = 'Principio Activo:';
+                document.getElementById('label-descripcion').textContent = 'Presentación Comercial:';
+                document.getElementById('label-clasificacion').textContent = 'CONCENTRACIÓN:';
+                document.getElementById('label-vida').textContent = 'CÓDIGO CUMS:';
+            } else {
+                // Restaura los títulos originales si no es la categoría Medicamentos
+                document.getElementById('label-nombre').textContent = 'Nombre:';
+                document.getElementById('label-descripcion').textContent = 'Descripción:';
+                document.getElementById('label-clasificacion').textContent = 'Riesgo:';
+                document.getElementById('label-vida').textContent = 'Vida útil:';
+            }
+        });
+    </script>
 @stop

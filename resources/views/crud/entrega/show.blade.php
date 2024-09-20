@@ -97,7 +97,7 @@
                         <thead class="bg-primary text-white">
                             <tr class="text-center">
                                 <th>Producto</th>
-                                {{-- <th>Marca</th> --}}
+                                <th>Marca</th> 
                                 <th>Presentacion</th>
                                 <th>Invima</th>
                                 <th>Lote</th>
@@ -109,11 +109,8 @@
                             @foreach ($entrega->insumos as $item)
                                 <tr>
                                     <td>{{ $item->nombre }}</td>
-
-
-
-
-                                    <td>{{ $item->presentacione->nombre }}</td>
+                                    <td>{{ $item->pivot->id_marca }}</td>
+                                    <td>{{ $item->pivot->id_presentacion }}</td>                    
                                     <td>{{ $item->pivot->invima }}</td>
                                     <td>{{ $item->pivot->lote }}</td>
                                     <td>{{ $item->pivot->vencimiento }}</td>

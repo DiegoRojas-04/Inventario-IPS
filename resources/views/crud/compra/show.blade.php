@@ -87,7 +87,7 @@
                         <thead class="bg-primary text-white">
                             <tr class="text-center">
                                 <th>Producto</th>
-                                {{-- <th>Marca</th> --}}
+                                <th>Marca</th>
                                 <th>Presentación</th>
                                 <th>Invima</th>
                                 <th>Lote</th>
@@ -100,8 +100,8 @@
                                 @foreach ($insumo->caracteristicasCompra as $caracteristica)
                                     <tr>
                                         <td>{{ $insumo->nombre }}</td>
-                                        {{-- <td>{{ $insumo->marca->nombre }}</td> --}}
-                                        <td>{{ $insumo->presentacione->nombre }}</td>
+                                        <td>{{ $caracteristica->marca->nombre }}</td>
+                                        <td>{{ $caracteristica->presentacion->nombre }}</td>
                                         <td>{{ $caracteristica->invima }}</td>
                                         <td>{{ $caracteristica->lote }}</td>
                                         <td>{{ $caracteristica->vencimiento }}</td>

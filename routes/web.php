@@ -37,10 +37,13 @@ Route::middleware([
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-    // Restricción de acceso a la creación de pedidos mediante URL
-    Route::get('pedido/create', [PedidoController::class, 'create'])
-        ->middleware(['check.time'])
-        ->name('pedido.create');
+    Route::get('/pedido/create', [PedidoController::class, 'create'])->name('pedido.create');
+    Route::get('/pedido/create', [PedidoController::class, 'create'])
+    ->middleware(['check.time'])
+    ->name('pedido.create');
+
+    Route::get('/pedido/create?especial=true', [PedidoController::class, 'create'])
+    ->name('pedido.create.especial');
 
     // Aplica el middleware 'role' a las rutas protegidas por roles
     Route::middleware(['role'])->group(function () {
@@ -68,6 +71,7 @@ Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])-
 Route::get('/export/entrega/pdf/{id}', [EntregaController::class, 'exportToPdf'])->name('export.entrega.pdf');
 
 Route::get('/export/pedido/pdf/{id}', [PedidoController::class, 'exportToPdf'])->name('export.pedido.pdf');
+Route::get('/insumos/exportar', [InsumoController::class, 'exportToPdf'])->name('insumos.exportToPdf');
 
 
 Route::get('/export/excel', [KardexController::class, 'exportToExcel'])->name('export.excel');

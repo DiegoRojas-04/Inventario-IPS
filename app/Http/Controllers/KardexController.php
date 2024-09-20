@@ -44,7 +44,7 @@ class KardexController extends Controller
         }
 
         // Aplicar paginación
-        $insumos = $query->paginate(30);
+        $insumos = $query->paginate(50);
 
         // Calcular los datos del Kardex para cada insumo
         $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
@@ -167,7 +167,7 @@ class KardexController extends Controller
             $sheet->getStyle('A' . $row)->getFont()->setBold(true);
 
             // Alternar color de fondo de las filas
-            $rowColor = $row % 2 == 0 ? 'FFADD8E6' : 'FFFFFFFF'; // Alternar entre blanco y azul claro
+            $rowColor = $row % 2 == 0 ? 'FFFFFFFF' : 'FFFFFFFF'; // Alternar entre blanco y azul claro
             $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -252,35 +252,35 @@ class KardexController extends Controller
     public function exportOrderToPdf(Request $request)
     {
         $data = $this->ObtenerDatosParaExportar($request);
-    
+
         // Ordenar por nombre del insumo alfabéticamente
         $data = $data->sortBy('nombre');
-    
+
         // Obtener el nombre del mes y categoría
         $selectedMonthNumber = $request->input('mes');
         $selectedYear = $request->input('anno');
         $selectedMonth = Carbon::create()->month($selectedMonthNumber)->format('F');
         $idCategoria = $request->input('id_categoria');
         $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : '';
-    
+
         // Crear el HTML para el PDF
         $titulo = 'Pedido de Insumos - ' . $categoriaNombre;
         $html = '<style>
-                    body { font-family: Arial, sans-serif; }
-                    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
-                    th, td { border: 1px solid black; text-align: center; padding: 8px; }
-                    th { background-color: #f2f2f2; }
-                    .cantidad { color: red; font-weight: bold; }
-                </style>';
+                body { font-family: Arial, sans-serif; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
+                th, td { border: 1px solid black; text-align: center; padding: 8px; }
+                th { background-color: #f2f2f2; }
+                .cantidad { color: red; font-weight: bold; }
+            </style>';
         $html .= '<h2 style="text-align: center;">' . $titulo . '</h2>';
         $html .= '<p><strong>TIPO DE PEDIDO:</strong> ' . $categoriaNombre . '</p>';
         $html .= '<p><strong>PROVEEDOR:</strong> ' . '</p>';
         $html .= '<p><strong>FECHA DE PEDIDO:</strong> ' . $selectedMonth . ' ' . $selectedYear . '</p>';
-        $html .= '<p><strong>NUMERO DE FACURA:</strong> ' . '</p>';
+        $html .= '<p><strong>NUMERO DE FACTURA:</strong> ' . '</p>';
         $html .= '<br>';
         $html .= '<table>';
         $html .= '<tr><th>Nombre de Insumo</th><th>Presentación</th><th>Cantidad a Pedir</th></tr>';
-    
+
         foreach ($data as $item) {
             // Calcular la cantidad a pedir
             $cantidadInicioMes = $item->cantidad_inicial_mes;
@@ -289,24 +289,26 @@ class KardexController extends Controller
             $saldoFinal = $item->saldo_final_mes;
             $saldo = $cantidadInicioMes + $ingresos;
             $cantidadPedir = $saldo - $saldoFinal;
-    
-            // Añadir fila a la tabla
-            $html .= '<tr>';
-            $html .= '<td>' . $item->nombre . '</td>';
-            $html .= '<td>' . $item->presentacione->nombre . '</td>';
-            $html .= '<td class="cantidad">' . round($cantidadPedir) . '</td>';
-            $html .= '</tr>';
+
+            // Solo añadir fila si cantidad a pedir es mayor que 0
+            if ($cantidadPedir > 0) {
+                $html .= '<tr>';
+                $html .= '<td>' . $item->nombre . '</td>';
+                $html .= '<td>' . '</td>'; // Agrega aquí la presentación si está disponible
+                $html .= '<td class="cantidad">' . round($cantidadPedir) . '</td>';
+                $html .= '</tr>';
+            }
         }
         $html .= '</table>';
-    
+
         // Configurar Dompdf para renderizar HTML
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
-    
+
         // Renderizar PDF
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-    
+
         // Descargar PDF
         return $dompdf->stream('Pedido_Insumos_' . $categoriaNombre . '_' . $selectedMonth . '.pdf');
     }

@@ -27,4 +27,5 @@ class EntregaInsumo extends Model
     {
         return $this->belongsTo(Insumo::class, 'insumo_id');
     }
+    
 }

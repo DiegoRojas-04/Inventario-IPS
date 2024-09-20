@@ -10,7 +10,7 @@
 
         <form id="entrega-form" action="{{ url('/entrega') }}" method="post">
             @csrf
-            <div class="container mt-4">
+            <div class="container-fluid mt-4">
                 <div class="row gy-4">
                     <div class="col-md-8">
                         <div class="text-white bg-primary p-1 text-center">
@@ -58,6 +58,8 @@
                                                     <th>Invima</th>
                                                     <th>Lote</th>
                                                     <th>F.Venc</th>
+                                                    <th>Marca</th>
+                                                    <th>Presentación</th>
                                                     <th>Cantidad</th>
                                                     <th><i class="fa fa-trash"></i></th>
                                                 </tr>
@@ -100,7 +102,7 @@
                             <div class="row">
                                 <div class="col-md-12 mb-2">
                                     <label for="" class="form-label">Entrega Para:</label>
-                                    <select data-size="5" title="Entregar A:" data-live-search="true"
+                                    <select data-size="8" title="Entregar A:" data-live-search="true"
                                         data-style="btn-white" name="servicio_id" id="servicio_id"
                                         class="form-control selectpicker show-tick" required>
                                         @foreach ($servicios as $item)
@@ -111,11 +113,11 @@
 
                                 <div class="col-md-12 mb-2">
                                     <label for="comprobante_id" class="form-label">Comprobante:</label>
-                                    <input type="text" id="comprobante_id" class="form-control" 
-                                           value="{{ $comprobanteEntrega->tipo_comprobante }}" readonly>
+                                    <input type="text" id="comprobante_id" class="form-control"
+                                        value="{{ $comprobanteEntrega->tipo_comprobante }}" readonly>
                                     <input type="hidden" name="comprobante_id" value="{{ $comprobanteEntrega->id }}">
                                 </div>
-                                
+
 
                                 <div class="col-md-12 mb-2">
                                     <label>Numero de Comprobante:</label>
@@ -267,14 +269,21 @@
                                 }
                             });
 
-                            // Agregar las nuevas opciones al select de variantes
                             caracteristicasDisponibles.forEach(function(caracteristica) {
-                                $('#variante').append('<option value="' + caracteristica
-                                    .id + '">' +
-                                    caracteristica.invima + ' - ' + caracteristica
-                                    .lote + ' - ' + caracteristica.vencimiento +
+                                $('#variante').append('<option value="' + caracteristica.id +
+                                    '" data-marca-id="' + (caracteristica.marca ? caracteristica
+                                        .marca.id : '') + '" data-presentacion-id="' + (
+                                        caracteristica.presentacion ? caracteristica
+                                        .presentacion.id : '') + '">' +
+                                    caracteristica.invima + ' - ' + caracteristica.lote +
+                                    ' - ' + caracteristica.vencimiento +
+                                    ' - ' + (caracteristica.marca ? caracteristica.marca
+                                        .nombre : 'Sin Marca') +
+                                    ' - ' + (caracteristica.presentacion ? caracteristica
+                                        .presentacion.nombre : 'Sin Presentación') +
                                     '</option>');
                             });
+
 
                             $('#variante').selectpicker();
                         } else { // Si el insumo no tiene variantes
@@ -325,24 +334,18 @@
                 let variante = $('#variante').val();
                 let stockActual = parseInt($('#stock_actual').val());
 
-                console.log('Datos ingresados:', idInsumo, nombreInsumo, cantidad, variante, stockActual);
-
                 // Capturar las características de la variante seleccionada
                 let varianteText = $('#variante option:selected').text();
-                let [invima, lote, vencimiento] = varianteText.split(' - ');
+                let [invima, lote, vencimiento, marcaNombre, presentacionNombre] = varianteText.split(' - ');
 
-                // Verificar si el insumo tiene variantes disponibles
-                let tieneVariantes = $('#variante').val() !== '';
-                // Si el insumo tiene variantes, verificar que se haya seleccionado una variante
-                if (tieneVariantes && variante === '') {
-                    showModal('Debes seleccionar una variante para este insumo');
-                    return; // Detener la ejecución de la función si no se ha seleccionado una variante
-                }
+                // Extraer los IDs de marca y presentación desde la variante seleccionada
+                let selectedOption = $('#variante option:selected');
+                let marcaId = selectedOption.data('marca-id');
+                let presentacionId = selectedOption.data('presentacion-id');
 
                 if (idInsumo !== '' && nombreInsumo !== '' && !isNaN(cantidad)) {
                     if (cantidad > 0 && (cantidad % 1 === 0)) {
                         if (cantidad <= stockActual) {
-                            // Verificar si el insumo con la misma variante ya está en la tabla
                             let encontrado = false;
                             $('#tabla_detalle tbody tr').each(function() {
                                 let idInsumoTabla = $(this).find('input[name="arrayidinsumo[]"]').val();
@@ -350,24 +353,24 @@
                                 if (idInsumoTabla === idInsumo && varianteTabla === variante) {
                                     encontrado = true;
                                     let cantidadExistente = parseInt($(this).find('input[name="arraycantidad[]"]')
-                                        .val());
+                                    .val());
                                     let nuevaCantidad = cantidadExistente + cantidad;
                                     if (nuevaCantidad <= stockActual) {
                                         $(this).find('input[name="arraycantidad[]"]').val(nuevaCantidad);
                                         total += cantidad;
                                         $('#total').html(total);
-                                        limpiarCampos(); // Mover aquí para limpiar solo cuando se agrega correctamente
+                                        limpiarCampos();
                                     } else {
                                         showModal('Cantidad Insuficiente');
                                     }
-                                    return false; // Salir del bucle each
+                                    return false;
                                 }
                             });
 
                             if (!encontrado) {
                                 agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad,
-                                    stockActual);
-                                limpiarCampos(); // Mover aquí para limpiar solo cuando se agrega correctamente
+                                    stockActual, marcaId, marcaNombre, presentacionId, presentacionNombre);
+                                limpiarCampos();
                             }
                         } else {
                             showModal('Cantidad No Disponible');
@@ -380,18 +383,18 @@
                 }
             }
 
-            function agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad, stockActual) {
+
+            function agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad, stockActual,
+                marcaId, marcaNombre, presentacionId, presentacionNombre) {
                 let fila = '<tr id="fila' + cont + '">' +
                     '<td><input type="hidden" name="arrayidinsumo[]" value="' + idInsumo + '">' +
-                    nombreInsumo +
-                    '</td>' +
+                    nombreInsumo + '</td>' +
                     '<td><input type="hidden" name="arrayvariante[]" value="' + variante + '">' +
-                    '<input type="hidden" name="arrayinvima[]" value="' + invima + '">' + invima +
-                    '</td>' +
-                    '<td><input type="hidden" name="arraylote[]" value="' + lote + '">' + lote +
-                    '</td>' +
-                    '<td><input type="hidden" name="arrayvencimiento[]" value="' + vencimiento + '">' +
-                    vencimiento +
+                    '<input type="hidden" name="arrayinvima[]" value="' + invima + '">' + invima + '</td>' +
+                    '<td><input type="hidden" name="arraylote[]" value="' + lote + '">' + lote + '</td>' +
+                    '<td><input type="hidden" name="arrayvencimiento[]" value="' + vencimiento + '">' + vencimiento + '</td>' +
+                    '<td><input type="hidden" name="arraymarca[]" value="' + marcaId + '">' + marcaNombre + '</td>' +
+                    '<td><input type="hidden" name="arraypresentacion[]" value="' + presentacionId + '">' + presentacionNombre +
                     '</td>' +
                     '<td id="centrar">' +
                     '<div class="input-group">' +
@@ -399,8 +402,7 @@
                     ')"><i class="fa fa-minus"></i></button>' +
                     '<input type="number" name="arraycantidad[]" id="cantidad' + cont + '" value="' + cantidad +
                     '" class="form-control" readonly>' +
-                    '<button class="btn btn-outline-success btn-sm" type="button" onClick="sumarCantidad(' + cont +
-                    ', ' +
+                    '<button class="btn btn-outline-success btn-sm" type="button" onClick="sumarCantidad(' + cont + ', ' +
                     stockActual + ')"><i class="fa fa-plus"></i></button>' +
                     '</div>' +
                     '</td>' +
@@ -412,8 +414,9 @@
                 cont++;
                 total += cantidad;
                 $('#total').html(total);
-                console.log('Fila agregada:', fila);
             }
+
+
 
             function sumarCantidad(indice, stockActual) {
                 let cantidadInput = $('#cantidad' + indice);

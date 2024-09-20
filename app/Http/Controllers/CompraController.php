@@ -9,6 +9,7 @@ use App\Models\Comprobante;
 use App\Models\Insumo;
 use App\Models\InsumoCaracteristica;
 use App\Models\Kardex;
+use App\Models\Marca;
 use App\Models\Presentacione;
 use App\Models\Proveedore;
 use App\Models\Servicio;
@@ -50,6 +51,8 @@ class CompraController extends Controller
      */
     public function create()
     {
+        $presentaciones = Presentacione::all();
+        $marcas = Marca::all();
         $insumos = Insumo::all();
         $proveedores = Proveedore::all();
         $comprobantes = Comprobante::all();
@@ -58,7 +61,7 @@ class CompraController extends Controller
         $numero_comprobante = Compra::generarNumeroComprobante();
         $comprobanteCompra = Comprobante::where('tipo_comprobante', 'Compra')->first();
 
-        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra'));
+        return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra', 'marcas', 'presentaciones'));
     }
 
 
@@ -101,6 +104,8 @@ class CompraController extends Controller
                         'invima' => $arrayCaracteristicas[$key]['invima'] ?? null,
                         'lote' => $arrayCaracteristicas[$key]['lote'] ?? null,
                         'vencimiento' => $arrayCaracteristicas[$key]['vencimiento'] ?? null,
+                        'id_marca' => $arrayCaracteristicas[$key]['id_marca'] ?? null,
+                        'id_presentacion' => $arrayCaracteristicas[$key]['id_presentacion'] ?? null,
                         'cantidad' => $arrayCantidad[$key],
                         'cantidad_compra' => $arrayCantidad[$key],
                         'compra_id' => $compra->id,

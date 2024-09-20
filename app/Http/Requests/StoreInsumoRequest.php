@@ -30,8 +30,8 @@ class StoreInsumoRequest extends FormRequest
             'vida_util' => 'required',
             'codigo' => 'nullable',
             'id_categoria' => 'required',
-            'id_marca' => 'required',
-            'id_presentacion' => 'required',
+            // 'id_marca' => 'required',
+            // 'id_presentacion' => 'required',
         ];
     }
 }

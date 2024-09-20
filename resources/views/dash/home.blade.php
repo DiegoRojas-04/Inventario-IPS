@@ -3,7 +3,7 @@
 @section('title', 'Home')
 
 @section('content_header')
-@if (session('Mensaje'))
+    @if (session('Mensaje'))
         <script>
             const Toast = Swal.mixin({
                 toast: true,
@@ -43,6 +43,12 @@
     <!-- Contador regresivo -->
     <div class="text-center" style="margin-top: 20px;">
         <div id="countdown" class="text-danger"></div>
+    </div>
+
+    <div class="text-center" style="margin-top: 20px;">
+        <button id="btnPedidoEspecial" class="btn btn-warning" style="margin-left: 10px;">
+            <i class="fa fa-star"></i> Realizar Pedido Especial
+        </button>
     </div>
 @stop
 

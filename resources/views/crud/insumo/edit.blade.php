@@ -8,7 +8,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h1 class="card-title ">Vista para editar <b>{{ $insumo->nombre }}</b> </h1>
+            <h1 class="card-title "> <b>{{ $insumo->nombre }}</b> </h1>
         </div>
         <div class="card-body">
             <form action="{{ url('insumo/' . $insumo->id) }}" method="POST" class="row g-3">
@@ -58,7 +58,7 @@
                     </select>
                 </div>
                 
-                <div class="col-md-4">
+                {{-- <div class="col-md-4">
                     <label>Marca:</label>
                     <select data-live-search="true" name="id_marca" id="id_marca"
                         class="form-control selectpicker show-tick">
@@ -82,7 +82,7 @@
                             </option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
 
 
                 <div class="col-md-4">

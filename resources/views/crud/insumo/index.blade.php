@@ -3,9 +3,18 @@
 @section('title', 'Insumo')
 
 @section('content_header')
+
     <a href="{{ url('/insumo/create') }}" class="text-decoration-none text-white">
         <button type="submit" class="btn btn-primary">Agregar Insumos</button>
     </a>
+
+    <button type="button" class="btn btn-primary">
+        <a href="{{ route('insumos.exportToPdf', ['id_categoria' => request('id_categoria')]) }}"
+            style="color: white; text-decoration: none;">
+            <i class="fa fa-file-pdf" aria-hidden="true"></i>
+        </a>
+    </button>
+
     @if (session('Mensaje'))
         <script>
             const Toast = Swal.mixin({
@@ -128,8 +137,6 @@
                 <thead class="thead-dark">
                     <tr class="text-center">
                         <th scope="col">Nombre</th>
-                        {{-- <th scope="col">Marca</th> --}}
-                        <th scope="col">Presentacion</th>
                         <th scope="col">Vida Util</th>
                         <th scope="col">Clasif.Riesgo</th>
                         <th scope="col">Cantidad</th>
@@ -140,14 +147,13 @@
                     @foreach ($insumos as $insumo)
                         <tr class="{{ $insumo->estado == 0 ? 'table-eliminado' : $insumo->alertClass ?? '' }}">
                             <td>{{ $insumo->nombre }}</td>
-                            {{-- <td>{{ $insumo->marca->nombre }}</td> --}}
-                            <td>{{ $insumo->presentacione->nombre }}</td>
+                            {{-- <td>{{ $insumo->marca->nombre }}</td>  --}}
+                            {{-- <td>{{ $insumo->presentacione->nombre }}</td>  --}}
                             <td>{{ $insumo->vida_util }}</td>
                             <td>{{ $insumo->riesgo }}</td>
                             <td>{{ $insumo->stock }}</td>
                             <td>
-                                <div class="btn-group" role="group"
-                                    style="gap: 5px;">
+                                <div class="btn-group" role="group" style="gap: 5px;">
                                     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                         data-bs-target="#modalInsumo-{{ $insumo->id }}">
                                         <i class="fa fa-eye" aria-hidden="true"></i>
@@ -191,7 +197,7 @@
     @foreach ($insumos as $insumo)
         <div class="modal fade bd-example-modal-lg" id="modalInsumo-{{ $insumo->id }}" tabindex="-1"
             aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title font-bold" id="exampleModalLabel"></h4>
@@ -208,9 +214,11 @@
                             <table class="table">
                                 <thead class="thead-dark">
                                     <tr class="text-center">
+                                        <th>Marca</th>
+                                        <th>Presentacion</th>
                                         <th>Invima</th>
                                         <th>Lote</th>
-                                        <th>Fecha de Vencimiento</th>
+                                        <th>Vencimiento</th>
                                         <th>Cantidad</th>
                                         <th>Estado</th>
                                         <th>Accion</th>
@@ -238,6 +246,8 @@
                                                 }
                                             @endphp
                                             <tr>
+                                                <td>{{ $caracteristica->marca->nombre }}</td>
+                                                <td>{{ $caracteristica->presentacion->nombre }}</td>
                                                 <td>{{ $caracteristica->invima }}</td>
                                                 <td>{{ $caracteristica->lote }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') }}

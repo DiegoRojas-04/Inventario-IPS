@@ -65,19 +65,22 @@
                             <th>Usuario</th>
                             <th>Fecha</th>
                             <th>Hora</th>
+                            <th>Tipo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="text-center">
                         @foreach ($pedidos as $pedido)
-                            <tr>
+                            <tr @if ($pedido->tipo === 'Pedido Especial') class="table-success" @endif>
                                 <td>{{ $pedido->id }}</td>
                                 <td>{{ $pedido->user->name }}</td>
                                 <td>{{ \Carbon\Carbon::parse($pedido->fecha_hora)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($pedido->fecha_hora)->format('H:i:s') }}</td>
+                                <td>{{ $pedido->tipo }}</td>
                                 <td>
-                                    <a href="{{ route('pedido.show', $pedido->id) }}" class="btn btn-info"><i
-                                            class="fa fa-eye" aria-hidden="true"></i></a>
+                                    <a href="{{ route('pedido.show', $pedido->id) }}" class="btn btn-info">
+                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach

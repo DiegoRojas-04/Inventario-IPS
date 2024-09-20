@@ -15,6 +15,13 @@
 @section('content')
     <div class="container w-100 border border-3 rounded p-4 mt-3">
         <div class="row mb-2">
+            <div class="col-sm-12">
+                <input disabled type="text" class="form-control text-center bg-blue" value="{{ $pedido->tipo }}">
+            </div>
+        </div>
+
+        <div class="row mb-2">
+
             <div class="col-sm-4">
                 <div class="input-group mb-3">
                     <span class="input-group-text"><i class="fa fa-users"></i></span>
@@ -24,7 +31,9 @@
             <div class="col-sm-8">
                 <input disabled type="text" class="form-control" value="{{ $pedido->user->name }}">
             </div>
+
         </div>
+
         <div class="row mb-2">
             <div class="col-sm-4">
                 <div class="input-group mb-3">
@@ -56,6 +65,18 @@
                         </button>
                     </form>
                 </div>
+                
+                <div class="row mb-2">
+                    <div class="col-sm-2">
+                        <div class="input-group mb-3">
+                            <input disabled type="text" class="form-control" value="Observacion:">
+                        </div>
+                    </div>
+                    <div class="col-sm-10">
+                        <input disabled type="text" class="form-control" id="observacion" value="{{ $observacion }}">
+                    </div>
+                </div>
+        
 
                 <div class="table-responsive">
                     <table class="table table-striped text-center">

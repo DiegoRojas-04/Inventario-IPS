@@ -24,14 +24,17 @@ class EntregaController extends Controller
         $stock = Insumo::findOrFail($insumoId)->stock;
         return response()->json(['stock' => $stock]);
     }
-
     public function getCaracteristicas(Request $request)
     {
         $insumoId = $request->get('insumo_id');
         $insumo = Insumo::findOrFail($insumoId);
-        $caracteristicas = $insumo->caracteristicas;
+        // Obtener características con la marca y la presentación
+        $caracteristicas = $insumo->caracteristicas()->with(['marca', 'presentacion'])->get();
+        
         return response()->json(['caracteristicas' => $caracteristicas]);
     }
+    
+
 
     public function index(Request $request)
     {
@@ -68,6 +71,7 @@ class EntregaController extends Controller
 
     public function store(StoreEntregaRequest $request)
     {
+        // dd($request);
         try {
             DB::beginTransaction();
             $entrega = Entrega::create($request->validated());
@@ -77,6 +81,8 @@ class EntregaController extends Controller
             $arrayInvima = $request->get('arrayinvima');
             $arrayLote = $request->get('arraylote');
             $arrayVencimiento = $request->get('arrayvencimiento');
+            $arrayMarca = $request->get('arraymarca');
+            $arrayPresentacion = $request->get('arraypresentacion');
             $totalCantidadEntregada = 0;
 
             foreach ($arrayInsumo as $key => $insumoId) {
@@ -85,6 +91,8 @@ class EntregaController extends Controller
                 $invima = $arrayInvima[$key];
                 $lote = $arrayLote[$key];
                 $vencimiento = $arrayVencimiento[$key];
+                $marca = $arrayMarca[$key];
+                $presentacion = $arrayPresentacion[$key];
 
                 $entrega->insumos()->attach([
                     $insumoId => [
@@ -92,6 +100,8 @@ class EntregaController extends Controller
                         'invima' => $invima,
                         'lote' => $lote,
                         'vencimiento' => $vencimiento,
+                        'id_marca' => $marca,
+                        'id_presentacion' => $presentacion,
                     ]
                 ]);
 
@@ -104,6 +114,8 @@ class EntregaController extends Controller
                     ->where('invima', $invima)
                     ->where('lote', $lote)
                     ->where('vencimiento', $vencimiento)
+                    ->where('id_marca', $marca)
+                    ->where('id_presentacion', $presentacion)
                     ->first();
 
                 if ($caracteristica) {
@@ -145,13 +157,15 @@ class EntregaController extends Controller
         $entrega = Entrega::with(['insumos' => function ($query) {
             $query->orderBy('nombre', 'asc'); // Ordenar por nombre
         }])->findOrFail($id);
-
+    
         $detalleEntrega = $entrega->insumos()->with(['caracteristicas' => function ($query) {
-            $query->select('insumo_id', 'invima', 'lote', 'vencimiento');
+            $query->select('insumo_id', 'invima', 'lote', 'vencimiento', 'id_marca', 'id_presentacion')
+                  ->with(['marca', 'presentacion']);
         }])->get();
-
+    
         return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega'));
     }
+    
 
     public function edit(string $id)
     {

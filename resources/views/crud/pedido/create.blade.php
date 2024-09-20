@@ -3,8 +3,15 @@
 @section('title', 'Realizar Pedido')
 
 @section('content_header')
+
     <div class="card-header text-center">
-        <h1 class="card-title">Realizar Pedido</h1>
+        @if ($esPedidoEspecial)
+            <div class="alert alert-primary">
+                <h5>Realizar Pedido Especial</h5>
+            </div>
+        @else
+            <h1 class="card-title">Realizar Pedido</h1>
+        @endif
     </div>
 @stop
 
@@ -26,6 +33,16 @@
                                 readonly>
                         </div>
                     </div>
+
+                    @if ($esPedidoEspecial)
+                        <div class="text-center">
+                            <h5>¿Estás Seguro de Realizar un Pedido Especial?</h5>
+                            <div class="text-center">
+                                <input type="checkbox" name="esPedidoEspecial" id="esPedidoEspecial" value="1"
+                                    required>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="row mb-2">
                         <div class="col-sm-12">
@@ -49,9 +66,9 @@
                         </div>
 
                         <div class="col-sm-12">
-                            <label for="observacion">Observacion:</label>
-                            <input type="text" id="observacion" name="observacion" class="form-control" required>
-                        </div>
+                            <label for="observacion">Observación:</label>
+                            <textarea id="observacion" name="observacion" class="form-control" rows="3" required></textarea>
+                        </div>                          
 
                     </div>
                     <div class="text-center">
@@ -131,10 +148,27 @@
 
         function confirmAndSubmit() {
             var tablaInsumos = $('#tabla-insumos tr').length;
+
+            // Verifica si es un pedido especial y si el checkbox está seleccionado
+            if ("{{ $esPedidoEspecial }}" && !$('#esPedidoEspecial').is(':checked')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Rellenar Campo Obligatorio Para Pedido Especial'
+                });
+                return; // Detener el envío del formulario
+            }
+
             if (tablaInsumos == 0) {
-                showModal('Debes agregar Insumos.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Debes agregar Insumos antes de realizar el pedido.'
+                });
                 return;
             }
+
+            // Si todo es correcto, mostrar la confirmación
             Swal.fire({
                 title: '¿Estás seguro?',
                 text: 'Deseas Realizar El Pedido.',

@@ -17,6 +17,33 @@
                 method="POST" class="row g-2">
                 @csrf
                 @method('PATCH')
+
+                <div class="form-group col-md-6">
+                    <label>Marca:</label>
+                    <select data-live-search="true" name="id_marca" id="id_marca"
+                        class="form-control selectpicker show-tick">
+                        @foreach ($marcas as $marca)
+                            <option value="{{ $marca->id }}"
+                                {{ isset($caracteristica->id_marca) && $caracteristica->id_marca == $marca->id ? 'selected' : '' }}>
+                                {{ $marca->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label>Presentación:</label>
+                    <select data-live-search="true" name="id_presentacion" id="id_presentacion"
+                        class="form-control selectpicker show-tick">
+                        @foreach ($presentaciones as $presentacione)
+                            <option value="{{ $presentacione->id }}"
+                                {{ isset($caracteristica->id_presentacion) && $caracteristica->id_presentacion == $presentacione->id ? 'selected' : '' }}>
+                                {{ $presentacione->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="form-group col-md-6">
                     <label for="cantidad">Cantidad:</label>
                     <input type="text" id="cantidad" name="cantidad" value="{{ $caracteristica->cantidad }}"

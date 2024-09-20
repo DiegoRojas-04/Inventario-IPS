@@ -11,7 +11,9 @@ use App\Models\Marca;
 use App\Models\Presentacione;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -26,7 +28,7 @@ class InsumoController extends Controller
   public function index(Request $request)
   {
     // Crear la consulta base con relaciones
-    $query = Insumo::with(['caracteristicas', 'marca', 'presentacione'])
+    $query = Insumo::with(['caracteristicas', 'marca', 'presentacion'])
       ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por nombre de A a Z
       ->orderBy('estado', 'desc'); // Ordenar por estado
 
@@ -50,9 +52,9 @@ class InsumoController extends Controller
     $insumos = $query->get();
 
     // Definir el tamaño de la página y la página actual
-    $pageSize = (int) $request->input('page_size', 20);
+    $pageSize = (int) $request->input('page_size', 50);
     if ($pageSize <= 0) {
-      $pageSize = 20; // Asegúrate de que pageSize nunca sea 0
+      $pageSize = 50; // Asegúrate de que pageSize nunca sea 0
     }
 
     $currentPage = LengthAwarePaginator::resolveCurrentPage();
@@ -102,7 +104,7 @@ class InsumoController extends Controller
     ]);
   }
 
-  
+
   /**
    * Show the form for creating a new resource.
    */
@@ -186,8 +188,8 @@ class InsumoController extends Controller
       'requiere_invima' => $request->filled('requiere_invima')  ? 1 : 0,
       'requiere_lote' => $request->filled('requiere_lote') ? 1 : 0,
       'id_categoria' => $request->input('id_categoria'),
-      'id_marca' => $request->input('id_marca'),
-      'id_presentacion' => $request->input('id_presentacion'),
+      // 'id_marca' => $request->input('id_marca'),
+      // 'id_presentacion' => $request->input('id_presentacion'),
       'riesgo' => $request->input('riesgo'),
       'vida_util' => $request->input('vida_util'),
       'codigo' => $request->input('codigo'),
@@ -219,5 +221,59 @@ class InsumoController extends Controller
     } else {
       return redirect('insumo')->with('Mensaje', 'insumo no encontrada');
     }
+  }
+
+  public function exportToPdf(Request $request)
+  {
+    // Obtener el id de la categoría seleccionada
+    $idCategoria = $request->input('id_categoria');
+    $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : 'Todas las categorías';
+
+    // Obtener insumos y sus características filtrando por categoría
+    $insumos = Insumo::with(['caracteristicas.marca', 'caracteristicas.presentacion'])
+      ->when($idCategoria, function ($query, $id) {
+        return $query->where('id_categoria', $id); // Asegúrate de que 'categoria_id' es la columna correcta
+      })
+      ->get();
+
+    // Crear el HTML para el PDF
+    $html = '<style>
+                    body { font-family: Arial, sans-serif; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th, td { border: 1px solid black; text-align: left; padding: 8px; }
+                    th { background-color: #f2f2f2; }
+                </style>';
+
+    // Agregar el título con el nombre de la categoría
+    $html .= '<h6 style="text-align: center;">Categoría: ' . $categoriaNombre . '</h6>';
+    $html .= '<table>';
+    $html .= '<tr><th>Nombre del Insumo</th><th>INVIMA</th><th>Lote</th><th>Fecha</th><th>Marca</th><th>Presentación</th><th>Cantidad</th></tr>';
+
+    // Iterar sobre cada insumo y sus características
+    foreach ($insumos as $insumo) {
+      foreach ($insumo->caracteristicas as $caracteristica) {
+        $html .= '<tr>';
+        $html .= '<td>' . $insumo->nombre . '</td>';
+        $html .= '<td>' . $caracteristica->invima . '</td>';
+        $html .= '<td>' . $caracteristica->lote . '</td>';
+        $html .= '<td>' . $caracteristica->vencimiento . '</td>';
+        $html .= '<td>' . ($caracteristica->marca ? $caracteristica->marca->nombre : 'Sin Marca') . '</td>'; // Cambiado aquí
+        $html .= '<td>' . ($caracteristica->presentacion ? $caracteristica->presentacion->nombre : 'Sin Presentación') . '</td>'; // Cambiado aquí
+        $html .= '<td>' . $caracteristica->cantidad . '</td>';
+        $html .= '</tr>';
+      }
+    }
+    $html .= '</table>';
+
+    // Configurar Dompdf para renderizar HTML
+    $dompdf = new Dompdf();
+    $dompdf->loadHtml($html);
+
+    // Renderizar PDF
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Descargar PDF
+    return $dompdf->stream('Insumos_y_Caracteristicas.pdf');
   }
 }

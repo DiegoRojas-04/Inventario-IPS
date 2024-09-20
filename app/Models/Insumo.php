@@ -23,22 +23,22 @@ class Insumo extends Model
         'id_marca',
         'id_presentacion',
         'estado'
-    ];  
+    ];
 
     public function ingresosDelMes($mes, $anno)
     {
         return $this->kardex()
-                    ->where('mes', $mes)
-                    ->where('anno', $anno)
-                    ->sum('ingresos');
+            ->where('mes', $mes)
+            ->where('anno', $anno)
+            ->sum('ingresos');
     }
 
     public function egresosDelMes($mes, $anno)
     {
         return $this->kardex()
-                    ->where('mes', $mes)
-                    ->where('anno', $anno)
-                    ->sum('egresos');
+            ->where('mes', $mes)
+            ->where('anno', $anno)
+            ->sum('egresos');
     }
 
     public function kardex()
@@ -54,30 +54,15 @@ class Insumo extends Model
     public function entregas()
     {
         return $this->belongsToMany(Entrega::class)
-                    ->withPivot('cantidad', 'invima', 'lote', 'vencimiento')
-                    ->withTimestamps();
-    }
-
-    public function marca()
-    {
-        return $this->belongsTo(Marca::class, 'id_marca');
-    }
-
-    public function presentacione()
-    {
-        return $this->belongsTo(Presentacione::class, 'id_presentacion');
+            ->withPivot('id_marca', 'id_presentacion', 'invima', 'lote', 'vencimiento', 'cantidad')
+            ->withTimestamps();
     }
 
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'id_categoria');
     }
-     
-    public function caracteristicas()
-    {
-        return $this->hasMany(InsumoCaracteristica::class, 'insumo_id');
-    }
-    
+
     // Definición de la relación entregaInsumo
     public function entregaInsumo()
     {
@@ -109,4 +94,21 @@ class Insumo extends Model
         }
         return '';
     }
+    // En tu modelo Insumo
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class, 'id_marca');
+    }
+
+    public function presentacion()
+    {
+        return $this->belongsTo(Presentacione::class, 'id_presentacion');
+    }
+    // Define la relación con las características (si es necesario)
+    public function caracteristicas()
+    {
+        return $this->hasMany(InsumoCaracteristica::class, 'insumo_id'); // Asegúrate de que 'insumo_id' sea el nombre correcto de la columna en la tabla 'insumo_caracteristicas'
+    }
+    
+
 }
