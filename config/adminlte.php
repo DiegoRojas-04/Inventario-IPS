@@ -342,14 +342,14 @@ return [
             'text' => 'Permisos',
             'url' => 'permiso',
             'icon' => 'far fa fa-cog',
-            'can' => 'a'
+            'can' => 'Administrador'
         ],
 
         [
             'text' => 'Roles',
             'url' => 'rol',
             'icon' => 'far fa fa-address-card',
-        'can' => 'a'
+        'can' => 'Administrador'
         ],
 
         ['header' => 'Gestion',
@@ -540,6 +540,28 @@ return [
             'url' => 'pedido/create',
             'icon' => 'far fa fa-comments',
             'can' => '',
+
+        ],
+
+        [
+            'text' => 'Consultorios',
+            'url' => 'consultorios',
+            'icon' => 'far fa fa-cart-arrow-down',
+            'can' => 'Consultorio',
+            'submenu' => [
+                [
+                    'text' => 'Consultorio',
+                    'url' => 'consultorios',
+                ],
+                [
+                    'text' => 'Elementos',
+                    'url' => 'elementos/create',
+                ],
+                [
+                    'text' => 'Lista',
+                    'url' => 'elementos',
+                ],
+            ],
 
         ],
 

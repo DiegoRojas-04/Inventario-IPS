@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ConsultorioController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ElementoController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InsumoCaracteristicaController;
@@ -85,3 +87,12 @@ Route::get('/get-stock', [EntregaController::class, 'getStock'])->name('get-stoc
 Route::get('/get-caracteristicas', [EntregaController::class, 'getCaracteristicas']);
 Route::get('/insumo/{insumoId}/caracteristica/{caracteristicaId}/edit', [InsumoCaracteristicaController::class, 'edit']);
 Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCaracteristicaController::class, 'update'])->name('caracteristica.update');
+
+Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCaracteristicaController::class, 'update'])->name('caracteristica.update');
+Route::resource('elementos', ElementoController::class);
+Route::resource('consultorios', ConsultorioController::class);
+Route::get('consultorios/{consultorioId}/elementos', [ElementoController::class, 'elementosPorConsultorio'])->name('consultorios.elementos');
+Route::patch('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.updateCantidad');
+Route::put('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.update.cantidad');
+Route::put('elementos/{id}/estado', [ElementoController::class, 'updateEstado'])->name('elementos.update.estado');
+Route::get('/usuario/{id}/asignar-rol', [UsuarioController::class, 'asignarRol'])->name('usuario.asignarRol');

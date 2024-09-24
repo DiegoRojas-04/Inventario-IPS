@@ -24,9 +24,15 @@
                             <div class="col-md-3">
                                 @foreach ($chunk as $permiso)
                                     <div class="form-check mb-3">
+                                        @php
+                                            $isAdminPermission = $permiso->name === 'Administrador'; // Verificar si el permiso es Administrador
+                                        @endphp
+
                                         <input type="checkbox" name="permissions[]" value="{{ $permiso->id }}"
                                             class="form-check-input" id="perm_{{ $permiso->id }}"
-                                            {{ $role->hasPermissionTo($permiso->name) ? 'checked' : '' }}>
+                                            {{ $role->hasPermissionTo($permiso->name) ? 'checked' : '' }}
+                                            {{ $isAdminPermission && $role->name === 'Administrador' ? 'disabled' : '' }}> <!-- Desactivar checkbox solo para el permiso Administrador -->
+
                                         <label class="form-check-label" for="perm_{{ $permiso->id }}">
                                             {{ $permiso->name }}
                                         </label>
@@ -36,14 +42,14 @@
                         @endforeach
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
             </form>
         </div>
     </div>
 @stop
 
 @section('css')
-    {{-- Add here extra stylesheets --}}
+    {{-- Agregar aquí hojas de estilo adicionales --}}
 @stop
 
 @section('js')

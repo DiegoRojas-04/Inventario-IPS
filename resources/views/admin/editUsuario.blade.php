@@ -33,7 +33,7 @@
 
                 <div class="form-group">
                     <label>Contraseña:</label>
-                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
+                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
                         placeholder="Contraseña">
                     @error('password')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
@@ -60,6 +60,24 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
+
+                <div class="form-group">
+                    <label>Lista de Roles</label>
+                    @if (!$isEditingOwnProfile) <!-- Solo mostrar si no es su propio perfil -->
+                        @foreach ($roles as $role)
+                            <div class="form-check mb-3">
+                                <input type="checkbox" name="roles[]" value="{{ $role->id }}" class="form-check-input"
+                                    id="perm_{{ $role->id }}" {{ $user->hasAnyRole($role->name) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="perm_{{ $role->id }}">
+                                    {{ $role->name }}
+                                </label>
+                            </div>
+                        @endforeach
+                    @else
+                        <p>No puedes cambiar tu propio rol.</p>
+                    @endif
+                </div>
+                         
 
                 <button type="submit" class="btn btn-primary">Actualizar Usuario</button>
             </form>
