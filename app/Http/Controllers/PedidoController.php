@@ -158,6 +158,8 @@ class PedidoController extends Controller
                     <th>Restante</th>
                     <th>Cantidad</th>
                     <th>Check</th>
+                    <th>Lote-Inv</th>
+
                 </tr>
             </thead>
             <tbody>';
@@ -170,6 +172,8 @@ class PedidoController extends Controller
                 <td>' . $insumo->pivot->restante . '</td>
                 <td class="cantidad">' . $insumo->pivot->cantidad . '</td>
                 <td></td>
+                <td></td>
+
             </tr>';
         }
 

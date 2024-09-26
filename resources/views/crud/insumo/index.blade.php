@@ -88,6 +88,7 @@
                             <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
                             <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
                             <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="70" {{ request('page_size') == 70 ? 'selected' : '' }}>50</option>
                         </select>
                     </div>
 
@@ -137,8 +138,8 @@
                 <thead class="thead-dark">
                     <tr class="text-center">
                         <th scope="col">Nombre</th>
-                        <th scope="col">Vida Util</th>
-                        <th scope="col">Clasif.Riesgo</th>
+                        <th scope="col" id="header-vida-util">Vida Util</th>
+                        <th scope="col" id="header-clasif-riesgo">Clasif.Riesgo</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -214,8 +215,8 @@
                             <table class="table">
                                 <thead class="thead-dark">
                                     <tr class="text-center">
-                                        <th>Marca</th>
-                                        <th>Presentacion</th>
+                                        <th scope="col" id="header-forma-farmaceutica">Marca</th>
+                                        <th  scope="col" id="header-unidad-medida">Presentacion</th>
                                         <th>Invima</th>
                                         <th>Lote</th>
                                         <th>Vencimiento</th>
@@ -291,4 +292,41 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/insumos.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoriaSelect = document.getElementById('id_categoria');
+    
+            // Función para actualizar los encabezados según el valor del select
+            function updateHeaders() {
+                const selectedValue = categoriaSelect.value;
+    
+                // Obtenemos los elementos de los encabezados
+                const headerVidaUtil = document.getElementById('header-vida-util');
+                const headerClasifRiesgo = document.getElementById('header-clasif-riesgo');
+                const headerFormaFarmaceutica = document.getElementById('header-forma-farmaceutica');
+                const headerUnidadMedida = document.getElementById('header-unidad-medida');
+    
+                // Verificamos si el valor seleccionado es 11 (Medicamentos)
+                if (selectedValue == '11') {
+                    headerVidaUtil.innerText = 'Código CUMS';
+                    headerClasifRiesgo.innerText = 'Concentración';
+                    headerFormaFarmaceutica.innerText = 'Forma Farmaceutica';
+                    headerUnidadMedida.innerText = 'Unidad Medida';
+
+                } else {
+                    headerVidaUtil.innerText = 'Vida Util';
+                    headerClasifRiesgo.innerText = 'Clasif.Riesgo';
+                    headerFormaFarmaceutica.innerText = 'Marca';
+                    headerUnidadMedida.innerText = 'Presentacion';
+                }
+            }
+    
+            // Llama a la función para actualizar los encabezados al cargar la página
+            updateHeaders();
+    
+            // Escucha el evento de cambio en el select
+            categoriaSelect.addEventListener('change', updateHeaders);
+        }); 
+    </script>
+    
 @stop

@@ -13,7 +13,7 @@ class ServicioController extends Controller
     public function index(Request $request)
     {
         $query = Servicio::query();
-        $servicios = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 10));
+        $servicios = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 15));
         return view('crud.servicio.index', compact('servicios'));
     }
 

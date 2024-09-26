@@ -14,8 +14,7 @@ class ConsultorioController extends Controller
     {
         // Obtener los consultorios desde la base de datos, ordenados por estado y nombre
         $consultorios = Consultorio::orderBy('estado', 'desc')
-            ->orderBy('nombre', 'asc')
-            ->paginate($request->input('page_size', 10)); // Paginación
+            ->paginate($request->input('page_size', 15)); // Paginación
 
         // Pasar los consultorios a la vista
         return view('crud.consultorio.index', compact('consultorios'));
@@ -34,10 +33,6 @@ class ConsultorioController extends Controller
         return redirect()->route('consultorios.index')->with('Mensaje', 'Consultorio Agregado');
     }
     
-    
-
-
-
 
     // Muestra los detalles de un consultorio específico
     public function show($id)

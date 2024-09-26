@@ -74,20 +74,21 @@
                 <tbody class="text-center">
                     @foreach ($users as $user)
                         <tr>
-                            <td>{{ $user->id }}</td>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
                             <td>
+
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url('/usuario/' . $user->id . '/edit') }}" class="btn btn-warning"><i
+                                            class="fa fa-edit"></i></a>
+                                </div>
                                 <div class="btn-group" role="group">
                                     <button type="submit" class="btn btn-danger" data-toggle="modal"
                                         data-target="#eliminar-{{ $user->id }}"><i class="fa fa-trash"
                                             aria-hidden="true"></i></button>
                                 </div>
 
-                                <div class="btn-group" role="group">
-                                    <a href="{{ url('/usuario/' . $user->id . '/edit') }}" class="btn btn-warning"><i
-                                            class="fa fa-edit"></i></a>
-                                </div>
                             </td>
                         </tr>
                     @endforeach

@@ -73,12 +73,16 @@
             <div class="row g-3">
 
                 <div class="col-md-1">
-                    <select class="form-control " id="pageSize">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
+
+                    <form id="filterForm" method="GET" action="{{ url('/proveedor') }}">
+                        <select class="form-control" id="pageSize" name="page_size" onchange="this.form.submit()">
+                            <option value="5" {{ request('page_size') == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ request('page_size') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
+                            <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
+                        </select>
+                    </form>
+
                 </div>
 
 

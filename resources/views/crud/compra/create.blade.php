@@ -33,7 +33,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Marca:</label>
+                                <label id="label-marca">Marca:</label>
                                 <select data-size="10" title="Seleccionar Marca..." data-live-search="true"
                                     name="arraycaracteristicas[0][id_marca]" id="id_marca"
                                     class="form-control selectpicker show-tick">
@@ -44,7 +44,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>Presentación:</label>
+                                <label id="label-presentacion">Presentación:</label>
                                 <select data-size="10" title="Seleccionar Presentación..." data-live-search="true"
                                     name="arraycaracteristicas[0][id_presentacion]" id="id_presentacion"
                                     class="form-control selectpicker show-tick">
@@ -430,5 +430,20 @@
             }
         }
     </script>
+
+<script>
+    document.getElementById('nombre').addEventListener('change', function() {
+       var categoriaId = this.value; // Obtiene el id de la categoría seleccionada
+
+       if (categoriaId == 11) { // Si la categoría es Medicamentos (id 11)
+           document.getElementById('label-marca').textContent = 'Forma Farmaceutica:';
+           document.getElementById('label-presentacion').textContent = 'Unidad de Medida:';
+       } else {
+           // Restaura los títulos originales si no es la categoría Medicamentos
+           document.getElementById('label-marca').textContent = 'Marca:';
+           document.getElementById('label-presentacion').textContent = 'Presentacion:';
+       }
+   });
+</script>
 
 @stop

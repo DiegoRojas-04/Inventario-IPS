@@ -99,7 +99,8 @@ class Insumo extends Model
     {
         return $this->belongsTo(Marca::class, 'id_marca');
     }
-
+    
+    // Relación con Presentacion
     public function presentacion()
     {
         return $this->belongsTo(Presentacione::class, 'id_presentacion');

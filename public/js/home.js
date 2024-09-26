@@ -2,7 +2,7 @@
 function updateCountdown() {
     var now = new Date();
     var currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-    var allowOrder = (currentDay === 3 && now.getHours() >= 6 && now.getHours() <
+    var allowOrder = (currentDay === 4 && now.getHours() >= 6 && now.getHours() <
         18); // Permitir pedidos solo los jueves entre las 6 AM y las 4 PM
 
     if (allowOrder) {

@@ -43,24 +43,24 @@
         </script>
     @endif
     @if (session('Mensaje3'))
-    <script>
-        const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-            }
-        });
-        Toast.fire({
-            icon: "success",
-            title: "Marca Restaurada"
-        });
-    </script>
-@endif
+        <script>
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: "Marca Restaurada"
+            });
+        </script>
+    @endif
     <div class="form-row">
         <div class="col-sm-12 d-flex align-items-center justify-content-between">
             <a href="{{ url('/marca/create') }}" class="text-decoration-none text-white">
@@ -76,21 +76,21 @@
             <div class="row g-3">
 
                 <div class="col-md-1">
-                    <select class="form-control " id="pageSize">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
-                </div>
 
+                    <form id="filterForm" method="GET" action="{{ url('/marca') }}">
+                        <select class="form-control" id="pageSize" name="page_size" onchange="this.form.submit()">
+                            <option value="5" {{ request('page_size') == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ request('page_size') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
+                            <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
+                        </select>
+                    </form>
+
+                </div>
 
                 <div class="col-md-6">
 
                 </div>
-
-
-
 
                 <div class="col-md-5 input-group">
                     <input type="text" class="form-control" placeholder="Buscar" id="search">
@@ -191,7 +191,5 @@
 @stop
 
 @section('js')
-    <script>
-        console.log("Hi, I'm using the Laravel-AdminLTE package!");
-    </script>
+
 @stop

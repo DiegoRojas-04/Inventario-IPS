@@ -209,7 +209,7 @@ class CompraController extends Controller
 
     public function exportToPdf($id)
     {
-        $compra = Compra::with('insumos.marca', 'insumos.presentacione', 'proveedor', 'comprobante')->findOrFail($id);
+        $compra = Compra::with('proveedor', 'comprobante')->findOrFail($id);
 
         // Obtener los insumos con las características específicas de esa compra
         $insumosConCaracteristicas = $compra->insumos->map(function ($insumo) use ($compra) {
@@ -225,48 +225,65 @@ class CompraController extends Controller
 
         // HTML para el contenido del PDF
         $html = '
-   <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-    </style>
-    <h1 style="text-align: center;">Detalle de Compra</h1>
-    <p><strong>Proveedor:</strong> ' . $compra->proveedor->nombre . '</p>
-    <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('d-m-Y') . '</p>
-    <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('H:i:s') . '</p>
-    <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; text-align: center;">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Marca</th>
-                <th>Presentación</th>
-                <th>Invima</th>
-                <th>Lote</th>
-                <th>Vencimiento</th>
-                <th>Cantidad</th>
-            </tr>
-        </thead>
-        <tbody>';
-
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 5px;
+                text-align: center;
+                font-size: 11px; /* Reduce the font size */
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            td {
+                word-wrap: break-word;
+            }
+        </style>
+        <h1 style="text-align: center;">Detalle de Compra</h1>
+        <p><strong>Proveedor:</strong> ' . $compra->proveedor->nombre . '</p>
+        <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('d-m-Y') . '</p>
+        <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($compra->fecha_hora)->format('H:i:s') . '</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Producto</th>
+                    <th style="width: 15%;">Marca</th>
+                    <th style="width: 10%;">Presentación</th>
+                    <th style="width: 15%;">Invima</th>
+                    <th style="width: 10%;">Lote</th>
+                    <th style="width: 10%;">Vencimiento</th>
+                    <th style="width: 10%;">Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>';
+            
         // Agregar los insumos y cantidades a la tabla
         foreach ($insumosConCaracteristicas as $insumo) {
             foreach ($insumo->caracteristicasCompra as $caracteristica) {
                 $html .= '
-            <tr>
-                <td>' . $insumo->nombre . '</td>
-                <td>' . $insumo->marca->nombre . '</td>
-                <td>' . $insumo->presentacione->nombre . '</td>
-                <td>' . $caracteristica->invima . '</td>
-                <td>' . $caracteristica->lote . '</td>
-                <td>' . \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') . '</td>
-                <td>' . $caracteristica->cantidad_compra . '</td>
-            </tr>';
+                <tr>
+                    <td>' . $insumo->nombre . '</td>
+                    <td>' . ($caracteristica->marca ? $caracteristica->marca->nombre : 'Sin Marca') . '</td>
+                    <td>' . ($caracteristica->presentacion ? $caracteristica->presentacion->nombre : 'Sin Presentación') . '</td>
+                    <td>' . $caracteristica->invima . '</td>
+                    <td>' . $caracteristica->lote . '</td>
+                    <td>' . \Carbon\Carbon::parse($caracteristica->vencimiento)->format('d-m-Y') . '</td>
+                    <td>' . $caracteristica->cantidad_compra . '</td>
+                </tr>';
             }
         }
-
+        
         $html .= '
-        </tbody>
-    </table>';
+            </tbody>
+        </table>';
 
         // Configurar el PDF
         $dompdf = new Dompdf();

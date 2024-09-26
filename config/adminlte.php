@@ -353,7 +353,7 @@ return [
         ],
 
         ['header' => 'Gestion',
-        // 'can' => 'Administrador',
+        'can' => 'Administrador',
     ],
 
         [
@@ -546,7 +546,7 @@ return [
         [
             'text' => 'Consultorios',
             'url' => 'consultorios',
-            'icon' => 'far fa fa-cart-arrow-down',
+            'icon' => 'far fa fa-cube',
             'can' => 'Consultorio',
             'submenu' => [
                 [
@@ -560,6 +560,24 @@ return [
                 [
                     'text' => 'Lista',
                     'url' => 'elementos',
+                ],
+            ],
+
+        ],
+
+        [
+            'text' => 'Activos',
+            'url' => 'activo',
+            'icon' => 'far fa fa-desktop',
+            'can' => 'Activos',
+            'submenu' => [
+                [
+                    'text' => 'Crear Activo',
+                    'url' => 'activo/create',
+                ],
+                [
+                    'text' => 'Lisa de Activos',
+                    'url' => 'activo',
                 ],
             ],
 

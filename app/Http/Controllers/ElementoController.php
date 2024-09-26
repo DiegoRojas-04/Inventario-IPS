@@ -19,31 +19,35 @@ class ElementoController extends Controller
     }
     // Muestra la lista de elementos
 
-  public function index(Request $request)
-{
-    $consultorios = Consultorio::all(); // Obtener todos los consultorios
-    $elementos = []; // Inicializar como vacío si no se ha seleccionado
-    $todosLosElementos = Elemento::all(); // Obtener todos los elementos
+    public function index(Request $request)
+    {
+        $consultorios = Consultorio::all(); // Obtener todos los consultorios
+        $elementos = []; // Inicializar como vacío si no se ha seleccionado
+        $todosLosElementos = Elemento::orderBy('nombre', 'asc')->get(); // Obtener todos los elementos ordenados alfabéticamente
 
-    // Si no hay un consultorio seleccionado, mostrar la suma total de todos los elementos
-    if (!$request->has('consultorio_id') || $request->consultorio_id === '') {
-        $elementos = Elemento::with('consultorios')
-            ->get()
-            ->map(function ($elemento) {
-                // Sumar la cantidad de cada elemento en todos los consultorios
-                $cantidadTotal = $elemento->consultorios->sum('pivot.cantidad');
-                return [
-                    'nombre' => $elemento->nombre,
-                    'cantidad_total' => $cantidadTotal,
-                ];
-            });
-    } elseif ($request->has('consultorio_id')) {
-        $consultorio = Consultorio::with('elementos')->find($request->consultorio_id);
-        $elementos = $consultorio->elementos; // Obtener los elementos del consultorio seleccionado
+        // Si no hay un consultorio seleccionado, mostrar la suma total de todos los elementos
+        if (!$request->has('consultorio_id') || $request->consultorio_id === '') {
+            $elementos = Elemento::with('consultorios')
+                ->orderBy('nombre', 'asc') // Ordenar elementos por nombre
+                ->get()
+                ->map(function ($elemento) {
+                    // Sumar la cantidad de cada elemento en todos los consultorios
+                    $cantidadTotal = $elemento->consultorios->sum('pivot.cantidad');
+                    return [
+                        'nombre' => $elemento->nombre,
+                        'cantidad_total' => $cantidadTotal,
+                    ];
+                });
+        } elseif ($request->has('consultorio_id')) {
+            $consultorio = Consultorio::findOrFail($request->consultorio_id); // Obtener el consultorio
+            $elementos = $consultorio->elementos()
+                ->orderBy('nombre', 'asc') // Ordenar elementos del consultorio seleccionado por nombre
+                ->get(); // Obtener los elementos del consultorio seleccionado
+        }
+
+        return view('crud.elemento.index', compact('consultorios', 'elementos', 'todosLosElementos'));
     }
 
-    return view('crud.elemento.index', compact('consultorios', 'elementos', 'todosLosElementos'));
-}
 
 
     public function store(Request $request)
@@ -102,23 +106,29 @@ class ElementoController extends Controller
     {
         $elemento = Elemento::findOrFail($id);
 
+        // Validar los campos
+        $request->validate([
+            'consultorio_id' => 'required|exists:consultorios,id',
+            'cantidad' => 'required|integer|min:0',
+            'observacion' => 'nullable|string|max:255',
+        ]);
+
         // Obtener el consultorio_id si está presente
         $consultorioId = $request->input('consultorio_id');
 
-        // Actualizar la cantidad del elemento en el consultorio correspondiente
+        // Actualizar la cantidad y la observación del elemento en el consultorio correspondiente
         $elemento->consultorios()->updateExistingPivot($consultorioId, [
-            'cantidad' => $request->input('cantidad')
+            'cantidad' => $request->input('cantidad'),
+            'observacion' => $request->input('observacion'), // Actualizar también la observación
         ]);
 
         // Condicional para redirigir según si hay o no un consultorio seleccionado
         if ($consultorioId) {
-            // Si hay un consultorio_id, redirigir con el filtro activo
             return redirect()->route('elementos.index', ['consultorio_id' => $consultorioId])
-                ->with('Success', 'Cantidad actualizada');
+                ->with('Success', 'Actualizado Correctamente');
         } else {
-            // Si no hay consultorio_id, redirigir a la vista general
             return redirect()->route('elementos.index')
-                ->with('Success', 'Cantidad actualizada');
+                ->with('Success', 'Actualizado Correctamente');
         }
     }
 

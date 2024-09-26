@@ -16,7 +16,7 @@ class CheckTimeMiddleware
 
         // Verificar si es el día y la hora permitidos para realizar pedidos normales
         $currentDay = now()->dayOfWeek; // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-        $allowOrder = ($currentDay === 3 && now()->hour >= 6 && now()->hour < 18); // Jueves de 6 AM a 4 PM
+        $allowOrder = ($currentDay === 4 && now()->hour >= 6 && now()->hour < 18); // Jueves de 6 AM a 4 PM
 
         if (!$allowOrder) {
             return redirect()->route('home')->with('error', 'No es momento de realizar pedidos.');

@@ -10,7 +10,8 @@
     <form action="{{ route('elementos.index') }}" method="GET" class="mb-3">
         <div class="form-row align-items-center">
             <div class="col-auto">
-                <select class="form-control" id="consultorio_id" name="consultorio_id">
+                <select data-size="10" title="Seleccionar Consultorio..." data-live-search="true"
+                class="form-control selectpicker show-tick"  id="consultorio_id" name="consultorio_id">
                     @foreach ($consultorios as $consultorio)
                         <option value="{{ $consultorio->id }}"
                             {{ request('consultorio_id') == $consultorio->id ? 'selected' : '' }}>
@@ -36,6 +37,7 @@
                     <tr class="text-center">
                         <th>Nombre</th>
                         <th>Cantidad</th>
+                        <th>Observación</th>
                         <th>Actualizar</th>
                         <th>Estado</th>
                     </tr>
@@ -64,6 +66,12 @@
                                         </button>
                                     </div>
                             </td>
+                            <td>
+                                <input type="text" name="observacion" class="form-control"
+                                    value="{{ $elemento->pivot->observacion }}" placeholder="Escribe una observación">
+                            </td>
+                            
+
                             <td>
                                 <button type="submit" class="btn btn-primary btn-sm"
                                     style="margin-left: 5px;">Actualizar</button>
@@ -162,10 +170,16 @@
 </style>
 
 @section('css')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @stop
 
 @section('js')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
     <script>
         function aumentarCantidad(index) {
             var cantidadInput = document.getElementById('cantidad_' + index);

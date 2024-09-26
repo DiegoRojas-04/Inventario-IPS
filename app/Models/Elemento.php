@@ -14,7 +14,7 @@ class Elemento extends Model
     public function consultorios()
     {
         return $this->belongsToMany(Consultorio::class, 'consultorio_elemento')
-            ->withPivot('cantidad', 'estado');
+            ->withPivot('cantidad', 'estado', 'observacion');
     }
 
     

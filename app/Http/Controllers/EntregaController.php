@@ -30,10 +30,10 @@ class EntregaController extends Controller
         $insumo = Insumo::findOrFail($insumoId);
         // Obtener características con la marca y la presentación
         $caracteristicas = $insumo->caracteristicas()->with(['marca', 'presentacion'])->get();
-        
+
         return response()->json(['caracteristicas' => $caracteristicas]);
     }
-    
+
 
 
     public function index(Request $request)
@@ -157,15 +157,15 @@ class EntregaController extends Controller
         $entrega = Entrega::with(['insumos' => function ($query) {
             $query->orderBy('nombre', 'asc'); // Ordenar por nombre
         }])->findOrFail($id);
-    
+
         $detalleEntrega = $entrega->insumos()->with(['caracteristicas' => function ($query) {
             $query->select('insumo_id', 'invima', 'lote', 'vencimiento', 'id_marca', 'id_presentacion')
-                  ->with(['marca', 'presentacion']);
+                ->with(['marca', 'presentacion']);
         }])->get();
-    
+
         return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega'));
     }
-    
+
 
     public function edit(string $id)
     {
@@ -184,7 +184,7 @@ class EntregaController extends Controller
 
     public function exportToPdf($id)
     {
-        $entrega = Entrega::with('insumos.marca', 'insumos.presentacione', 'user', 'comprobante', 'servicio')->findOrFail($id);
+        $entrega = Entrega::with('user', 'comprobante', 'servicio')->findOrFail($id);
 
         // Ordenar los insumos por nombre
         $insumosOrdenados = $entrega->insumos->sortBy('nombre');
@@ -194,6 +194,23 @@ class EntregaController extends Controller
         <style>
             body {
                 font-family: Arial, sans-serif;
+                font-size: 12px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 5px;
+                text-align: center;
+                font-size: 11px; /* Reduce the font size */
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            td {
+                word-wrap: break-word;
             }
         </style>
         <h1 style="text-align: center;">Detalle de Entrega</h1>
@@ -201,15 +218,15 @@ class EntregaController extends Controller
         <p><strong>Fecha:</strong> ' . \Carbon\Carbon::parse($entrega->fecha_hora)->format('d-m-Y') . '</p>
         <p><strong>Hora:</strong> ' . \Carbon\Carbon::parse($entrega->fecha_hora)->format('H:i:s') . '</p>
         <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; text-align: center;">
-            <thead>
+             <thead>
                 <tr>
-                    <th>Producto</th>
-                    <th>Marca</th>
-                    <th>Presentacion</th>
-                    <th>Invima</th>
-                    <th>Lote</th>
-                    <th>Vencimiento</th>
-                    <th>Cantidad</th>
+                    <th style="width: 20%;">Producto</th>
+                    <th style="width: 15%;">Marca</th>
+                    <th style="width: 10%;">Presentación</th>
+                    <th style="width: 15%;">Invima</th>
+                    <th style="width: 10%;">Lote</th>
+                    <th style="width: 10%;">Vencimiento</th>
+                    <th style="width: 10%;">Cantidad</th>
                 </tr>
             </thead>
             <tbody>';
@@ -219,8 +236,8 @@ class EntregaController extends Controller
             $html .= '
             <tr>
                 <td>' . $insumo->nombre . '</td>
-                <td>' . $insumo->marca->nombre . '</td>
-                <td>' . $insumo->presentacione->nombre . '</td>
+                <td>' . ($insumo->marca ? $insumo->marca->nombre : 'Sin Marca') . '</td>
+                <td>' . ($insumo->presentacion ? $insumo->presentacion->nombre : 'Sin Presentación') . '</td>
                 <td>' . $insumo->pivot->invima . '</td>
                 <td>' . $insumo->pivot->lote . '</td>
                 <td>' . \Carbon\Carbon::parse($insumo->pivot->vencimiento)->format('d-m-Y') . '</td>
