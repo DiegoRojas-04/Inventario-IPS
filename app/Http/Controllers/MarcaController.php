@@ -36,7 +36,7 @@ class MarcaController extends Controller
     public function store(StoreMarcaRequest $request)
     {
       $datosMarca=request()->except('_token');
-      Marca::insert($datosMarca);
+      Marca::create($datosMarca);
       return redirect('marca/create')->with('Mensaje','Marca');  
 
     }

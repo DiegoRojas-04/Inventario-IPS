@@ -333,15 +333,17 @@
         function limpiarCampos() {
             let selectNombre = $('#nombre');
             let selectVariante = $('#variante');
+            let selectMarca = $('#id_marca');
+            let selectPresentacion = $('#id_presentacion');
 
             selectNombre.selectpicker('val', ''); // Limpiar select de nombre
             selectVariante.selectpicker('val', ''); // Limpiar select de variante
+            selectMarca.selectpicker('val', ''); // Limpiar select de nombre
+            selectPresentacion.selectpicker('val', ''); // Limpiar select de variante
             $('#stock').val('');
             $('#invima').val('');
             $('#lote').val('');
             $('#vencimiento').val('');
-            $('#id_marca').val('');
-            $('#id_presentacion').val('');
 
         }
 

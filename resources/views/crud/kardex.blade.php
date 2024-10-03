@@ -161,7 +161,7 @@
                                             <td>{{ $caracteristica->cantidad_compra }}</td>
                                             <td>{{ \Carbon\Carbon::parse($caracteristica->created_at)->format('d/m/Y') }}
                                             </td>
-
+                                              
                                         </tr>
                                     @endif
                                 @endforeach

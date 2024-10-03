@@ -70,20 +70,23 @@ class CompraController extends Controller
      */
     public function store(StoreCompraRequest $request)
     {
-        // dd($request);
         try {
             DB::beginTransaction();
 
+            // Crear la compra
             $compra = Compra::create($request->validated());
+
+            // Obtener los arrays de insumos, cantidades y características
             $arrayInsumo = $request->get('arrayidinsumo');
             $arrayCantidad = $request->get('arraycantidad');
             $arrayCaracteristicas = $request->get('arraycaracteristicas');
 
-            // Verificar que todos los arrays tengan la misma longitud
+            // Verificar que los arrays tengan la misma longitud
             if (count($arrayInsumo) !== count($arrayCantidad) || count($arrayInsumo) !== count($arrayCaracteristicas)) {
                 return redirect()->back()->withErrors(['error' => 'Los datos de entrada son inconsistentes.']);
             }
 
+            // Recorrer cada insumo y actualizar su información
             foreach ($arrayInsumo as $key => $insumoId) {
                 $insumo = Insumo::find($insumoId);
 
@@ -94,11 +97,9 @@ class CompraController extends Controller
                 if (!$tieneCaracteristicas) {
                     // Relación sin características
                     $compra->insumos()->attach($insumoId, ['cantidad' => $arrayCantidad[$key]]);
-                    $insumo->increment('stock', intval($arrayCantidad[$key]));
                 } else {
                     // Relación con características
                     $compra->insumos()->syncWithoutDetaching([$insumoId => ['cantidad' => $arrayCantidad[$key]]]);
-                    $insumo->increment('stock', intval($arrayCantidad[$key]));
 
                     $insumo->caracteristicas()->create([
                         'invima' => $arrayCaracteristicas[$key]['invima'] ?? null,
@@ -112,7 +113,10 @@ class CompraController extends Controller
                     ]);
                 }
 
-                // Agregar entrada al kardex
+                // Incrementar el stock del insumo
+                $insumo->increment('stock', intval($arrayCantidad[$key]));
+
+                // Agregar la entrada al Kardex
                 $this->agregarEntradaKardex($insumo->id, $request->input('fecha'), intval($arrayCantidad[$key]));
             }
 
@@ -124,7 +128,6 @@ class CompraController extends Controller
         }
     }
 
-
     /**
      * Agregar una entrada al Kardex para un insumo específico.
      */
@@ -134,27 +137,26 @@ class CompraController extends Controller
         $mesCompra = $fechaCompra->month;
         $annoCompra = $fechaCompra->year;
 
-        // Verificar si ya existe un registro para este mes
+        // Verificar si ya existe un registro para este mes y año
         $registroExistente = Kardex::where('insumo_id', $insumoId)
             ->where('mes', $mesCompra)
             ->where('anno', $annoCompra)
             ->first();
 
         if ($registroExistente) {
-            // Si existe, simplemente agrega una nueva entrada
+            // Si ya existe, sumamos los ingresos
             $registroExistente->ingresos += $cantidad;
             $registroExistente->saldo += $cantidad;
             $registroExistente->save();
         } else {
-            // Si no existe, crea un nuevo registro
+            // Si no existe, creamos un nuevo registro
             Kardex::create([
                 'insumo_id' => $insumoId,
                 'mes' => $mesCompra,
                 'anno' => $annoCompra,
-                'cantidad_inicial' => 0, // Debes ajustar esto según tu lógica
+                'cantidad_inicial' => 0, // Ajusta esto según la lógica de tu inventario
                 'ingresos' => $cantidad,
                 'saldo' => $cantidad,
-                // Otros campos del Kardex
             ]);
         }
     }
@@ -264,7 +266,7 @@ class CompraController extends Controller
                 </tr>
             </thead>
             <tbody>';
-            
+
         // Agregar los insumos y cantidades a la tabla
         foreach ($insumosConCaracteristicas as $insumo) {
             foreach ($insumo->caracteristicasCompra as $caracteristica) {
@@ -280,7 +282,7 @@ class CompraController extends Controller
                 </tr>';
             }
         }
-        
+
         $html .= '
             </tbody>
         </table>';

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ActivoRequest;
 use App\Http\Requests\StoreActivoRequest;
 use App\Models\Activo;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ActivoController extends Controller
 {
@@ -15,24 +18,24 @@ class ActivoController extends Controller
     public function index(Request $request)
     {
         $query = Activo::query();
-    
+
         // Filtrado por categoría
         if ($request->filled('categoria')) {
             $query->where('categoria', $request->categoria);
         }
-    
+
         // Búsqueda
         if ($request->filled('search')) {
             $query->where('nombre', 'like', '%' . $request->search . '%');
         }
-    
+
         // Paginación
         $pageSize = $request->input('pageSize', 15);
         $activos = $query->paginate($pageSize);
-    
+
         return view('crud.activo.index', compact('activos'));
     }
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -132,5 +135,74 @@ class ActivoController extends Controller
         $activo->save();
 
         return redirect()->back()->with($sessionMessage, $mensaje);
+    }
+
+    public function generarCodigoBarrasPDF($id)
+    {
+        $activo = Activo::findOrFail($id);
+        $codigo = $activo->codigo;
+
+        // Genera el código de barras
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = $generator->getBarcode($codigo, $generator::TYPE_CODE_128);
+
+        // Crea una nueva instancia de Dompdf
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true); // Permitir imágenes remotas
+        $dompdf = new Dompdf($options);
+
+        // Ruta del logo
+        $logoPath = public_path('images/logoCodigo.png');
+
+        // HTML del PDF
+        $html = '
+        <style>
+            .sticker {
+                width: 90mm;
+                height: 85mm;
+                text-align: center;
+                position: relative;
+            }
+            .logo {
+                text-align: center;
+                width: 100%;
+                height: auto; 
+                position: relative;
+                margin-bottom: 3mm;
+                font-size: 25px;
+
+            }
+            .barcode {
+                width: 100%;
+                height: auto;
+
+            }
+            .codigo {
+                font-size: 15px;
+                font-weight: bold;
+                letter-spacing: 5px;
+            }
+        </style>
+        <div class="sticker">
+            <p class="logo">MEDICARE IPS</p>
+            <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
+            <p class="codigo">' . $codigo . '</p>
+        </div>
+        ';
+
+        // Cargar el HTML
+        $dompdf->loadHtml($html);
+
+        // Configura el tamaño del papel A8 y la orientación a horizontal
+        $dompdf->setPaper('A7', 'landscape'); // Cambiar a landscape para orientación horizontal
+
+        // Renderiza el PDF
+        $dompdf->render();
+
+        // Envía el PDF al navegador para descargar
+        return $dompdf->stream('codigo_barras.pdf', [
+            'Attachment' => true // Esto hace que el PDF se descargue en lugar de mostrarse en el navegador
+        ]);
     }
 }

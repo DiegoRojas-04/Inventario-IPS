@@ -127,7 +127,7 @@ class InsumoController extends Controller
   {
     // Lógica para crear un nuevo insumo
     $datosInsumo = request()->except('_token');
-    Insumo::insert($datosInsumo);
+    Insumo::create($datosInsumo);
 
     // Obtener el ID del nuevo insumo creado
     $nuevoInsumoId = Insumo::latest()->first()->id;

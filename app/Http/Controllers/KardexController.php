@@ -25,8 +25,8 @@ class KardexController extends Controller
     public function index(Request $request)
     {
         // Obtener el mes y el año seleccionados en el formulario
-        $selectedMonth = $request->input('mes', date('n'));
-        $selectedYear = $request->input('anno', date('Y'));
+        $selectedMonth = $request->input('mes', date('n')); // Mes actual por defecto
+        $selectedYear = $request->input('anno', date('Y')); // Año actual por defecto
 
         // Obtener todas las categorías
         $categorias = Categoria::all();
@@ -48,10 +48,12 @@ class KardexController extends Controller
 
         // Calcular los datos del Kardex para cada insumo
         $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
-            $insumo->cantidad_inicial_mes = $this->calcularCantidadInicialMes($insumo, $selectedMonth, $selectedYear);
-            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
-            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
-            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
+            // $insumo->cantidad_inicial_mes = $this->calcularCantidadInicialMes($insumo, $selectedMonth, $selectedYear);
+            $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
+            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear); // Método que calcula los ingresos para el mes
+            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear); // Método que calcula los egresos para el mes
+            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes; // Cálculo del saldo
+
             return $insumo;
         });
 
@@ -61,18 +63,45 @@ class KardexController extends Controller
 
 
 
-    private function calcularCantidadInicialMes($insumo, $mes, $anno)
-    {
-        // Obtener el mes y año anterior
-        $fecha = Carbon::createFromDate($anno, $mes, 1);
-        $fechaAnterior = $fecha->subMonth();
-        $mesAnterior = $fechaAnterior->month;
-        $annoAnterior = $fechaAnterior->year;
+    // private function calcularCantidadInicialMes($insumo, $mes, $anno)
+    // {
+    //     // Obtener el mes y año anterior
+    //     $fecha = Carbon::createFromDate($anno, $mes, 1);
+    //     $fechaAnterior = $fecha->subMonth();
+    //     $mesAnterior = $fechaAnterior->month;
+    //     $annoAnterior = $fechaAnterior->year;
 
-        // Calcular el saldo final del mes anterior como la cantidad inicial del mes actual
-        $kardexAnterior = $insumo->kardex()->where('mes', $mesAnterior)->where('anno', $annoAnterior)->first();
-        return $kardexAnterior ? $kardexAnterior->saldo : 0;
-    }
+    //     // Calcular el saldo final del mes anterior como la cantidad inicial del mes actual
+    //     $kardexAnterior = $insumo->kardex()->where('mes', $mesAnterior)->where('anno', $annoAnterior)->first();
+    //     return $kardexAnterior ? $kardexAnterior->saldo : 0;
+    // }
+
+    // public function cambiarMes($nuevoMes, $nuevoAno)
+    // {
+    //     // Obtener todos los insumos
+    //     $insumos = Insumo::all();
+
+    //     foreach ($insumos as $insumo) {
+    //         // Calcular la cantidad inicial del nuevo mes
+    //         $cantidadInicial = $this->calcularCantidadInicialMes($insumo, $nuevoMes, $nuevoAno);
+
+    //         // Verificar si ya existe un registro para el nuevo mes
+    //         $kardexExistente = $insumo->kardex()->where('mes', $nuevoMes)->where('anno', $nuevoAno)->first();
+
+    //         if (!$kardexExistente) {
+    //             // Crear un nuevo registro en el kardex para el nuevo mes
+    //             Kardex::create([
+    //                 'insumo_id' => $insumo->id,
+    //                 'mes' => $nuevoMes,
+    //                 'anno' => $nuevoAno,
+    //                 'cantidad_inicial' => $cantidadInicial,
+    //                 'ingresos' => 0,  // Inicializa ingresos a 0 o lo que corresponda
+    //                 'egresos' => 0,   // Inicializa egresos a 0 o lo que corresponda
+    //                 'saldo' => $cantidadInicial, // El saldo inicial es igual a la cantidad inicial
+    //             ]);
+    //         }
+    //     }
+    // }
 
     public function ObtenerDatosParaExportar($request)
     {
@@ -89,10 +118,10 @@ class KardexController extends Controller
         $insumos = $query->get();
 
         $insumos->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
-            $insumo->cantidad_inicial_mes = $this->calcularCantidadInicialMes($insumo, $selectedMonth, $selectedYear);
-            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
-            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
-            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
+            $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
+            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear); // Método que calcula los ingresos para el mes
+            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear); // Método que calcula los egresos para el mes
+            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes; // Cálculo del saldo
             return $insumo;
         });
 
@@ -289,12 +318,12 @@ class KardexController extends Controller
             $saldoFinal = $item->saldo_final_mes;
             $saldo = $cantidadInicioMes + $ingresos;
             $cantidadPedir = $saldo - $saldoFinal;
-
+            $presentacion = $item->presentacion ? $item->presentacion->nombre : 'Sin presentación';
             // Solo añadir fila si cantidad a pedir es mayor que 0
             if ($cantidadPedir > 0) {
                 $html .= '<tr>';
                 $html .= '<td>' . $item->nombre . '</td>';
-                $html .= '<td>' . '</td>'; // Agrega aquí la presentación si está disponible
+                $html .= '<td>' . $presentacion . '</td>'; // Aquí se muestra la presentación
                 $html .= '<td class="cantidad">' . round($cantidadPedir) . '</td>';
                 $html .= '</tr>';
             }

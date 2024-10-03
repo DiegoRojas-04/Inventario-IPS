@@ -547,7 +547,7 @@ return [
             'text' => 'Consultorios',
             'url' => 'consultorios',
             'icon' => 'far fa fa-cube',
-            'can' => 'Consultorio',
+            'can' => 'Consultorios',
             'submenu' => [
                 [
                     'text' => 'Consultorio',

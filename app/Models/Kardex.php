@@ -9,6 +9,8 @@ class Kardex extends Model
 {
     use HasFactory;
 
+    protected $table = 'kardexes';
+
     protected $fillable = [
         'insumo_id',
         'mes',

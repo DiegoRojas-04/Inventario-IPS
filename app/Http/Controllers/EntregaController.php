@@ -94,6 +94,7 @@ class EntregaController extends Controller
                 $marca = $arrayMarca[$key];
                 $presentacion = $arrayPresentacion[$key];
 
+                // Asociar insumo a la entrega con los detalles adicionales
                 $entrega->insumos()->attach([
                     $insumoId => [
                         'cantidad' => $cantidad,
@@ -105,10 +106,12 @@ class EntregaController extends Controller
                     ]
                 ]);
 
+                // Actualizar stock del insumo
                 $insumo = Insumo::find($insumoId);
-                $insumo->stock -= intval($cantidad);
+                $insumo->stock -= intval($cantidad); // Actualizar stock
                 $insumo->save();
 
+                // Actualizar características de insumo
                 $caracteristica = DB::table('insumo_caracteristicas')
                     ->where('insumo_id', $insumoId)
                     ->where('invima', $invima)
@@ -121,35 +124,41 @@ class EntregaController extends Controller
                 if ($caracteristica) {
                     DB::table('insumo_caracteristicas')
                         ->where('id', $caracteristica->id)
-                        ->decrement('cantidad', intval($cantidad));
+                        ->decrement('cantidad', intval($cantidad)); // Actualizar cantidad de la variante
                 }
 
+                // Obtener la fecha de entrega
                 $fechaEntrega = Carbon::createFromFormat('Y-m-d H:i:s', $entrega->fecha_hora);
                 $mesEntrega = $fechaEntrega->month;
                 $annoEntrega = $fechaEntrega->year;
 
+                // Buscar o crear un nuevo registro en el Kardex para el insumo, mes y año correspondientes
                 $kardex = Kardex::firstOrNew([
                     'insumo_id' => $insumoId,
                     'mes' => $mesEntrega,
                     'anno' => $annoEntrega
                 ]);
 
+                // Sumar el nuevo egreso al egreso existente
                 $kardex->egresos += intval($cantidad);
+                // Restar la cantidad al saldo
                 $kardex->saldo -= intval($cantidad);
-                $kardex->save();
+                $kardex->save(); // Guardar el Kardex actualizado
 
+                // Acumular la cantidad total entregada
                 $totalCantidadEntregada += $cantidad;
             }
 
-            DB::commit();
+            DB::commit(); // Confirmar la transacción
         } catch (Exception $e) {
             Log::error('Ocurrió un error al procesar la solicitud: ' . $e->getMessage());
-            DB::rollBack();
+            DB::rollBack(); // Revertir la transacción en caso de error
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al procesar la solicitud.']);
         }
 
         return redirect('entrega')->with('Mensaje', 'Entrega registrada con éxito.');
     }
+
 
     public function show($id)
     {

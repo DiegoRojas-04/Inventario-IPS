@@ -88,7 +88,7 @@
                             <option value="20" {{ request('page_size') == 20 ? 'selected' : '' }}>20</option>
                             <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
                             <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="70" {{ request('page_size') == 70 ? 'selected' : '' }}>50</option>
+                            <option value="70" {{ request('page_size') == 70 ? 'selected' : '' }}>70</option>
                         </select>
                     </div>
 
@@ -145,7 +145,7 @@
                     </tr>
                 </thead>
                 <tbody class="text-center">
-                    @foreach ($insumos as $insumo)
+                    @foreach ($insumos as $insumo) 
                         <tr class="{{ $insumo->estado == 0 ? 'table-eliminado' : $insumo->alertClass ?? '' }}">
                             <td>{{ $insumo->nombre }}</td>
                             {{-- <td>{{ $insumo->marca->nombre }}</td>  --}}

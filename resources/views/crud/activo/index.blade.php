@@ -214,6 +214,8 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
+                                    <a href="{{ route('activo.codigoBarras.pdf', $activo->id) }}" class="btn btn-primary">Descargar Código de Barras en PDF</a>
+
                                     <form action="{{ route('elementos.update.observacion', $activo->id) }}"
                                         method="POST">
                                         @csrf

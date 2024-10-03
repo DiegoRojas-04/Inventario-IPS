@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivoController;
+use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConsultorioController;
@@ -100,3 +101,4 @@ Route::put('elementos/{id}/estado', [ElementoController::class, 'updateEstado'])
 Route::get('/usuario/{id}/asignar-rol', [UsuarioController::class, 'asignarRol'])->name('usuario.asignarRol');
 Route::patch('/activo/{id}/update-estado', [ActivoController::class, 'updateEstado']);
 Route::put('/elementos/{id}/observacion', [ActivoController::class, 'updateObservacion'])->name('elementos.update.observacion');
+Route::get('/activo/{id}/codigo-barras/pdf', [ActivoController::class, 'generarCodigoBarrasPDF'])->name('activo.codigoBarras.pdf');

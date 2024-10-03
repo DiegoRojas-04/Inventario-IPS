@@ -35,7 +35,7 @@ class PresentacionController extends Controller
     public function store(StorePresentacioneRequest $request)
     {
         $datosPresentacion=request()->except('_token');
-        Presentacione::insert($datosPresentacion);
+        Presentacione::create($datosPresentacion);
         return redirect('presentacion/create')->with('Mensaje','Presentacion');  
     }
 
