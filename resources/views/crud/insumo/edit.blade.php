@@ -102,7 +102,7 @@
 
                 <div class="col-md-4">
                     <label>Codigo:</label>
-                    <input type="text" name="codigo"  value="{{ old('codigo', $insumo->codigo)}}"
+                    <input type="text" name="codigo"  value="{{ old('codigo', $insumo->codigo)}}" readonly 
                         class="form-control  @error('codigo') is-invalid @enderror">
                     @error('codigo')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>

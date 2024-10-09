@@ -59,4 +59,9 @@ class Compra extends Model
         
         return $numero;
     }
+
+    public function compraInsumos()
+    {
+        return $this->hasMany(CompraInsumo::class, 'compra_id', 'id');
+    }
 }

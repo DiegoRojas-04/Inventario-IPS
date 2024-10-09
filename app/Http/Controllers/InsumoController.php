@@ -100,7 +100,7 @@ class InsumoController extends Controller
 
     return view('crud.insumo.index', [
       'insumos' => $paginatedItems,
-      'categorias' => $categorias
+      'categorias' => $categorias,
     ]);
   }
 
@@ -123,31 +123,39 @@ class InsumoController extends Controller
   /**
    * Store a newly created resource in storage.
    */
+
   public function store(StoreInsumoRequest $request)
   {
-    // Lógica para crear un nuevo insumo
-    $datosInsumo = request()->except('_token');
-    Insumo::create($datosInsumo);
+    do {
+      $codigo = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+    } while (Insumo::where('codigo', $codigo)->exists()); // Verifica si el código ya existe
+
+    // Obtener todos los datos excepto el token y añadir el código generado
+    $datosInsumo = $request->except('_token');
+    $datosInsumo['codigo'] = $codigo; // Añadir el código generado
+
+    // Insertar el nuevo insumo en la base de datos
+    $nuevoInsumo = Insumo::create($datosInsumo);
 
     // Obtener el ID del nuevo insumo creado
-    $nuevoInsumoId = Insumo::latest()->first()->id;
+    $nuevoInsumoId = $nuevoInsumo->id;
 
     // Crear registros de Kardex para cada mes
-    $mesActual = Carbon::now()->month;
     $annoActual = Carbon::now()->year;
 
-    // Loop a través de los meses que deseas seguir
+    // Loop a través de los meses del año
     for ($mes = 1; $mes <= 12; $mes++) {
       Kardex::create([
         'insumo_id' => $nuevoInsumoId,
         'mes' => $mes,
         'anno' => $annoActual,
-        // Otros campos del Kardex
+        // Otros campos del Kardex, si los tienes
       ]);
     }
 
-    return redirect('insumo/create')->with('Mensaje', 'Insumo');
+    return redirect('insumo/create')->with('Mensaje', 'Insumo creado con éxito');
   }
+
 
 
   /**
@@ -275,5 +283,87 @@ class InsumoController extends Controller
 
     // Descargar PDF
     return $dompdf->stream('Insumos_y_Caracteristicas.pdf');
+  }
+
+  public function generarCodigoBarrasPDF($id)
+  {
+    // Encontrar el insumo por ID
+    $insumo = Insumo::findOrFail($id);
+    $codigo = $insumo->codigo; // Suponiendo que tienes un campo 'codigo' en la tabla 'insumos'
+    $nombreInsumo = $insumo->nombre; // Obtener el nombre del insumo
+    $nombreArchivo = 'codigo_barras_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $insumo->nombre) . '.pdf';
+    // Genera el código de barras
+    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+    $barcode = $generator->getBarcode($codigo, $generator::TYPE_CODE_128);
+
+    // Crea una nueva instancia de Dompdf
+    $options = new \Dompdf\Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isRemoteEnabled', true); // Permitir imágenes remotas
+    $options->set('isHtml5ParserEnabled', true); // Habilitar el analizador HTML5
+
+    // Configurar márgenes a 0
+    $options->set('marginTop', 0);
+    $options->set('marginBottom', 0);
+    $options->set('marginLeft', 0);
+    $options->set('marginRight', 0);
+
+    $dompdf = new \Dompdf\Dompdf($options);
+    // HTML del PDF
+    $html = '
+  <style>
+      .sticker {
+          width: 130mm;
+          height: 150mm;
+          display: flex;
+          justify-content: center;
+          text-align: center;
+          margin: 0;
+          padding: 0;
+      }
+      .logo {
+          text-align: center;
+          width: 100%;
+          font-size: 24px;
+          margin: 0;
+          padding: 0;
+          margin-bottom: 20px;
+          font-weight: bold; 
+      }
+      .barcode {
+          width: 100%;
+          height: 30%;
+          margin: 0;
+          padding: 0;
+      }
+      .codigo {
+          font-size: 32px;
+          font-weight: bold;
+          letter-spacing: 35px;
+          margin: 5px 0;
+          font-weight: bold; 
+      }
+  </style>
+
+  <div class="sticker">
+      <p class="logo">' . $nombreInsumo . '</p>
+      <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
+      <p class="codigo">' . $codigo . '</p>
+  </div>
+  ';
+
+    // Cargar el HTML
+    $dompdf->loadHtml($html);
+
+    // Configura el tamaño del papel y la orientación
+    $dompdf->setPaper('A6', 'landscape');
+
+    // Renderiza el PDF
+    $dompdf->render();
+
+    // Envía el PDF al navegador para descargar
+    return $dompdf->stream($nombreArchivo, [
+      'Attachment' => true
+    ]);
   }
 }

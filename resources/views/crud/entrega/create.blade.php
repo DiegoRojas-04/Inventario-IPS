@@ -317,7 +317,7 @@
                     $('#variante').selectpicker('val', '');
                 });
             });
-
+            
             // Función para agregar un insumo a la lista de detalles
             $('#btn_agregar').click(function() {
                 agregarInsumo();

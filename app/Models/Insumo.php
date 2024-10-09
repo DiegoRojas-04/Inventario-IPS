@@ -25,6 +25,12 @@ class Insumo extends Model
         'estado'
     ];
 
+    
+    public function setNombreAttribute($value)
+    {
+        $this->attributes['nombre'] = strtoupper($value);
+    }
+    
     public function ingresosDelMes($mes, $anno)
     {
         return $this->kardex()
@@ -47,28 +53,6 @@ class Insumo extends Model
             ->where('anno', $anno)
             ->sum('cantidad_inicial'); // Asegúrate de que 'cantidad_inicial' sea el nombre correcto del campo
     }
-
-    // public function calcularCantidadInicialMes($mes, $anno)
-    // {
-    //     // Obtener la última cantidad antes del mes actual
-    //     $kardexAnteriores = $this->kardex()
-    //         ->where(function ($query) use ($mes, $anno) {
-    //             // Filtrar por año y mes
-    //             $query->where('anno', $anno)
-    //                 ->where('mes', '<', $mes);
-    //         })
-    //         ->orderBy('anno', 'desc')
-    //         ->orderBy('mes', 'desc')
-    //         ->first();
-
-    //     // Si hay un registro anterior, devolver la cantidad
-    //     if ($kardexAnteriores) {
-    //         return $kardexAnteriores->cantidad_inicial; // Asegúrate de que este campo existe
-    //     }
-
-    //     // Si no hay registros anteriores, devolver 0 o el valor predeterminado
-    //     return 0;
-    // }
 
     public function kardex()
     {
@@ -138,5 +122,10 @@ class Insumo extends Model
     public function caracteristicas()
     {
         return $this->hasMany(InsumoCaracteristica::class, 'insumo_id'); // Asegúrate de que 'insumo_id' sea el nombre correcto de la columna en la tabla 'insumo_caracteristicas'
+    }
+
+    public function compraInsumos()
+    {
+        return $this->hasMany(CompraInsumo::class, 'insumo_id', 'id');
     }
 }

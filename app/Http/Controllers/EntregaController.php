@@ -46,7 +46,7 @@ class EntregaController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $entregas = $query->latest()->paginate(10);
+        $entregas = $query->latest()->paginate(20);
         return view('crud.entrega.index', compact('entregas'));
     }
 
@@ -69,9 +69,11 @@ class EntregaController extends Controller
         return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias', 'numeroComprobante', 'comprobanteEntrega'));
     }
 
+
+    // hacer que compare a cual le puede restar
+
     public function store(StoreEntregaRequest $request)
     {
-        // dd($request);
         try {
             DB::beginTransaction();
             $entrega = Entrega::create($request->validated());
@@ -111,20 +113,41 @@ class EntregaController extends Controller
                 $insumo->stock -= intval($cantidad); // Actualizar stock
                 $insumo->save();
 
-                // Actualizar características de insumo
-                $caracteristica = DB::table('insumo_caracteristicas')
+                // Obtener características del insumo
+                $caracteristicas = DB::table('insumo_caracteristicas')
                     ->where('insumo_id', $insumoId)
                     ->where('invima', $invima)
                     ->where('lote', $lote)
                     ->where('vencimiento', $vencimiento)
                     ->where('id_marca', $marca)
                     ->where('id_presentacion', $presentacion)
-                    ->first();
+                    ->get();
 
-                if ($caracteristica) {
-                    DB::table('insumo_caracteristicas')
-                        ->where('id', $caracteristica->id)
-                        ->decrement('cantidad', intval($cantidad)); // Actualizar cantidad de la variante
+                $cantidadRestante = intval($cantidad);
+
+                foreach ($caracteristicas as $caracteristica) {
+                    if ($cantidadRestante <= 0) {
+                        break; // Si ya se ha restado la cantidad total, salir del bucle
+                    }
+
+                    if ($caracteristica->cantidad >= $cantidadRestante) {
+                        // Si hay suficiente cantidad, simplemente resta y actualiza
+                        DB::table('insumo_caracteristicas')
+                            ->where('id', $caracteristica->id)
+                            ->decrement('cantidad', $cantidadRestante);
+                        $cantidadRestante = 0; // Ya se ha restado toda la cantidad
+                    } else {
+                        // Resta lo que haya y continua al siguiente
+                        $cantidadRestante -= $caracteristica->cantidad;
+                        DB::table('insumo_caracteristicas')
+                            ->where('id', $caracteristica->id)
+                            ->update(['cantidad' => 0]); // Dejar en 0
+                    }
+                }
+
+                // Si hay alguna cantidad que no se pudo restar, podrías manejarlo aquí, si es necesario
+                if ($cantidadRestante > 0) {
+                    // Manejar la cantidad restante (por ejemplo, mostrar un error o mensaje)
                 }
 
                 // Obtener la fecha de entrega

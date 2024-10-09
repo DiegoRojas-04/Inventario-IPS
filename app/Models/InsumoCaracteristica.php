@@ -32,13 +32,17 @@ class InsumoCaracteristica extends Model
     }
 
     public function marca()
-{
-    return $this->belongsTo(Marca::class, 'id_marca');
-}
+    {
+        return $this->belongsTo(Marca::class, 'id_marca');
+    }
 
-public function presentacion()
-{
-    return $this->belongsTo(Presentacione::class, 'id_presentacion');
-}
+    public function presentacion()
+    {
+        return $this->belongsTo(Presentacione::class, 'id_presentacion');
+    }
 
+    public function compras()
+    {
+        return $this->hasMany(Compra::class, 'id', 'compra_id'); // Aquí la clave foránea es 'compra_id' de la tabla insumo_caracteristica
+    }   
 }

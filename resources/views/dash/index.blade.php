@@ -128,9 +128,9 @@
         </div>
 
 
-        <div class="text-center col-lg-8 col-6">
+        {{-- <div class="text-center col-lg-8 col-6">
             <img src="{{ asset('images/muñeco.jpg') }}" alt="Logo">
-        </div>
+        </div> --}}
     </div>
 
     {{-- 

@@ -24,6 +24,7 @@ class StoreProveedorRequest extends FormRequest
         return [
             'nombre' => 'required | max:60 | unique:proveedores,nombre',
             'descripcion' => 'nullable | max:255',
+            'nit' => 'required | max:255',
             'telefono' => 'required | numeric',
             'email' => 'required',
             'direccion' => 'required',

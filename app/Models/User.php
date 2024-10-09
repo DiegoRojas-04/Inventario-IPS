@@ -50,7 +50,7 @@ class User extends Authenticatable
 
     public function adminlte_image()
     {
-        return 'https://picsum.photos/300/300';
+        return url('images/logo2.jpg');
     }
 
     public function adminlte_desc()
@@ -60,6 +60,6 @@ class User extends Authenticatable
 
     public function adminlte_profile_url()
     {
-        return 'perfil';
+        return '';
     }
 }

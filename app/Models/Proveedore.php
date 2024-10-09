@@ -11,6 +11,7 @@ class Proveedore extends Model
     protected $fillable= [
         'nombre',
         'descripcion',
+        'nit',
         'telefono',
         'email',
         'direccion',

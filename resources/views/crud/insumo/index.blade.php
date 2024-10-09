@@ -89,6 +89,7 @@
                             <option value="30" {{ request('page_size') == 30 ? 'selected' : '' }}>30</option>
                             <option value="50" {{ request('page_size') == 50 ? 'selected' : '' }}>50</option>
                             <option value="70" {{ request('page_size') == 70 ? 'selected' : '' }}>70</option>
+                            <option value="100" {{ request('page_size') == 100 ? 'selected' : '' }}>100</option>
                         </select>
                     </div>
 
@@ -137,21 +138,51 @@
             <table class="table table-striped" id="datos">
                 <thead class="thead-dark">
                     <tr class="text-center">
+                        <th scope="col">#</th>
                         <th scope="col">Nombre</th>
-                        <th scope="col" id="header-vida-util">Vida Util</th>
-                        <th scope="col" id="header-clasif-riesgo">Clasif.Riesgo</th>
+                        {{-- <th scope="col">Vida Util</th>
+                        <th scope="col">Clasif.Riesgo</th> --}}
                         <th scope="col">Cantidad</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="text-center">
-                    @foreach ($insumos as $insumo) 
+                    @foreach ($insumos as $insumo)
+                        @php
+                            // Variables de estado
+                            $estadoInsumo = 'status-green'; // Asumimos verde por defecto
+
+                            // Recorrer las características del insumo
+                            foreach ($insumo->caracteristicas as $caracteristica) {
+                                // Ignorar si la cantidad es 0
+                                if ($caracteristica->cantidad == 0) {
+                                    continue;
+                                }
+
+                                $fechaVencimiento = \Carbon\Carbon::parse($caracteristica->vencimiento);
+                                $hoy = \Carbon\Carbon::now();
+                                $diferenciaMeses = $hoy->diffInMonths($fechaVencimiento);
+
+                                // Verificar estado según la fecha de vencimiento
+                                if ($fechaVencimiento->format('d-m-Y') === '01-01-0001') {
+                                    continue; // Ignorar si la fecha no es válida
+                                } elseif ($fechaVencimiento->lessThanOrEqualTo($hoy->addMonth())) {
+                                    $estadoInsumo = 'status-red'; // Si hay algún rojo, prevalece
+                                    break; // Ya no es necesario seguir revisando
+                                } elseif ($diferenciaMeses <= 3 && $estadoInsumo !== 'status-red') {
+                                    $estadoInsumo = 'status-yellow'; // Si hay algún amarillo y no hay rojo
+                                }
+                            }
+                        @endphp
                         <tr class="{{ $insumo->estado == 0 ? 'table-eliminado' : $insumo->alertClass ?? '' }}">
+                            <td>
+                                <div class="status-circle {{ $estadoInsumo }}"></div>
+                            </td>
                             <td>{{ $insumo->nombre }}</td>
                             {{-- <td>{{ $insumo->marca->nombre }}</td>  --}}
                             {{-- <td>{{ $insumo->presentacione->nombre }}</td>  --}}
-                            <td>{{ $insumo->vida_util }}</td>
-                            <td>{{ $insumo->riesgo }}</td>
+                            {{-- <td>{{ $insumo->vida_util }}</td>
+                            <td>{{ $insumo->riesgo }}</td> --}}
                             <td>{{ $insumo->stock }}</td>
                             <td>
                                 <div class="btn-group" role="group" style="gap: 5px;">
@@ -204,19 +235,53 @@
                         <h4 class="modal-title font-bold" id="exampleModalLabel"></h4>
                     </div>
                     <div class="modal-body text-center">
+                        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+                            <a href="{{ route('insumo.generarCodigoBarrasPDF', $insumo->id) }}" class="btn btn-primary"
+                                style="margin-right: 15px;">
+                                Código de Barras <i class="fa fa-barcode" aria-hidden="true"></i>
+                            </a>
+                            <h4 style="margin: 0;">{{ $insumo->codigo }}</h4>
+                        </div>
+
                         <label class="text-center font-bold">
                             <h4>{{ $insumo->nombre }}</h4>
                         </label>
-                        <div class="mb-3 border-b pb-3">
-                            <label class="block">Descripción:</label>
-                            <span class="block">{{ $insumo->descripcion }}</span>
+
+                        <div class="mb-3 border-b pb-3"
+                            style="display: flex; justify-content: space-between; align-items: stretch; border: 1px solid #ccc; padding: 10px;">
+                            <div style="flex: 0 0 70%; border-right: 1px solid #ccc; padding-right: 10px;">
+                                <label class="block font-bold" for="descripcion">Descripción:</label>
+                                <span id="descripcion" style="word-wrap: break-word; text-align: left;">
+                                    {{ $insumo->descripcion }}
+                                </span>
+                            </div>
+                            <div
+                                style="flex: 0 0 15%; border-right: 1px solid #ccc; padding-right: 10px; display: flex; align-items: center; justify-content: center;">
+                                <div>
+                                    <label class="block font-bold" for="vida_util" style="text-align: center;">Vida
+                                        Útil:</label>
+                                    <span id="vida_util" style="text-align: center;">
+                                        {{ $insumo->vida_util }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="flex: 0 0 15%; display: flex; align-items: center; justify-content: center;">
+                                <div>
+                                    <label class="block font-bold" for="riesgo"
+                                        style="text-align: center;">Riesgo:</label>
+                                    <span id="riesgo" style="text-align: center;">
+                                        {{ $insumo->riesgo }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="mb-3">
                             <table class="table">
                                 <thead class="thead-dark">
                                     <tr class="text-center">
                                         <th scope="col" id="header-forma-farmaceutica">Marca</th>
-                                        <th  scope="col" id="header-unidad-medida">Presentacion</th>
+                                        <th scope="col" id="header-unidad-medida">Presentacion</th>
                                         <th>Invima</th>
                                         <th>Lote</th>
                                         <th>Vencimiento</th>
@@ -295,38 +360,38 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const categoriaSelect = document.getElementById('id_categoria');
-    
+
             // Función para actualizar los encabezados según el valor del select
             function updateHeaders() {
                 const selectedValue = categoriaSelect.value;
-    
+
                 // Obtenemos los elementos de los encabezados
                 const headerVidaUtil = document.getElementById('header-vida-util');
                 const headerClasifRiesgo = document.getElementById('header-clasif-riesgo');
                 const headerFormaFarmaceutica = document.getElementById('header-forma-farmaceutica');
                 const headerUnidadMedida = document.getElementById('header-unidad-medida');
-    
+
                 // Verificamos si el valor seleccionado es 11 (Medicamentos)
                 if (selectedValue == '11') {
-                    headerVidaUtil.innerText = 'Código CUMS';
-                    headerClasifRiesgo.innerText = 'Concentración';
+                    headerVidaUtil.innerText = 'Código CUMS:';
+                    headerClasifRiesgo.innerText = 'Concentración:';
                     headerFormaFarmaceutica.innerText = 'Forma Farmaceutica';
                     headerUnidadMedida.innerText = 'Unidad Medida';
 
                 } else {
-                    headerVidaUtil.innerText = 'Vida Util';
-                    headerClasifRiesgo.innerText = 'Clasif.Riesgo';
+                    headerVidaUtil.innerText = 'Vida Util:';
+                    headerClasifRiesgo.innerText = 'Clasif.Riesgo:';
                     headerFormaFarmaceutica.innerText = 'Marca';
                     headerUnidadMedida.innerText = 'Presentacion';
                 }
             }
-    
+
             // Llama a la función para actualizar los encabezados al cargar la página
             updateHeaders();
-    
+
             // Escucha el evento de cambio en el select
             categoriaSelect.addEventListener('change', updateHeaders);
-        }); 
+        });
     </script>
-    
+
 @stop

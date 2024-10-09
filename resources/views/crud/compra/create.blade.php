@@ -355,26 +355,29 @@
         }
 
         function aumentarCantidad(indice) {
-            let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[]"]');
+            let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[' + indice +
+            ']"]'); // Corrige el selector
             let cantidad = parseInt(cantidadInput.val());
             cantidad++;
-            cantidadInput.val(cantidad);
+            cantidadInput.val(cantidad); // Actualiza la cantidad
             total++;
-            $('#total').html(total);
+            $('#total').html(total); // Actualiza el total
         }
 
         function disminuirCantidad(indice) {
-            let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[]"]');
+            let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[' + indice +
+            ']"]'); // Corrige el selector
             let cantidad = parseInt(cantidadInput.val());
-            if (cantidad > 1) {
+            if (cantidad > 1) { // Si la cantidad es mayor que 1, la disminuye
                 cantidad--;
-                cantidadInput.val(cantidad);
+                cantidadInput.val(cantidad); // Actualiza la cantidad
                 total--;
-                $('#total').html(total);
+                $('#total').html(total); // Actualiza el total
             } else {
-                eliminarInsumo(indice);
+                eliminarInsumo(indice); // Si la cantidad es 1, elimina la fila
             }
         }
+
 
         function showModal(message, icon = 'error') {
             const Toast = Swal.mixin({
@@ -433,19 +436,19 @@
         }
     </script>
 
-<script>
-    document.getElementById('nombre').addEventListener('change', function() {
-       var categoriaId = this.value; // Obtiene el id de la categoría seleccionada
+    <script>
+        document.getElementById('nombre').addEventListener('change', function() {
+            var categoriaId = this.value; // Obtiene el id de la categoría seleccionada
 
-       if (categoriaId == 11) { // Si la categoría es Medicamentos (id 11)
-           document.getElementById('label-marca').textContent = 'Forma Farmaceutica:';
-           document.getElementById('label-presentacion').textContent = 'Unidad de Medida:';
-       } else {
-           // Restaura los títulos originales si no es la categoría Medicamentos
-           document.getElementById('label-marca').textContent = 'Marca:';
-           document.getElementById('label-presentacion').textContent = 'Presentacion:';
-       }
-   });
-</script>
+            if (categoriaId == 11) { // Si la categoría es Medicamentos (id 11)
+                document.getElementById('label-marca').textContent = 'Forma Farmaceutica:';
+                document.getElementById('label-presentacion').textContent = 'Unidad de Medida:';
+            } else {
+                // Restaura los títulos originales si no es la categoría Medicamentos
+                document.getElementById('label-marca').textContent = 'Marca:';
+                document.getElementById('label-presentacion').textContent = 'Presentacion:';
+            }
+        });
+    </script>
 
 @stop

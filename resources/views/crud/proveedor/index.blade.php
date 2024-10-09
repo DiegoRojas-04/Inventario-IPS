@@ -108,9 +108,10 @@
                 <thead class="thead-dark">
                     <tr class="text-center">
                         <th scope="col">Nombre</th>
+                        <th scope="col">NIT</th>
                         <th scope="col">Correo</th>
                         <th scope="col">Telefono</th>
-                        <th scope="col">Direccion</th>
+                        {{-- <th scope="col">Direccion</th> --}}
                         <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -119,9 +120,10 @@
                     @foreach ($proveedores as $proveedor)
                         <tr>
                             <td>{{ $proveedor->nombre }}</td>
+                            <td>{{ $proveedor->nit}}</td>
                             <td>{{ $proveedor->email }}</td>
                             <td>{{ $proveedor->telefono }}</td>
-                            <td>{{ $proveedor->direccion }}</td>
+                            {{-- <td>{{ $proveedor->direccion }}</td> --}}
 
                             <td>
                                 @if ($proveedor->estado == 1)

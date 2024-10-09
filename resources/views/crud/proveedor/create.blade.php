@@ -35,7 +35,7 @@
             <form action="{{ url('/proveedor') }}" method="POST">
                 {{ csrf_field() }}
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label>Nombre del Proveedor:</label>
                         <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
                             value="{{ old('nombre') }}">
@@ -44,12 +44,21 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label>Descripcion del Proveedor:</label>
                         <input type="text" name="descripcion"
                             class="form-control @error('descripcion') is-invalid @enderror"
                             value="{{ old('descripcion') }}">
                         @error('descripcion')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>NIT:</label>
+                        <input type="text" name="nit" class="form-control @error('nit') is-invalid @enderror"
+                            value="{{ old('nit') }}">
+                        @error('nit')
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror
                     </div>

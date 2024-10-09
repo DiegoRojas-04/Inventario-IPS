@@ -40,7 +40,7 @@ class CompraController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $compras = $query->latest()->paginate(10);
+        $compras = $query->latest()->paginate(20);
 
         return view('crud.compra.index', compact('compras'));
     }

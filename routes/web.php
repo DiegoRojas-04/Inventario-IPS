@@ -43,11 +43,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/pedido/create', [PedidoController::class, 'create'])->name('pedido.create');
     Route::get('/pedido/create', [PedidoController::class, 'create'])
-    ->middleware(['check.time'])
-    ->name('pedido.create');
+        ->middleware(['check.time'])
+        ->name('pedido.create');
 
     Route::get('/pedido/create?especial=true', [PedidoController::class, 'create'])
-    ->name('pedido.create.especial');
+        ->name('pedido.create.especial');
 
     // Aplica el middleware 'role' a las rutas protegidas por roles
     Route::middleware(['role'])->group(function () {
@@ -102,3 +102,4 @@ Route::get('/usuario/{id}/asignar-rol', [UsuarioController::class, 'asignarRol']
 Route::patch('/activo/{id}/update-estado', [ActivoController::class, 'updateEstado']);
 Route::put('/elementos/{id}/observacion', [ActivoController::class, 'updateObservacion'])->name('elementos.update.observacion');
 Route::get('/activo/{id}/codigo-barras/pdf', [ActivoController::class, 'generarCodigoBarrasPDF'])->name('activo.codigoBarras.pdf');
+Route::get('insumo/{id}/codigo-barras', [InsumoController::class, 'generarCodigoBarrasPDF'])->name('insumo.generarCodigoBarrasPDF');

@@ -61,68 +61,60 @@ class KardexController extends Controller
         return view('crud.kardex', compact('insumos', 'selectedMonth', 'selectedYear', 'categorias'));
     }
 
-
-
-    // private function calcularCantidadInicialMes($insumo, $mes, $anno)
-    // {
-    //     // Obtener el mes y año anterior
-    //     $fecha = Carbon::createFromDate($anno, $mes, 1);
-    //     $fechaAnterior = $fecha->subMonth();
-    //     $mesAnterior = $fechaAnterior->month;
-    //     $annoAnterior = $fechaAnterior->year;
-
-    //     // Calcular el saldo final del mes anterior como la cantidad inicial del mes actual
-    //     $kardexAnterior = $insumo->kardex()->where('mes', $mesAnterior)->where('anno', $annoAnterior)->first();
-    //     return $kardexAnterior ? $kardexAnterior->saldo : 0;
-    // }
-
-    // public function cambiarMes($nuevoMes, $nuevoAno)
-    // {
-    //     // Obtener todos los insumos
-    //     $insumos = Insumo::all();
-
-    //     foreach ($insumos as $insumo) {
-    //         // Calcular la cantidad inicial del nuevo mes
-    //         $cantidadInicial = $this->calcularCantidadInicialMes($insumo, $nuevoMes, $nuevoAno);
-
-    //         // Verificar si ya existe un registro para el nuevo mes
-    //         $kardexExistente = $insumo->kardex()->where('mes', $nuevoMes)->where('anno', $nuevoAno)->first();
-
-    //         if (!$kardexExistente) {
-    //             // Crear un nuevo registro en el kardex para el nuevo mes
-    //             Kardex::create([
-    //                 'insumo_id' => $insumo->id,
-    //                 'mes' => $nuevoMes,
-    //                 'anno' => $nuevoAno,
-    //                 'cantidad_inicial' => $cantidadInicial,
-    //                 'ingresos' => 0,  // Inicializa ingresos a 0 o lo que corresponda
-    //                 'egresos' => 0,   // Inicializa egresos a 0 o lo que corresponda
-    //                 'saldo' => $cantidadInicial, // El saldo inicial es igual a la cantidad inicial
-    //             ]);
-    //         }
-    //     }
-    // }
-
     public function ObtenerDatosParaExportar($request)
     {
         $selectedMonth = $request->input('mes');
         $selectedYear = $request->input('anno');
         $idCategoria = $request->input('id_categoria');
 
-        $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
+        $query = Insumo::with('detallesTransaccion', 'compras', 'entregas', 'caracteristicas.compras')
+            ->orderBy('nombre', 'asc');
 
         if ($idCategoria) {
             $query->where('id_categoria', $idCategoria);
         }
 
+        // Filtrar insumos actualizados en el mes y año seleccionado o con cantidades mayores a cero
+        $query->where(function ($query) use ($selectedMonth, $selectedYear) {
+            $query->whereHas('caracteristicas', function ($subQuery) use ($selectedMonth, $selectedYear) {
+                $subQuery->whereMonth('updated_at', $selectedMonth)
+                    ->whereYear('updated_at', $selectedYear)
+                    ->orWhere('cantidad', '>', 0);
+            });
+        });
+
         $insumos = $query->get();
 
         $insumos->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
             $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
-            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear); // Método que calcula los ingresos para el mes
-            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear); // Método que calcula los egresos para el mes
-            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes; // Cálculo del saldo
+            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
+            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
+            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
+
+            // Filtrar características para mostrar solo las que son relevantes
+            $insumo->caracteristicas = $insumo->caracteristicas->filter(function ($caracteristica) use ($selectedMonth, $selectedYear, $insumo) {
+                $comprasDelMes = $caracteristica->compras ? $caracteristica->compras->filter(function ($compra) use ($selectedMonth, $selectedYear) {
+                    return Carbon::parse($compra->fecha_hora)->month == $selectedMonth &&
+                        Carbon::parse($compra->fecha_hora)->year == $selectedYear;
+                }) : collect();
+
+                // Incluir la característica si hay compras, si la cantidad es mayor a cero, o si fue actualizada en el mes filtrado
+                $incluyeCaracteristica = $comprasDelMes->isNotEmpty() || $caracteristica->cantidad > 0;
+
+                if ($caracteristica->cantidad == 0) {
+                    $incluyeCaracteristica = $incluyeCaracteristica || (Carbon::parse($caracteristica->updated_at)->month == $selectedMonth &&
+                        Carbon::parse($caracteristica->updated_at)->year == $selectedYear);
+                }
+
+                return $incluyeCaracteristica;
+            });
+
             return $insumo;
+        });
+
+        // Filtrar insumos que no tengan características
+        $insumos = $insumos->filter(function ($insumo) {
+            return $insumo->caracteristicas->isNotEmpty(); // Retornar solo si hay características
         });
 
         return $insumos;
@@ -136,89 +128,115 @@ class KardexController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Obtener el nombre del mes
+        // Obtener el nombre del mes y el año
         $selectedMonthNumber = $request->input('mes');
         $selectedYear = $request->input('anno');
         $selectedMonth = Carbon::create()->month($selectedMonthNumber)->format('F');
 
-        // Obtener el nombre de la categoría
-        $idCategoria = $request->input('id_categoria');
-        $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : '';
-
         // Escribir título encima de la tabla
-        $titulo = 'Kardex Medicare IPS (' . $selectedMonth . ' ' . $selectedYear . ($categoriaNombre ? ' - ' . $categoriaNombre : '') . ')';
-        $sheet->mergeCells('A1:E1');
+        $titulo = 'Kardex Medicare IPS (' . $selectedMonth . ' ' . $selectedYear . ')';
+        $sheet->mergeCells('A1:K1');
         $sheet->setCellValue('A1', $titulo);
 
         // Estilo para el título
         $titleStyle = [
-            'font' => [
-                'bold' => true,
-                'size' => 16,
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-            ],
+            'font' => ['bold' => true, 'size' => 16],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
         ];
         $sheet->getStyle('A1')->applyFromArray($titleStyle);
 
         // Escribir encabezados
         $sheet->setCellValue('A2', 'Nombre del Insumo');
-        $sheet->setCellValue('B2', 'Inicio Mes');
-        $sheet->setCellValue('C2', 'Ingresos');
-        $sheet->setCellValue('D2', 'Egresos');
-        $sheet->setCellValue('E2', 'Saldo Fin');
+        $sheet->setCellValue('B2', 'Marca');
+        $sheet->setCellValue('C2', 'Presentación');
+        $sheet->setCellValue('D2', 'INVIMA');
+        $sheet->setCellValue('E2', 'Vencimiento');
+        $sheet->setCellValue('F2', 'Lote');
+        $sheet->setCellValue('G2', 'Inicio Mes');
+        $sheet->setCellValue('H2', 'Ingresos Mes');
+        $sheet->setCellValue('I2', 'Egresos Mes');
+        $sheet->setCellValue('J2', 'Saldo Fin Mes');
+        $sheet->setCellValue('K2', 'Cantidad Actual');
 
         // Estilo para los encabezados
         $headerStyle = [
             'font' => ['bold' => true],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            'borders' => [
-                'allBorders' => ['borderStyle' => Border::BORDER_THIN],
-            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
                 'startColor' => ['argb' => 'FFADD8E6'], // Azul claro
             ],
         ];
-        $sheet->getStyle('A2:E2')->applyFromArray($headerStyle);
+        $sheet->getStyle('A2:K2')->applyFromArray($headerStyle);
 
         // Escribir datos
         $row = 3;
+        $previousItemName = null;
+        $startRow = null;
+
         foreach ($data as $item) {
-            $sheet->setCellValue('A' . $row, $item->nombre);
-            $sheet->setCellValue('B' . $row, $item->cantidad_inicial_mes);
-            $sheet->setCellValue('C' . $row, $item->ingresos_mes);
-            $sheet->setCellValue('D' . $row, $item->egresos_mes);
-            $sheet->setCellValue('E' . $row, $item->saldo_final_mes);
+            $caracteristicas = $item->caracteristicas;
 
-            // Estilo para los nombres de insumos en negrilla
-            $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+            foreach ($caracteristicas as $caracteristica) {
+                if ($previousItemName === $item->nombre) {
+                    // Combinar celdas si el nombre del insumo es el mismo
+                    $sheet->setCellValue('B' . $row, $caracteristica['marca']->nombre);
+                    $sheet->setCellValue('C' . $row, $caracteristica['presentacion']->nombre);
+                    $sheet->setCellValue('D' . $row, $caracteristica['invima']);
+                    $sheet->setCellValue('E' . $row, \Carbon\Carbon::parse($caracteristica['vencimiento'])->format('d-m-Y'));
+                    $sheet->setCellValue('F' . $row, $caracteristica['lote']);
+                    $sheet->setCellValue('K' . $row, $caracteristica['cantidad']);
+                } else {
+                    // Combinar las celdas de la fila anterior
+                    if ($startRow !== null) {
+                        $sheet->mergeCells("A{$startRow}:A" . ($row - 1));
+                        $sheet->mergeCells("G{$startRow}:G" . ($row - 1));
+                        $sheet->mergeCells("H{$startRow}:H" . ($row - 1));
+                        $sheet->mergeCells("I{$startRow}:I" . ($row - 1));
+                        $sheet->mergeCells("J{$startRow}:J" . ($row - 1));
+                    }
 
-            // Alternar color de fondo de las filas
-            $rowColor = $row % 2 == 0 ? 'FFFFFFFF' : 'FFFFFFFF'; // Alternar entre blanco y azul claro
-            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['argb' => $rowColor],
-                ],
-            ]);
+                    // Actualizar el nombre del insumo y la fila inicial
+                    $previousItemName = $item->nombre;
+                    $startRow = $row;
 
-            $row++;
+                    // Escribir los valores en la nueva fila
+                    $sheet->setCellValue('A' . $row, $item->nombre);
+                    $sheet->setCellValue('B' . $row, $caracteristica['marca']->nombre);
+                    $sheet->setCellValue('C' . $row, $caracteristica['presentacion']->nombre);
+                    $sheet->setCellValue('D' . $row, $caracteristica['invima']);
+                    $sheet->setCellValue('E' . $row, \Carbon\Carbon::parse($caracteristica['vencimiento'])->format('d-m-Y'));
+                    $sheet->setCellValue('F' . $row, $caracteristica['lote']);
+                    $sheet->setCellValue('G' . $row, $item->cantidad_inicial_mes);
+                    $sheet->setCellValue('H' . $row, $item->ingresos_mes);
+                    $sheet->setCellValue('I' . $row, $item->egresos_mes);
+                    $sheet->setCellValue('J' . $row, $item->saldo_final_mes);
+                    $sheet->setCellValue('K' . $row, $caracteristica['cantidad']);
+                }
+                $row++;
+            }
+        }
+
+        // Combinar las celdas del último insumo procesado
+        if ($startRow !== null) {
+            $sheet->mergeCells("A{$startRow}:A" . ($row - 1));
+            $sheet->mergeCells("G{$startRow}:G" . ($row - 1));
+            $sheet->mergeCells("H{$startRow}:H" . ($row - 1));
+            $sheet->mergeCells("I{$startRow}:I" . ($row - 1));
+            $sheet->mergeCells("J{$startRow}:J" . ($row - 1));
         }
 
         // Ajustar el tamaño de las columnas automáticamente
-        foreach (range('A', 'E') as $col) {
+        foreach (range('A', 'K') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Establecer bordes a todas las celdas de la tabla
-        $tableRange = 'A2:E' . ($row - 1);
+        // Estilo de la tabla
+        $tableRange = 'A2:K' . ($row - 1);
         $sheet->getStyle($tableRange)->applyFromArray([
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            'borders' => [
-                'allBorders' => ['borderStyle' => Border::BORDER_THIN],
-            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
         ]);
 
         // Configurar el nombre del archivo y descargar
@@ -228,6 +246,8 @@ class KardexController extends Controller
 
         return response()->download($filename)->deleteFileAfterSend(true);
     }
+
+
 
     public function exportToPdf(Request $request)
     {

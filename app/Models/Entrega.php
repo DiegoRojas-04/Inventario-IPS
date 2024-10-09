@@ -64,4 +64,19 @@ class Entrega extends Model
 
         return $numero;
     }
+    public function insumoEntregas()
+    {
+        return $this->hasMany(EntregaInsumo::class); // Cambia esto al nombre correcto de tu modelo
+    }
+
+    public function marca()
+{
+    return $this->belongsTo(Marca::class, 'id_marca');
+}
+
+public function presentacion()
+{
+    return $this->belongsTo(Presentacione::class, 'id_presentacion');
+}
+    
 }

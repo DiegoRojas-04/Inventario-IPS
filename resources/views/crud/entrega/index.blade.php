@@ -80,7 +80,7 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <form action="{{ route('entrega.show', ['entrega' => $item]) }}" method="get">
-                                            <button type="submit" class="btn btn-success"><i class="fa fa-eye"
+                                            <button type="submit" class="btn btn-primary"><i class="fa fa-eye"
                                                     aria-hidden="true"></i></button>
                                         </form>
                                     </div>

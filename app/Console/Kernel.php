@@ -13,8 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
 
-        $schedule->command('kardex:insertar-nuevos-datos')->everyMinute();
-    
+        $schedule->command('kardex:insertar-nuevos-datos')->monthlyOn(1, '00:00');    
     }
 
     /**

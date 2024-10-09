@@ -141,6 +141,7 @@ class ActivoController extends Controller
     {
         $activo = Activo::findOrFail($id);
         $codigo = $activo->codigo;
+        $nombreActivo = $activo->nombre; // Obtener el nombre del activo
 
         // Genera el código de barras
         $generator = new BarcodeGeneratorPNG();
@@ -150,42 +151,55 @@ class ActivoController extends Controller
         $options = new Options();
         $options->set('defaultFont', 'Arial');
         $options->set('isRemoteEnabled', true); // Permitir imágenes remotas
-        $dompdf = new Dompdf($options);
+        $options->set('isHtml5ParserEnabled', true); // Habilitar el analizador HTML5
 
-        // Ruta del logo
-        $logoPath = public_path('images/logoCodigo.png');
+        // Configurar márgenes a 0
+        $options->set('marginTop', 0);
+        $options->set('marginBottom', 0);
+        $options->set('marginLeft', 0);
+        $options->set('marginRight', 0);
+
+        $dompdf = new Dompdf($options);
 
         // HTML del PDF
         $html = '
         <style>
             .sticker {
-                width: 90mm;
-                height: 85mm;
+                width: 130mm;
+                height: 150mm;
+                display: flex;
+                justify-content: center;
                 text-align: center;
-                position: relative;
+                margin: 0; /* Elimina el margen */
+                padding: 0; /* Elimina el padding */
             }
             .logo {
                 text-align: center;
                 width: 100%;
                 height: auto; 
-                position: relative;
-                margin-bottom: 3mm;
-                font-size: 25px;
-
+                font-size: 24px;
+                margin: 0; /* Elimina el margen */
+                padding: 0; /* Elimina el padding */
+                margin-bottom: 20px;
+                font-weight: bold; 
             }
             .barcode {
                 width: 100%;
-                height: auto;
-
+                height: 30%; /* Cambiar a auto para mantener la proporción */
+                margin: 0; /* Elimina el margen */
+                padding: 0; /* Elimina el padding */
             }
             .codigo {
-                font-size: 15px;
+                font-size: 32px;
                 font-weight: bold;
-                letter-spacing: 5px;
+                letter-spacing: 35px; /* Reduce el espaciado */
+                margin: 5px 0; /* Ajusta el margen superior e inferior */
+                font-weight: bold; 
             }
         </style>
+    
         <div class="sticker">
-            <p class="logo">MEDICARE IPS</p>
+            <p class="logo">' . $nombreActivo . '</p> <!-- Cambiar a nombre del activo -->
             <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
             <p class="codigo">' . $codigo . '</p>
         </div>
@@ -194,8 +208,8 @@ class ActivoController extends Controller
         // Cargar el HTML
         $dompdf->loadHtml($html);
 
-        // Configura el tamaño del papel A8 y la orientación a horizontal
-        $dompdf->setPaper('A7', 'landscape'); // Cambiar a landscape para orientación horizontal
+        // Configura el tamaño del papel A6 y la orientación a horizontal
+        $dompdf->setPaper('A6', 'landscape'); // Cambiar a landscape para orientación horizontal
 
         // Renderiza el PDF
         $dompdf->render();
