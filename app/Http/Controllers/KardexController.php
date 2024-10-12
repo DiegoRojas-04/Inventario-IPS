@@ -6,6 +6,7 @@ use App\Models\Categoria;
 use App\Models\Insumo;
 use App\Models\Kardex;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -22,6 +23,7 @@ class KardexController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index(Request $request)
     {
         // Obtener el mes y el año seleccionados en el formulario
@@ -31,16 +33,28 @@ class KardexController extends Controller
         // Obtener todas las categorías
         $categorias = Categoria::all();
 
-        // Obtener los insumos con paginación
+        // Obtener el usuario autenticado
+        $user = auth()->user(); // Asumiendo que estás usando el sistema de autenticación de Laravel
+
+        // Inicializar variable para la categoría seleccionada
+        $selectedCategory = $request->input('id_categoria');
+
+        // Filtrar por categoría según el rol del usuario
+        if ($user->roles->contains('name', 'Administrador')) {
+            // Si es Administrador, se respeta la selección del usuario
+            // No se necesita hacer nada, ya que ya se están seleccionando todos
+        } elseif ($user->roles->contains('name', 'Laboratorio')) {
+            // Si es Laboratorio, forzar la categoría 12 como seleccionada
+            $selectedCategory = 12;
+        } else {
+            // Si es otro rol, puedes manejarlo según tu necesidad
+        }
+
+        // Obtener los insumos con paginación, filtrando por la categoría si está seleccionada
         $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
 
-        // Filtrar por categoría si se selecciona una
-        if ($request->has('id_categoria')) {
-            $idCategoria = $request->input('id_categoria');
-            // Filtrar solo si se selecciona una categoría específica
-            if ($idCategoria != "") {
-                $query->where('id_categoria', $idCategoria);
-            }
+        if ($selectedCategory) {
+            $query->where('id_categoria', $selectedCategory);
         }
 
         // Aplicar paginación
@@ -48,17 +62,16 @@ class KardexController extends Controller
 
         // Calcular los datos del Kardex para cada insumo
         $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
-            // $insumo->cantidad_inicial_mes = $this->calcularCantidadInicialMes($insumo, $selectedMonth, $selectedYear);
             $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
-            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear); // Método que calcula los ingresos para el mes
-            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear); // Método que calcula los egresos para el mes
-            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes; // Cálculo del saldo
+            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
+            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
+            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
 
             return $insumo;
         });
 
-        // Pasar los datos a la vista
-        return view('crud.kardex', compact('insumos', 'selectedMonth', 'selectedYear', 'categorias'));
+        // Pasar los datos a la vista, incluyendo la categoría seleccionada
+        return view('crud.kardex', compact('insumos', 'selectedMonth', 'selectedYear', 'categorias', 'selectedCategory'));
     }
 
     public function ObtenerDatosParaExportar($request)
@@ -300,7 +313,19 @@ class KardexController extends Controller
 
     public function exportOrderToPdf(Request $request)
     {
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+
+        // Obtener los datos para exportar
         $data = $this->ObtenerDatosParaExportar($request);
+
+        // Filtrar insumos según el rol del usuario
+        if ($user->roles->contains('name', 'Laboratorio')) {
+            // Si es Laboratorio, filtrar solo los insumos de la categoría 6
+            $data = $data->filter(function ($item) {
+                return $item->id_categoria == 12; // Ajusta la categoría según lo que necesites
+            });
+        }
 
         // Ordenar por nombre del insumo alfabéticamente
         $data = $data->sortBy('nombre');
@@ -315,12 +340,12 @@ class KardexController extends Controller
         // Crear el HTML para el PDF
         $titulo = 'Pedido de Insumos - ' . $categoriaNombre;
         $html = '<style>
-                body { font-family: Arial, sans-serif; }
-                table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
-                th, td { border: 1px solid black; text-align: center; padding: 8px; }
-                th { background-color: #f2f2f2; }
-                .cantidad { color: red; font-weight: bold; }
-            </style>';
+            body { font-family: Arial, sans-serif; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
+            th, td { border: 1px solid black; text-align: center; padding: 8px; }
+            th { background-color: #f2f2f2; }
+            .cantidad { color: red; font-weight: bold; }
+        </style>';
         $html .= '<h2 style="text-align: center;">' . $titulo . '</h2>';
         $html .= '<p><strong>TIPO DE PEDIDO:</strong> ' . $categoriaNombre . '</p>';
         $html .= '<p><strong>PROVEEDOR:</strong> ' . '</p>';
@@ -339,6 +364,7 @@ class KardexController extends Controller
             $saldo = $cantidadInicioMes + $ingresos;
             $cantidadPedir = $saldo - $saldoFinal;
             $presentacion = $item->presentacion ? $item->presentacion->nombre : 'Sin presentación';
+
             // Solo añadir fila si cantidad a pedir es mayor que 0
             if ($cantidadPedir > 0) {
                 $html .= '<tr>';

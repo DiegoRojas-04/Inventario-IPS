@@ -12,7 +12,7 @@ class Activo extends Model
     protected $fillable = [
         'codigo',
         'nombre',
-        'categoria',
+        'categoria_id',
         'modelo',
         'serie',
         'marca',
@@ -22,4 +22,9 @@ class Activo extends Model
         'observacion',
         'condicion',
     ];
+
+    public function categoria()
+    {
+        return $this->belongsTo(CategoriaActivo::class);
+    }
 }

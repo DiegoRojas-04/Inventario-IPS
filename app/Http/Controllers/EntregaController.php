@@ -9,6 +9,7 @@ use App\Models\Entrega;
 use App\Models\Insumo;
 use App\Models\Kardex;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Servicio;
 use Dompdf\Dompdf;
 use Exception;
@@ -52,7 +53,28 @@ class EntregaController extends Controller
 
     public function create()
     {
-        $insumos = Insumo::where('estado', 1)->orderBy('nombre', 'asc')->where('stock', '>', 0)->get();
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+
+        // Filtrar insumos según el rol del usuario
+        if ($user->roles->contains('name', 'Administrador')) {
+            // Si es Administrador, obtener todos los insumos con estado 1 y stock mayor a 0
+            $insumos = Insumo::where('estado', 1)
+                ->where('stock', '>', 0)
+                ->orderBy('nombre', 'asc')
+                ->get();
+        } elseif ($user->roles->contains('name', 'Laboratorio')) {
+            // Si es Laboratorio, obtener solo insumos de la categoría 6
+            $insumos = Insumo::where('estado', 1)
+                ->where('stock', '>', 0)
+                ->where('id_categoria', 12) // Filtrar por categoría 6
+                ->orderBy('nombre', 'asc')
+                ->get();
+        } else {
+            // Si es otro rol, manejar como consideres
+            $insumos = collect(); // Sin insumos disponibles
+        }
+
         $servicios = Servicio::where('estado', 1)->get();
         $categorias = Categoria::all();
         $comprobantes = Comprobante::all();
@@ -66,8 +88,10 @@ class EntregaController extends Controller
         }
 
         $varianteIndex = 0;
+
         return view('crud.entrega.create', compact('insumos', 'servicios', 'comprobantes', 'todasVariantes', 'varianteIndex', 'categorias', 'numeroComprobante', 'comprobanteEntrega'));
     }
+
 
 
     // hacer que compare a cual le puede restar
@@ -135,15 +159,28 @@ class EntregaController extends Controller
                         DB::table('insumo_caracteristicas')
                             ->where('id', $caracteristica->id)
                             ->decrement('cantidad', $cantidadRestante);
+
+                        // Actualiza el timestamp si la cantidad llega a 0
+                        $nuevaCantidad = $caracteristica->cantidad - $cantidadRestante;
+                        if ($nuevaCantidad == 0) {
+                            DB::table('insumo_caracteristicas')
+                                ->where('id', $caracteristica->id)
+                                ->update(['updated_at' => Carbon::now()]);
+                        }
+
                         $cantidadRestante = 0; // Ya se ha restado toda la cantidad
                     } else {
                         // Resta lo que haya y continua al siguiente
                         $cantidadRestante -= $caracteristica->cantidad;
                         DB::table('insumo_caracteristicas')
                             ->where('id', $caracteristica->id)
-                            ->update(['cantidad' => 0]); // Dejar en 0
+                            ->update([
+                                'cantidad' => 0,
+                                'updated_at' => Carbon::now() // Actualiza la fecha si la cantidad llega a 0
+                            ]);
                     }
                 }
+
 
                 // Si hay alguna cantidad que no se pudo restar, podrías manejarlo aquí, si es necesario
                 if ($cantidadRestante > 0) {

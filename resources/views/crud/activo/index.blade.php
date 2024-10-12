@@ -86,26 +86,18 @@
                     </div>
 
                     <div class="col-md-3">
-                        <select name="categoria" class="form-control" id="categoria" onchange="this.form.submit()">
-                            <option value="">Seleccionar categoría...</option>
-                            <option value="PC" {{ request('categoria') == 'PC' ? 'selected' : '' }}>PC</option>
-                            <option value="Impresora" {{ request('categoria') == 'Impresora' ? 'selected' : '' }}>Impresoras
-                            </option>
-                            <option value="Monitores" {{ request('categoria') == 'Monitores' ? 'selected' : '' }}>Monitores
-                            </option>
-                            <option value="Tablets" {{ request('categoria') == 'Tablets' ? 'selected' : '' }}>Tablets
-                            </option>
-                            <option value="Televisores" {{ request('categoria') == 'Televisores' ? 'selected' : '' }}>
-                                Televisores</option>
-                            <option value="Telefonos" {{ request('categoria') == 'Telefonos' ? 'selected' : '' }}>Teléfonos
-                            </option>
-                            <option value="Mause" {{ request('categoria') == 'Mause' ? 'selected' : '' }}>Mause</option>
-                            <option value="Teclados" {{ request('categoria') == 'Teclados' ? 'selected' : '' }}>Teclados
-                            </option>
-                            <option value="Mesas" {{ request('categoria') == 'Mesas' ? 'selected' : '' }}>Mesas</option>
-                            <option value="Sillas" {{ request('categoria') == 'Sillas' ? 'selected' : '' }}>Sillas</option>
+                        <select data-size="5" title="Seleccionar Categoría" data-live-search="true" name="categoria"
+                            id="categoria" class="form-control selectpicker show-tick" onchange="this.form.submit()">
+                            <option value="">Seleccionar Categoría</option>
+                            @foreach ($categorias as $categoria)
+                                <option value="{{ $categoria->id }}"
+                                    {{ request('categoria') == $categoria->id ? 'selected' : '' }}>
+                                    {{ $categoria->nombre }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+                    
 
                 </div>
             </form>

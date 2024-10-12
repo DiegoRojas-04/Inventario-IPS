@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivoController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\CategoriaActivoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConsultorioController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\RolController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UsuarioController;
+use App\Models\CategoriaActivo;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -70,6 +72,14 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+Route::middleware(['auth', 'role:Laboratorio'])->group(function () {
+    Route::resource('compra', CompraController::class);
+    Route::resource('entrega', EntregaController::class);
+    Route::resource('kardex', KardexController::class);
+    Route::resource('insumo', InsumoController::class);
+});
+
+
 Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])->name('export.compra.pdf');
 // Route::get('/export-order-pdf', [KardexController::class, 'exportOrderToPdf'])->name('generate.order');
 Route::get('/export/entrega/pdf/{id}', [EntregaController::class, 'exportToPdf'])->name('export.entrega.pdf');
@@ -93,6 +103,7 @@ Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCara
 Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCaracteristicaController::class, 'update'])->name('caracteristica.update');
 Route::resource('elementos', ElementoController::class);
 Route::resource('consultorios', ConsultorioController::class);
+Route::resource('categoriasAct', CategoriaActivoController::class);
 Route::resource('activo', ActivoController::class);
 Route::get('consultorios/{consultorioId}/elementos', [ElementoController::class, 'elementosPorConsultorio'])->name('consultorios.elementos');
 Route::patch('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.updateCantidad');
@@ -103,3 +114,5 @@ Route::patch('/activo/{id}/update-estado', [ActivoController::class, 'updateEsta
 Route::put('/elementos/{id}/observacion', [ActivoController::class, 'updateObservacion'])->name('elementos.update.observacion');
 Route::get('/activo/{id}/codigo-barras/pdf', [ActivoController::class, 'generarCodigoBarrasPDF'])->name('activo.codigoBarras.pdf');
 Route::get('insumo/{id}/codigo-barras', [InsumoController::class, 'generarCodigoBarrasPDF'])->name('insumo.generarCodigoBarrasPDF');
+Route::get('/insumos/generar-codigos-barras', [InsumoController::class, 'generarCodigosBarrasPDF'])->name('generar.codigos.barras');
+Route::get('insumo/codigo-barras/{id}', [InsumoController::class, 'generarCodigoBarrasPorInsumoPDF'])->name('insumo.generarCodigoBarrasPorInsumoPDF');

@@ -14,10 +14,10 @@
                     <form action="{{ route('kardex.index') }}" method="GET">
                         <label for="id_categoria" class="sr-only">Categoría</label>
                         <select name="id_categoria" id="id_categoria" class="form-control">
-                            <option value="">Todas las Categorias</option>
+                            <option value="">Seleccionar categoría</option>
                             @foreach ($categorias as $categoria)
                                 <option value="{{ $categoria->id }}"
-                                    {{ request('id_categoria') == $categoria->id ? 'selected' : '' }}>
+                                    {{ $categoria->id == $selectedCategory ? 'selected' : '' }}>
                                     {{ $categoria->nombre }}
                                 </option>
                             @endforeach
@@ -146,7 +146,7 @@
                                     <th>Fecha de Vencimiento</th>
                                     <th>Cantidad</th>
                                     <th>Compra</th>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -161,7 +161,7 @@
                                             <td>{{ $caracteristica->cantidad_compra }}</td>
                                             <td>{{ \Carbon\Carbon::parse($caracteristica->created_at)->format('d/m/Y') }}
                                             </td>
-                                              
+
                                         </tr>
                                     @endif
                                 @endforeach
@@ -192,7 +192,7 @@
                             <thead>
                                 <tr class="text-center">
                                     <th>Marca</th>
-                                    <th>Presentación</th> 
+                                    <th>Presentación</th>
                                     <th>Invima</th>
                                     <th>Lote</th>
                                     <th>Vencimiento</th>
@@ -201,20 +201,20 @@
                                     <th>Área</th>
                                 </tr>
                             </thead>
-                                <tbody>
-                                    @foreach ($insumo->entregas as $entrega)
-                                        @if (\Carbon\Carbon::parse($entrega->created_at)->month == $selectedMonth)
-                                            <tr class="text-center">
-                                                <td>{{ $entrega->pivot->id_marca }}</td>
-                                                <td>{{ $entrega->pivot->id_presentacion }}</td>
-                                                <td>{{ $entrega->pivot->invima }}</td>
-                                                <td>{{ $entrega->pivot->lote }}</td>
-                                                <td>{{ $entrega->pivot->vencimiento }}</td>
-                                                <td>{{ $entrega->pivot->cantidad }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($entrega->created_at)->format('d/m/Y') }}</td>
-                                                <td>{{ $entrega->servicio->nombre }}</td>
-                                                </tr>
-                                        @endif
+                            <tbody>
+                                @foreach ($insumo->entregas as $entrega)
+                                    @if (\Carbon\Carbon::parse($entrega->created_at)->month == $selectedMonth)
+                                        <tr class="text-center">
+                                            <td>{{ $entrega->pivot->id_marca }}</td>
+                                            <td>{{ $entrega->pivot->id_presentacion }}</td>
+                                            <td>{{ $entrega->pivot->invima }}</td>
+                                            <td>{{ $entrega->pivot->lote }}</td>
+                                            <td>{{ $entrega->pivot->vencimiento }}</td>
+                                            <td>{{ $entrega->pivot->cantidad }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($entrega->created_at)->format('d/m/Y') }}</td>
+                                            <td>{{ $entrega->servicio->nombre }}</td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>

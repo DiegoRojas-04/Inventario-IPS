@@ -457,8 +457,7 @@ return [
             'text' => 'Insumos',
             'url' => 'insumo',
             'icon' => 'far fa fa-stethoscope',
-            'can' => 'Insumos',
-
+            'can' => ['Insumos', 'Laboratorio'],
             'submenu' => [
                 [
                     'text' => 'Insumo',
@@ -476,7 +475,8 @@ return [
             'text' => 'Kardex',
             'url' => 'kardex',
             'icon' => 'far fa fa-book',
-            'can' => 'Kardex',
+            'can' => ['Kardex', 'Laboratorio'],     
+        
         ],
 
         ['header' => 'Acciones',
@@ -487,7 +487,7 @@ return [
             'text' => 'Compras',
             'url' => 'compra',
             'icon' => 'far fa fa-shopping-cart',
-            'can' => 'Compras',
+            'can' => ['Compras', 'Laboratorio'],     
             'submenu' => [
                 [
                     'text' => 'Compra',
@@ -505,7 +505,8 @@ return [
             'text' => 'Entregas',
             'url' => 'entrega',
             'icon' => 'far fa fa-cart-arrow-down',
-            'can' => 'Entregas',
+            'can' => ['Entregas', 'Laboratorio'],     
+
             'submenu' => [
                 [
                     'text' => 'Entrega',
@@ -571,6 +572,10 @@ return [
             'icon' => 'far fa fa-desktop',
             'can' => 'Activos',
             'submenu' => [
+                [
+                    'text' => 'Crear Categoria',
+                    'url' => 'categoriasAct',
+                ],
                 [
                     'text' => 'Crear Activo',
                     'url' => 'activo/create',

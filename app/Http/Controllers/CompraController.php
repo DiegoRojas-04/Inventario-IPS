@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCompraRequest;
 use App\Models\Categoria;
 use App\Models\Compra;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Comprobante;
 use App\Models\Insumo;
 use App\Models\InsumoCaracteristica;
@@ -53,18 +54,31 @@ class CompraController extends Controller
     {
         $presentaciones = Presentacione::all();
         $marcas = Marca::all();
-        $insumos = Insumo::all();
         $proveedores = Proveedore::all();
         $comprobantes = Comprobante::all();
-
+    
         // Generar el siguiente número de comprobante
         $numero_comprobante = Compra::generarNumeroComprobante();
         $comprobanteCompra = Comprobante::where('tipo_comprobante', 'Compra')->first();
-
+    
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+    
+        // Filtrar insumos según el rol del usuario
+        if ($user->roles->contains('name', 'Administrador')) {
+            // Si es Administrador, obtener todos los insumos
+            $insumos = Insumo::all();
+        } elseif ($user->roles->contains('name', 'Laboratorio')) {
+            // Si es Laboratorio, obtener solo los insumos de la categoría 6
+            $insumos = Insumo::where('id_categoria', 12)->get();
+        } else {
+            // Si es otro rol, manejar como consideres, aquí se regresará una colección vacía
+            $insumos = collect(); // Sin insumos disponibles
+        }
+    
         return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra', 'marcas', 'presentaciones'));
     }
-
-
+    
     /**
      * Store a newly created resource in storage.
      */

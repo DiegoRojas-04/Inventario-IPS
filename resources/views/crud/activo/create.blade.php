@@ -46,22 +46,15 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="categoria">Categoria:</label>
-                    <select name="categoria" class="form-control @error('categoria') is-invalid @enderror">
-                        <option value="">Seleccionar categoria...</option>
-                        <option value="PC" {{ old('categoria') == 'PC' ? 'selected' : '' }}>PC</option>
-                        <option value="Impresora" {{ old('categoria') == 'Impresora' ? 'selected' : '' }}>Impresoras</option>
-                        <option value="Monitores" {{ old('categoria') == 'Monitores' ? 'selected' : '' }}>Monitores</option>
-                        <option value="Tablets" {{ old('categoria') == 'Tablets' ? 'selected' : '' }}>Tablets</option>
-                        <option value="Televisores" {{ old('categoria') == 'Televisores' ? 'selected' : '' }}>Televisores</option>
-                        <option value="Telefonos" {{ old('categoria') == 'Telefonos' ? 'selected' : '' }}>Telefonos</option>
-                        <option value="Mause" {{ old('categoria') == 'Mause' ? 'selected' : '' }}>Mause</option>
-                        <option value="Teclados" {{ old('categoria') == 'Teclados' ? 'selected' : '' }}>Teclados</option>
-                        <option value="Mesas" {{ old('categoria') == 'Mesas' ? 'selected' : '' }}>Mesas</option>
-                        <option value="Sillas" {{ old('categoria') == 'Sillas' ? 'selected' : '' }}>Sillas</option>
+                    <label for="categoria_id">Categoría:</label>
+                    <select name="categoria_id" class="form-control @error('categoria_id') is-invalid @enderror">
+                        <option value="">Seleccionar categoría...</option>
+                        @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>{{ $categoria->nombre }}</option>
+                        @endforeach
                     </select>
-                    @error('categoria')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @error('categoria_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
 

@@ -56,28 +56,20 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="categoria">Categoría:</label>
-                    <select name="categoria" class="form-control @error('categoria') is-invalid @enderror">
-                        <option value="">Seleccionar categoría...</option>
-                        <option value="PC" {{ old('categoria', $activo->categoria) == 'PC' ? 'selected' : '' }}>PC</option>
-                        <option value="Impresora" {{ old('categoria', $activo->categoria) == 'Impresora' ? 'selected' : '' }}>Impresora</option>
-                        <option value="Pantallas" {{ old('categoria', $activo->categoria) == 'Pantallas' ? 'selected' : '' }}>Pantallas</option>
-                        <option value="PC" {{ old('categoria', $activo->categoria) == 'PC' ? 'selected' : '' }}>PC</option>
-                        <option value="Impresora" {{ old('categoria', $activo->categoria) == 'Impresora' ? 'selected' : '' }}>Impresoras</option>
-                        <option value="Monitores" {{ old('categoria', $activo->categoria) == 'Monitores' ? 'selected' : '' }}>Monitores</option>
-                        <option value="Tablets" {{ old('categoria', $activo->categoria) == 'Tablets' ? 'selected' : '' }}>Tablets</option>
-                        <option value="Televisores" {{ old('categoria', $activo->categoria) == 'Televisores' ? 'selected' : '' }}>Televisores</option>
-                        <option value="Telefonos" {{ old('categoria', $activo->categoria) == 'Telefonos' ? 'selected' : '' }}>Teléfonos</option>
-                        <option value="Mause" {{ old('categoria', $activo->categoria) == 'Mause' ? 'selected' : '' }}>Mause</option>
-                        <option value="Teclados" {{ old('categoria', $activo->categoria) == 'Teclados' ? 'selected' : '' }}>Teclados</option>
-                        <option value="Mesas" {{ old('categoria', $activo->categoria) == 'Mesas' ? 'selected' : '' }}>Mesas</option>
-                        <option value="Sillas" {{ old('categoria', $activo->categoria) == 'Sillas' ? 'selected' : '' }}>Sillas</option>
+                    <label for="categoria_id">Categoría</label>
+                    <select name="categoria_id" id="categoria_id" class="form-control" required>
+                        <option value="">Selecciona una categoría</option>
+                        @foreach ($categorias as $categoria)
+                            <option value="{{ $categoria->id }}"
+                                {{ old('categoria_id', $activo->categoria_id ?? '') == $categoria->id ? 'selected' : '' }}>
+                                {{ $categoria->nombre }}
+                            </option>
+                        @endforeach
                     </select>
                     @error('categoria')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-                
 
                 <div class="col-md-4">
                     <label for="modelo">Modelo:</label>

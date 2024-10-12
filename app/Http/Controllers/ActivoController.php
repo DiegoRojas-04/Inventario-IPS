@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ActivoRequest;
 use App\Http\Requests\StoreActivoRequest;
 use App\Models\Activo;
+use App\Models\CategoriaActivo;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
@@ -18,31 +19,37 @@ class ActivoController extends Controller
     public function index(Request $request)
     {
         $query = Activo::query();
-
-        // Filtrado por categoría
+    
+        // Filtrado por categoría usando el ID
         if ($request->filled('categoria')) {
-            $query->where('categoria', $request->categoria);
+            $query->where('categoria_id', $request->categoria);
         }
-
+    
         // Búsqueda
         if ($request->filled('search')) {
             $query->where('nombre', 'like', '%' . $request->search . '%');
         }
-
+    
         // Paginación
         $pageSize = $request->input('pageSize', 15);
         $activos = $query->paginate($pageSize);
-
-        return view('crud.activo.index', compact('activos'));
+    
+        // Obtener todas las categorías para mostrarlas en el filtro
+        $categorias = CategoriaActivo::all();
+    
+        return view('crud.activo.index', compact('activos', 'categorias'));
     }
-
+    
+    
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('crud.activo.create');
+        $categorias = CategoriaActivo::all();
+        return view('crud.activo.create', compact('categorias'));
+
     }
 
     /**
@@ -101,8 +108,9 @@ class ActivoController extends Controller
      */
     public function edit($id)
     {
+        $categorias = CategoriaActivo::all();
         $activo = Activo::findOrFail($id); // Encuentra el activo por ID o lanza un error 404
-        return view('crud.activo.edit', compact('activo')); // Pasa el activo a la vista
+        return view('crud.activo.edit', compact('activo','categorias')); // Pasa el activo a la vista
     }
 
     public function update(StoreActivoRequest $request, $id)

@@ -27,16 +27,26 @@ class InsumoController extends Controller
 
   public function index(Request $request)
   {
+    // Obtener el usuario autenticado
+    $user = auth()->user();
+
     // Crear la consulta base con relaciones
     $query = Insumo::with(['caracteristicas', 'marca', 'presentacion'])
-      ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por nombre de A a Z
+      ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por nombre
       ->orderBy('estado', 'desc'); // Ordenar por estado
 
+    // Obtener todas las categorías
     $categorias = Categoria::all();
 
-    // Filtrar por categoría si se proporciona
-    if ($request->has('id_categoria') && !empty($request->id_categoria)) {
-      $query->where('id_categoria', $request->id_categoria);
+    // Filtrar por categoría si se proporciona y si el usuario es Administrador
+    if ($user->roles->contains('name', 'Administrador')) {
+      // Si el usuario es Administrador, permitir filtrar por categoría
+      if ($request->has('id_categoria') && !empty($request->id_categoria)) {
+        $query->where('id_categoria', $request->id_categoria);
+      }
+    } elseif ($user->roles->contains('name', 'Laboratorio')) {
+      // Si el usuario es Laboratorio, solo permitir ver insumos de la categoría 6
+      $query->where('id_categoria', 12);
     }
 
     // Filtrar por término de búsqueda si se proporciona
@@ -363,6 +373,227 @@ class InsumoController extends Controller
 
     // Envía el PDF al navegador para descargar
     return $dompdf->stream($nombreArchivo, [
+      'Attachment' => true
+    ]);
+  }
+
+  public function generarCodigosBarrasPDF()
+  {
+    // Obtener todos los insumos y ordenarlos alfabéticamente por nombre
+    $insumos = Insumo::orderBy('nombre')->get();
+
+    // Parámetros de tamaño de cada código de barras (en milímetros)
+    $barcodeWidth = 45; // Ancho del código de barras
+    $barcodeHeight = 25; // Alto del código de barras
+
+    // Definir la cantidad de códigos por fila y por página
+    $barcodesPerRow = 3; // Número de columnas
+    $barcodesPerPage = 5 * $barcodesPerRow; // Total de códigos por página (filas * columnas)
+
+    // Inicializar Dompdf
+    $options = new \Dompdf\Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isRemoteEnabled', true);
+    $options->set('isHtml5ParserEnabled', true);
+
+    $dompdf = new \Dompdf\Dompdf($options);
+
+    // Iniciar el HTML con los estilos
+    $html = '<style>
+              .page { 
+                  page-break-after: always;
+                  margin-top: 10mm;
+                  margin-bottom: 0mm;
+                  display: flex;
+                  justify-content: center;
+                  text-align: center;
+              }
+              .barcode-container {
+                  display: inline-block;
+                  width: ' . $barcodeWidth . 'mm;
+                  height: ' . $barcodeHeight . 'mm;
+                  text-align: center;
+                  margin: 7mm 10mm 12mm 5mm;
+              }
+              .barcode {
+                  width: 100%;
+                  height: 70%;
+              }
+              .nombre-insumo {
+                  text-align: center;
+                  font-size: 8px;
+                  margin-top: 2px;
+                  font-weight: bold;
+              }
+              .codigo-insumo {
+                  font-size: 12px;
+                  letter-spacing: 15px;
+                  font-weight: bold;
+                  text-align: center;
+              }
+              .letra {
+                  font-size: 30px;
+                  font-weight: bold;
+                  text-align: center;
+                  margin-bottom: 30px;
+              }
+          </style>';
+
+    $currentLetter = ''; // Para rastrear el cambio de letra
+    $count = 0; // Contador de códigos de barras por página
+    $mostrarLetra = true; // Bandera para mostrar la letra solo en la primera página del grupo
+
+    foreach ($insumos as $insumo) {
+      $codigo = $insumo->codigo;
+      $nombreInsumo = $insumo->nombre;
+      $letraActual = strtoupper(substr($nombreInsumo, 0, 1)); // Obtener la primera letra del nombre
+
+      // Comprobar si se debe iniciar una nueva página para una nueva letra
+      if ($letraActual !== $currentLetter) {
+        if ($count > 0) {
+          $html .= '</div>'; // Cerrar la página anterior
+        }
+        // Comenzar una nueva página para la nueva letra
+        $html .= '<div class="page">';
+        $html .= '<h1 class="letra"> ' . $letraActual . '</h1>'; // Mostrar la letra en la primera página del grupo
+        $currentLetter = $letraActual; // Actualizar la letra actual
+        $count = 0; // Reiniciar el contador para la nueva página
+      }
+
+      // Generar el código de barras usando Picqer
+      $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+      $barcode = $generator->getBarcode($codigo, $generator::TYPE_CODE_128);
+
+      // Añadir cada código de barras al HTML
+      $html .= '
+              <div class="barcode-container">
+                  <p class="nombre-insumo">' . $nombreInsumo . '</p>
+                  <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
+                  <p class="codigo-insumo">' . $codigo . '</p>
+              </div>
+          ';
+
+      $count++;
+
+      // Comprobar si se debe iniciar una nueva fila o una nueva página
+      if ($count % $barcodesPerRow == 0) {
+        $html .= '<br>'; // Crear una nueva fila
+      }
+      if ($count % $barcodesPerPage == 0) {
+        $html .= '</div><div class="page">'; // Crear una nueva página
+      }
+    }
+
+    $html .= '</div>'; // Cerrar la última página
+
+    // Cargar el HTML en Dompdf
+    $dompdf->loadHtml($html);
+
+    // Configurar el tamaño del papel
+    $dompdf->setPaper('A4', 'portrait');
+
+    // Renderizar el PDF
+    $dompdf->render();
+
+    // Descargar el PDF
+    return $dompdf->stream('codigos_barras_completos.pdf', [
+      'Attachment' => true
+    ]);
+  }
+
+
+
+  public function generarCodigoBarrasPorInsumoPDF($id)
+  {
+    // Obtener el insumo por ID
+    $insumo = Insumo::findOrFail($id);
+
+    // Parámetros de tamaño de cada código de barras (en milímetros)
+    $barcodeWidth = 40; // 6 cm de ancho
+    $barcodeHeight = 20; // 3 cm de alto
+    $barcodesPerRow = 3; // 4 columnas
+    $barcodesPerPage = 18; // 24 códigos en total (6 filas)
+
+    // Inicializar Dompdf
+    $options = new \Dompdf\Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isRemoteEnabled', true);
+    $options->set('isHtml5ParserEnabled', true);
+
+    $dompdf = new \Dompdf\Dompdf($options);
+
+    // Comienza a crear el HTML para los códigos de barras
+    $html = '<style>
+                .page { 
+                    page-break-after: always;
+                    margin-top: 10mm; /* Margen superior */
+                    margin-bottom: 0mm; /* Margen inferior */
+                    display: flex;
+                    flex-wrap: wrap; /* Permitir que los elementos se ajusten a múltiples líneas */
+                    justify-content: center;
+                    text-align: center;
+                }
+                .barcode-container {
+                    display: inline-block;
+                    width: ' . $barcodeWidth . 'mm;
+                    height: ' . $barcodeHeight . 'mm;
+                    text-align: center;
+                    margin: 7mm 10mm 12mm 5mm; /* Espacio entre los códigos de barras */
+                }
+                .barcode {
+                    width: 100%;
+                    height: 70%; /* Ajusta para incluir nombre y código */
+                }
+                .nombre-insumo {
+                    text-align: center;
+                    font-size: 7px;
+                    margin-top: 2px;
+                    font-weight: bold;
+                }
+                .codigo-insumo {
+                    font-size: 11px;
+                    letter-spacing: 15px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+            </style>';
+
+    // Añadir la información del insumo y generar el código de barras
+    $codigo = $insumo->codigo;
+    $nombreInsumo = $insumo->nombre;
+
+    // Generar el código de barras usando Picqer
+    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+    $barcode = $generator->getBarcode($codigo, $generator::TYPE_CODE_128);
+
+    // Iniciar la primera página
+    $html .= '<div class="page">';
+
+    // Repetir el código de barras en un formato de 4 columnas y 6 filas (total de 24)
+    for ($i = 0; $i < $barcodesPerPage; $i++) {
+      // Añadir cada código de barras al HTML
+      $html .= '
+              <div class="barcode-container">
+                  <p class="nombre-insumo">' . $nombreInsumo . '</p>
+                  <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
+                  <p class="codigo-insumo">' . $codigo . '</p>
+              </div>
+          ';
+    }
+
+    $html .= '</div>'; // Cerrar la página
+
+    // Cargar el HTML en Dompdf
+    $dompdf->loadHtml($html);
+
+    // Configurar el tamaño del papel
+    $dompdf->setPaper('A4', 'portrait'); // A4 en orientación vertical
+
+    // Renderizar el PDF
+    $dompdf->render();
+
+    // Descargar el PDF
+    return $dompdf->stream('codigo_barras_' . $codigo . '.pdf', [
       'Attachment' => true
     ]);
   }

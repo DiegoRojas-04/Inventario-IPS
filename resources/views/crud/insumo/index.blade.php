@@ -15,6 +15,8 @@
         </a>
     </button>
 
+    <a href="{{ route('generar.codigos.barras') }}" class="btn btn-primary">Códigos de Barras</a>
+
     @if (session('Mensaje'))
         <script>
             const Toast = Swal.mixin({
@@ -239,6 +241,11 @@
                             <a href="{{ route('insumo.generarCodigoBarrasPDF', $insumo->id) }}" class="btn btn-primary"
                                 style="margin-right: 15px;">
                                 Código de Barras <i class="fa fa-barcode" aria-hidden="true"></i>
+                            </a>
+
+                            <a href="{{ route('insumo.generarCodigoBarrasPorInsumoPDF', $insumo->id) }}"
+                                class="btn btn-primary" style="margin-right: 15px;">
+                                Varios <i class="fa fa-barcode" aria-hidden="true"></i>
                             </a>
                             <h4 style="margin: 0;">{{ $insumo->codigo }}</h4>
                         </div>
