@@ -19,6 +19,7 @@ class Insumo extends Model
         'riesgo',
         'vida_util',
         'codigo',
+        'ubicacion',
         'id_categoria',
         'id_marca',
         'id_presentacion',

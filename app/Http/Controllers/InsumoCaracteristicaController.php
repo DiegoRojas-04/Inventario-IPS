@@ -10,79 +10,59 @@ use Illuminate\Http\Request;
 
 class InsumoCaracteristicaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($insumoId, $caracteristicaId)
-{
-    $insumo = Insumo::findOrFail($insumoId);
-    $caracteristica = InsumoCaracteristica::findOrFail($caracteristicaId);
-    $marcas = Marca::all();
-    $presentaciones = Presentacione::all();
+    {
+        $insumo = Insumo::findOrFail($insumoId);
+        $caracteristica = InsumoCaracteristica::findOrFail($caracteristicaId);
+        $marcas = Marca::all();
+        $presentaciones = Presentacione::all();
 
-    return view('crud.caracteristica.edit', compact('insumo', 'caracteristica', 'marcas', 'presentaciones'));
-}
+        return view('crud.caracteristica.edit', compact('insumo', 'caracteristica', 'marcas', 'presentaciones'));
+    }
 
+    public function update(Request $request, $insumoId, $caracteristicaId)
+    {
 
+        $request->validate([
+            'cantidad' => 'required|integer|min:1 ',
+            'valor_unitario' => 'nullable',
+        ]);
 
-   
-public function update(Request $request, $insumoId, $caracteristicaId)
-{
+        $caracteristica = InsumoCaracteristica::findOrFail($caracteristicaId);
+        $insumo = Insumo::findOrFail($insumoId);
 
-    $request->validate([
-        'cantidad' => 'required|integer|min:1 ',
-    ]);
+        $cantidadAnterior = $caracteristica->cantidad;
 
-    $caracteristica = InsumoCaracteristica::findOrFail($caracteristicaId);
-    $insumo = Insumo::findOrFail($insumoId);
+        $caracteristica->update($request->all());
 
-    $cantidadAnterior = $caracteristica->cantidad;
+        $diferenciaCantidad = $caracteristica->cantidad - $cantidadAnterior;
 
-    $caracteristica->update($request->all());
+        $insumo->stock += $diferenciaCantidad;
+        $insumo->save();
 
-    $diferenciaCantidad = $caracteristica->cantidad - $cantidadAnterior;
+        return redirect('insumo')->with('Mensaje2', 'Insumo Actualizado Correctamente');
+    }
 
-    $insumo->stock += $diferenciaCantidad;
-    $insumo->save();
-
-    return redirect('insumo')->with('Mensaje2', 'Insumo Actualizado Correctamente');
-}
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //

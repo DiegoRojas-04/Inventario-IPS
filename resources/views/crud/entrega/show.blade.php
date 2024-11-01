@@ -12,7 +12,7 @@
     @stop
 
     @section('content')
-        <div class="container w-100 border border-3 rounded p-4 mt-3">
+        <div class="container-fluid w-100 border border-3 rounded p-4 mt-3">
             <div class="row mb-2">
                 <div class="col-sm-4">
                     <div class="input-group mb-3">
@@ -49,6 +49,7 @@
                         value="{{ $entrega->comprobante->tipo_comprobante }}">
                 </div>
             </div>
+
             <div class="row mb-2">
                 <div class="col-sm-4">
                     <div class="input-group mb-3">
@@ -60,6 +61,7 @@
                     <input disabled type="text" class="form-control" value="{{ $entrega->numero_comprobante }}">
                 </div>
             </div>
+
             <div class="row mb-2">
                 <div class="col-sm-4">
                     <div class="input-group mb-3">
@@ -76,6 +78,7 @@
                         value="{{ \Carbon\Carbon::parse($entrega->fecha_hora)->format('H:i:s') }}">
                 </div>
             </div>
+
             <div class="card mb-4">
                 <div class="card-header text-center">
                     <h4>Detalle de Entrega</h4>
@@ -97,28 +100,36 @@
                         <thead class="bg-primary text-white">
                             <tr class="text-center">
                                 <th>Producto</th>
-                                <th>Marca</th> 
-                                <th>Presentacion</th>
+                                <th>Marca</th>
+                                <th>Presentación</th>
                                 <th>Invima</th>
                                 <th>Lote</th>
                                 <th>Vencimiento</th>
+                                <th>Valor</th>
                                 <th>Cantidad</th>
+                                <th>SubTotal</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($entrega->insumos as $item)
+                            @foreach ($entrega->insumoEntregas as $entregaInsumo)
                                 <tr>
-                                    <td>{{ $item->nombre }}</td>
-                                    <td>{{ $item->pivot->id_marca }}</td>
-                                    <td>{{ $item->pivot->id_presentacion }}</td>                    
-                                    <td>{{ $item->pivot->invima }}</td>
-                                    <td>{{ $item->pivot->lote }}</td>
-                                    <td>{{ $item->pivot->vencimiento }}</td>
-                                    <td>{{ $item->pivot->cantidad }}</td>
+                                    <td>{{ $entregaInsumo->insumo->nombre }}</td>
+                                    <td>{{ $entregaInsumo->marca->nombre ?? 'N/A' }}</td>
+                                    <td>{{ $entregaInsumo->presentacion->nombre ?? 'N/A' }}</td>
+                                    <td>{{ $entregaInsumo->invima }}</td>
+                                    <td>{{ $entregaInsumo->lote }}</td>
+                                    <td>{{ $entregaInsumo->vencimiento }}</td>
+                                    <td>{{ number_format($entregaInsumo->valor_unitario) }}</td>
+                                    <td>{{ $entregaInsumo->cantidad }}</td>
+                                    <td>{{ number_format($entregaInsumo->valor_unitario * $entregaInsumo->cantidad) }}
+
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-end mt-3">
+                            <h5>Total de la Entrega: <span class="text">{{ number_format($totalEntrega) }}</span></h5>
+                    </div>
                 </div>
             </div>
         </div>

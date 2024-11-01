@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEntregaRequest;
 use App\Models\Categoria;
 use App\Models\Comprobante;
 use App\Models\Entrega;
+use App\Models\EntregaInsumo;
 use App\Models\Insumo;
 use App\Models\Kardex;
 use Carbon\Carbon;
@@ -40,6 +41,9 @@ class EntregaController extends Controller
     public function index(Request $request)
     {
         $query = Entrega::with('comprobante')->where('estado', 1);
+
+        // Filtra las entregas por el usuario autenticado
+        $query->where('user_id', auth()->id());
 
         if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
             $fechaInicio = Carbon::createFromFormat('Y-m-d', $request->input('fecha_inicio'))->startOfDay();
@@ -109,6 +113,7 @@ class EntregaController extends Controller
             $arrayVencimiento = $request->get('arrayvencimiento');
             $arrayMarca = $request->get('arraymarca');
             $arrayPresentacion = $request->get('arraypresentacion');
+            $arrayValor = $request->get('arrayvalor');
             $totalCantidadEntregada = 0;
 
             foreach ($arrayInsumo as $key => $insumoId) {
@@ -119,7 +124,7 @@ class EntregaController extends Controller
                 $vencimiento = $arrayVencimiento[$key];
                 $marca = $arrayMarca[$key];
                 $presentacion = $arrayPresentacion[$key];
-
+                $valor = $arrayValor[$key];
                 // Asociar insumo a la entrega con los detalles adicionales
                 $entrega->insumos()->attach([
                     $insumoId => [
@@ -129,6 +134,7 @@ class EntregaController extends Controller
                         'vencimiento' => $vencimiento,
                         'id_marca' => $marca,
                         'id_presentacion' => $presentacion,
+                        'valor_unitario' => $valor,
                     ]
                 ]);
 
@@ -222,19 +228,65 @@ class EntregaController extends Controller
 
     public function show($id)
     {
-        $insumo = Insumo::all();
+        // Obtener todos los insumos y ordenarlos de la A a la Z
+        $insumo = Insumo::orderBy('nombre', 'asc')->get(); // Ordenar por nombre
+
+        // Obtener la entrega con la relación de insumos y ordenarlos de la A a la Z
         $entrega = Entrega::with(['insumos' => function ($query) {
-            $query->orderBy('nombre', 'asc'); // Ordenar por nombre
+            $query->orderBy('nombre', 'asc'); // Ordenar los insumos por nombre
         }])->findOrFail($id);
 
-        $detalleEntrega = $entrega->insumos()->with(['caracteristicas' => function ($query) {
-            $query->select('insumo_id', 'invima', 'lote', 'vencimiento', 'id_marca', 'id_presentacion')
-                ->with(['marca', 'presentacion']);
-        }])->get();
+        // Obtener los detalles de la entrega con las características (invima, lote, vencimiento, marca, presentación)
+        $detalleEntrega = EntregaInsumo::with(['insumo', 'marca', 'presentacion'])
+            ->where('entrega_id', $id)
+            ->get();
 
-        return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega'));
+        // Calcular el valor total de la entrega
+        $totalEntrega = $entrega->insumoEntregas->sum(function ($entregaInsumo) {
+            return $entregaInsumo->valor_unitario * $entregaInsumo->cantidad;
+        });
+
+
+        // Pasar los datos a la vista
+        return view('crud.entrega.show', compact('entrega', 'insumo', 'detalleEntrega', 'totalEntrega'));
     }
 
+    public function estadisticas(Request $request)
+    {
+        $fechaInicio = $request->get('fecha_inicio');
+        $fechaFin = $request->get('fecha_fin');
+        $categoriaId = $request->get('categoria_id');
+
+        // Obtener todas las categorías
+        $categorias = Categoria::all();
+
+        // Iniciar la consulta
+        $query = Entrega::query()
+            ->join('entrega_insumo', 'entregas.id', '=', 'entrega_insumo.entrega_id')
+            ->join('insumos', 'entrega_insumo.insumo_id', '=', 'insumos.id')
+            ->select('entrega_insumo.*', 'insumos.nombre as insumo_nombre', 'insumos.id_categoria', 'entregas.created_at')
+            ->orderBy('entregas.created_at', 'desc'); // Ordenar por la fecha de entrega de la más reciente a la más antigua
+
+        // Filtrar por fecha
+        if ($fechaInicio && $fechaFin) {
+            $query->whereBetween('entregas.created_at', [$fechaInicio, $fechaFin]);
+        }
+
+        // Filtrar por categoría si se proporciona
+        if ($categoriaId) {
+            $query->where('insumos.id_categoria', $categoriaId);
+        }
+
+        // Obtener las entregas y paginarlas
+        $entregas = $query->paginate(100);
+
+        // Calcular el valor total de entrega
+        $valorTotalEntrega = $entregas->sum(function ($entrega) {
+            return $entrega->valor_unitario * $entrega->cantidad;
+        });
+
+        return view('crud.entrega.estadisticas', compact('entregas', 'fechaInicio', 'fechaFin', 'categoriaId', 'categorias', 'valorTotalEntrega'));
+    }
 
     public function edit(string $id)
     {

@@ -19,6 +19,7 @@ class InsumoCaracteristica extends Model
         'cantidad_compra',
         'id_marca',
         'id_presentacion',
+        'valor_unitario',
     ];
 
     public function insumo()

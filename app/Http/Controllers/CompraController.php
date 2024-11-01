@@ -31,6 +31,9 @@ class CompraController extends Controller
     {
         $query = Compra::query();
 
+        // Filtra las compras por el usuario autenticado
+        $query->where('user_id', auth()->id());
+
         // Verifica si se enviaron fechas en la solicitud
         if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
             // Convierte las fechas de texto en objetos Carbon para poder compararlas
@@ -41,6 +44,7 @@ class CompraController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
+        // Obtener las compras paginadas
         $compras = $query->latest()->paginate(20);
 
         return view('crud.compra.index', compact('compras'));
@@ -56,14 +60,14 @@ class CompraController extends Controller
         $marcas = Marca::all();
         $proveedores = Proveedore::all();
         $comprobantes = Comprobante::all();
-    
+
         // Generar el siguiente número de comprobante
         $numero_comprobante = Compra::generarNumeroComprobante();
         $comprobanteCompra = Comprobante::where('tipo_comprobante', 'Compra')->first();
-    
+
         // Obtener el usuario autenticado
         $user = Auth::user();
-    
+
         // Filtrar insumos según el rol del usuario
         if ($user->roles->contains('name', 'Administrador')) {
             // Si es Administrador, obtener todos los insumos
@@ -75,20 +79,21 @@ class CompraController extends Controller
             // Si es otro rol, manejar como consideres, aquí se regresará una colección vacía
             $insumos = collect(); // Sin insumos disponibles
         }
-    
+
         return view('crud.compra.create', compact('insumos', 'proveedores', 'comprobantes', 'numero_comprobante', 'comprobanteCompra', 'marcas', 'presentaciones'));
     }
-    
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCompraRequest $request)
     {
+        // dd($request);
         try {
             DB::beginTransaction();
 
             // Crear la compra
-            $compra = Compra::create($request->validated());
+            $compra = Compra::create(array_merge($request->validated(), ['user_id' => auth()->id()]));
 
             // Obtener los arrays de insumos, cantidades y características
             $arrayInsumo = $request->get('arrayidinsumo');
@@ -123,6 +128,7 @@ class CompraController extends Controller
                         'id_presentacion' => $arrayCaracteristicas[$key]['id_presentacion'] ?? null,
                         'cantidad' => $arrayCantidad[$key],
                         'cantidad_compra' => $arrayCantidad[$key],
+                        'valor_unitario' => $arrayCaracteristicas[$key]['valor_unitario'],
                         'compra_id' => $compra->id,
                     ]);
                 }
@@ -192,9 +198,53 @@ class CompraController extends Controller
         // Ordenar los insumos por nombre
         $insumosConCaracteristicas = $insumosConCaracteristicas->sortBy('nombre');
 
-        return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas'));
+        // Calcular el valor total de la compra
+        $totalCompra = $insumosConCaracteristicas->flatMap(function ($insumo) {
+            return $insumo->caracteristicasCompra->map(function ($caracteristica) {
+                return $caracteristica->valor_unitario * $caracteristica->cantidad_compra;
+            });
+        })->sum();
+
+        return view('crud.compra.show', compact('compra', 'insumosConCaracteristicas', 'totalCompra'));
     }
 
+
+    public function estadisticas(Request $request)
+    {
+        $fechaInicio = $request->get('fecha_inicio');
+        $fechaFin = $request->get('fecha_fin');
+        $categoriaId = $request->get('categoria_id');
+
+        // Obtener todas las categorías
+        $categorias = Categoria::all();
+
+        // Iniciar la consulta
+        $query = InsumoCaracteristica::query()
+            ->join('insumos', 'insumo_caracteristicas.insumo_id', '=', 'insumos.id')
+            ->select('insumo_caracteristicas.*', 'insumos.nombre as insumo_nombre', 'insumos.id_categoria')
+            ->with('insumo') // Asegúrate de que hay una relación 'insumo' definida en el modelo
+            ->orderBy('insumo_caracteristicas.created_at', 'desc');
+
+        // Filtrar por fecha
+        if ($fechaInicio && $fechaFin) {
+            $query->whereBetween('insumo_caracteristicas.created_at', [$fechaInicio, $fechaFin]);
+        }
+
+        // Filtrar por categoría si se proporciona
+        if ($categoriaId) {
+            $query->where('insumos.id_categoria', $categoriaId);
+        }
+
+        // Obtener los insumos y paginarlos
+        $insumos = $query->paginate(100);
+
+        // Calcular el valor total de compra
+        $valorTotalCompra = $insumos->sum(function ($insumo) {
+            return $insumo->valor_unitario * $insumo->cantidad_compra;
+        });
+
+        return view('crud.compra.estadisticas', compact('insumos', 'fechaInicio', 'fechaFin', 'categoriaId', 'categorias', 'valorTotalCompra'));
+    }
 
     /**
      * Show the form for editing the specified resource.

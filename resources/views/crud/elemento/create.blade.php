@@ -36,6 +36,15 @@
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="form-group">
+                            <label for="cantidad_necesaria">Cantidad Necesaria</label>
+                            <input type="number" name="cantidad_necesaria" id="cantidad_necesaria" class="form-control" required>
+                            @error('cantidad_necesaria')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="form-group">
                             <label for="descripcion">Descripción</label>
                             <input type="text" name="descripcion" id="descripcion" class="form-control">
@@ -83,6 +92,7 @@
                             <thead class="thead-dark text-center">
                                 <tr>
                                     <th>Nombre</th>
+                                    <th>Cantidad</th>
                                     <th>Categoría</th>
                                     <th>Descripción</th>
                                     <th>Acciones</th>
@@ -92,6 +102,7 @@
                                 @foreach ($elementos as $elemento)
                                     <tr>
                                         <td>{{ $elemento->nombre }}</td>
+                                        <td>{{ $elemento->cantidad_necesaria }}</td>
                                         <td>{{ $elemento->categoria }}</td>
                                         <td>{{ $elemento->descripcion }}</td>
                                         <td>
@@ -100,18 +111,18 @@
                                             <div class="btn-group" role="group">
                                                 @if ($elemento->estado == 1)
                                                     <button type="button" class="btn btn-danger" data-toggle="modal"
-                                                        data-target="#eliminar-{{ $elemento->id }}"><i
-                                                            class="fa fa-trash" aria-hidden="true"></i></button>
+                                                        data-target="#eliminar-{{ $elemento->id }}"><i class="fa fa-trash"
+                                                            aria-hidden="true"></i></button>
                                                 @else
                                                     <button type="button" class="btn btn-success" data-toggle="modal"
-                                                        data-target="#eliminar-{{ $elemento->id }}"><i
-                                                            class="fa fa-share" aria-hidden="true"></i></button>
+                                                        data-target="#eliminar-{{ $elemento->id }}"><i class="fa fa-share"
+                                                            aria-hidden="true"></i></button>
                                                 @endif
                                             </div>
                                         </td>
                                     </tr>
-                                    <div class="modal fade" id="eliminar-{{ $elemento->id }}" tabindex="-1"
-                                        role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal fade" id="eliminar-{{ $elemento->id }}" tabindex="-1" role="dialog"
+                                        aria-labelledby="exampleModalLabel" aria-hidden="true">
                                         <div class="modal-dialog" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">

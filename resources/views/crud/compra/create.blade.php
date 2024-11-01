@@ -60,18 +60,24 @@
                                     class="form-control">
                             </div>
 
-                            <div class="col-md-4 mb-3" id="campos_lote_fecha" style="display: none;">
+                            <div class="col-md-3 mb-3" id="campos_lote_fecha" style="display: none;">
                                 <label for="lote">Lote:</label>
                                 <input type="text" id="lote" name="arraycaracteristicas[0][lote]"
                                     class="form-control">
                             </div>
-                            <div class="col-md-4 mb-3" id="campos_vencimiento" style="display: none;">
+                            <div class="col-md-3 mb-3" id="campos_vencimiento" style="display: none;">
                                 <label for="vencimiento">Fecha de Vencimiento:</label>
                                 <input type="date" id="vencimiento" name="arraycaracteristicas[0][vencimiento]"
                                     class="form-control">
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Valor Unitario:</label>
+                                <input type="number" name="arraycaracteristicas[0][valor_unitario]" id="valor_unitario"
+                                    class="form-control" placeholder="0.00" step="0.01">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Cantidad:</label>
                                 <input type="number" name="stock" id="stock" class="form-control" placeholder="0">
                             </div>
@@ -260,6 +266,7 @@
             let lote = $('#lote').val();
             let vencimiento = $('#vencimiento').val();
             let invima = $('#invima').val();
+            let unitario = $('#valor_unitario').val();
             let marcaId = $('#id_marca').val();
             let presentacionId = $('#id_presentacion').val();
 
@@ -283,18 +290,22 @@
             }
 
             // Validar que la cantidad sea un número positivo
-            if (id_insumo != '' && nameinsumo != '' && cantidad != '') {
+            if (id_insumo != '' && nameinsumo != '' && cantidad != '' && unitario != '' && !isNaN(unitario) &&
+                parseFloat(unitario) > 0) {
                 if (cantidad > 0 && (cantidad % 1 === 0)) {
                     // Obtener los nombres de marca y presentación a partir de sus IDs
                     let marcaNombre = marcas.find(m => m.id == marcaId).nombre;
                     let presentacionNombre = presentaciones.find(p => p.id == presentacionId).nombre;
 
-                    let fila = '<tr id="fila' + cont + '">' +
-                        '<th>' + (cont + 1) + '</th>' +
+                    let fila = '<tr id="fila' + cont + '" style="font-size: 14px; text-align:center">' +
+                        '<th>' + (cont + 1) + '</th>' + 
                         '<td><input type="hidden" name="arrayidinsumo[' + cont + ']" value="' + id_insumo + '">' +
                         nameinsumo + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][invima]" value="' + invima +
                         '">' + invima + '</td>' +
+                        '<td hidden><input type="hidden" name="arraycaracteristicas[' + cont + '][valor_unitario]" value="' +
+                        unitario +
+                        '">' + unitario + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][lote]" value="' + lote + '">' +
                         lote + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][vencimiento]" value="' +
@@ -304,12 +315,12 @@
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][id_presentacion]" value="' +
                         presentacionId + '">' + presentacionNombre + '</td>' +
                         '<td>' +
-                        '<div class="input-group">' +
-                        '<button class="btn btn-outline-danger btn-sm" type="button" onclick="disminuirCantidad(' + cont +
+                        '<div class="input-group">' +                        
+                        '<button class="btn btn-outline-danger btn-xs p-1" type="button" onclick="disminuirCantidad(' + cont +
                         ')"><i class="fa fa-minus"></i></button>' +
                         '<input type="number" name="arraycantidad[' + cont + ']" value="' + cantidad +
                         '" class="form-control text-center" readonly>' +
-                        '<button class="btn btn-outline-success btn-sm" type="button" onclick="aumentarCantidad(' + cont +
+                        '<button class="btn btn-outline-success btn-xs p-1" type="button" onclick="aumentarCantidad(' + cont +
                         ')"><i class="fa fa-plus"></i></button>' +
                         '</div>' +
                         '</td>' +
@@ -341,6 +352,7 @@
             selectMarca.selectpicker('val', ''); // Limpiar select de nombre
             selectPresentacion.selectpicker('val', ''); // Limpiar select de variante
             $('#stock').val('');
+            $('#valor_unitario').val('');
             $('#invima').val('');
             $('#lote').val('');
             $('#vencimiento').val('');
@@ -356,7 +368,7 @@
 
         function aumentarCantidad(indice) {
             let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[' + indice +
-            ']"]'); // Corrige el selector
+                ']"]'); // Corrige el selector
             let cantidad = parseInt(cantidadInput.val());
             cantidad++;
             cantidadInput.val(cantidad); // Actualiza la cantidad
@@ -366,7 +378,7 @@
 
         function disminuirCantidad(indice) {
             let cantidadInput = $('#fila' + indice).find('input[name="arraycantidad[' + indice +
-            ']"]'); // Corrige el selector
+                ']"]'); // Corrige el selector
             let cantidad = parseInt(cantidadInput.val());
             if (cantidad > 1) { // Si la cantidad es mayor que 1, la disminuye
                 cantidad--;

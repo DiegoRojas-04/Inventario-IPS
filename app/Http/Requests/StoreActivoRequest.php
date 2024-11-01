@@ -32,6 +32,7 @@ class StoreActivoRequest extends FormRequest
             'cantidad' => 'required|integer|min:1',
             'medida' => 'nullable|string|max:50',
             'estado' => 'required|string|max:50',
+            'ubicacion_id' => 'required',
             'observacion' => 'nullable|string|max:500',
         ];
     }

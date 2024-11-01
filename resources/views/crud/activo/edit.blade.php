@@ -38,15 +38,6 @@
                 @method('PUT') <!-- Se usa PUT para la actualización -->
 
                 <div class="col-md-4">
-                    <label for="codigo">Código:</label>
-                    <input type="text" name="codigo" class="form-control @error('codigo') is-invalid @enderror"
-                        value="{{ old('codigo', $activo->codigo) }}" readonly>
-                    @error('codigo')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
                     <label for="nombre">Nombre:</label>
                     <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
                         value="{{ old('nombre', $activo->nombre) }}">
@@ -58,7 +49,6 @@
                 <div class="col-md-4">
                     <label for="categoria_id">Categoría</label>
                     <select name="categoria_id" id="categoria_id" class="form-control" required>
-                        <option value="">Selecciona una categoría</option>
                         @foreach ($categorias as $categoria)
                             <option value="{{ $categoria->id }}"
                                 {{ old('categoria_id', $activo->categoria_id ?? '') == $categoria->id ? 'selected' : '' }}>
@@ -119,17 +109,45 @@
                 <div class="col-md-4">
                     <label for="estado">Estado:</label>
                     <select name="estado" class="form-control @error('estado') is-invalid @enderror">
-                        <option value="">Seleccionar estado...</option>
-                        <option value="0" {{ old('estado') == 0 ? 'selected' : '' }}>En Uso</option>
-                        <option value="1" {{ old('estado') == 1 ? 'selected' : '' }}>Disponible</option>
-                        <option value="2" {{ old('estado') == 2 ? 'selected' : '' }}>Reparacion</option>
+                        <option value="0" {{ old('estado', $activo->estado) == 0 ? 'selected' : '' }}>En Uso</option>
+                        <option value="1" {{ old('estado', $activo->estado) == 1 ? 'selected' : '' }}>Disponible
+                        </option>
+                        <option value="2" {{ old('estado', $activo->estado) == 2 ? 'selected' : '' }}>Reparación
+                        </option>
                     </select>
                     @error('estado')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
 
-                <div class="col-md-12">
+                <div class="col-md-4">
+                    <label for="ubicacion_id">Ubicación:</label>
+                    <select name="ubicacion_id" id="ubicacion_id"
+                        class="form-control @error('ubicacion_id') is-invalid @enderror">
+                        @foreach ($ubicaciones as $ubicacion)
+                            <option value="{{ $ubicacion->id }}"
+                                {{ old('ubicacion_id', $activo->ubicacion_id) == $ubicacion->id ? 'selected' : '' }}>
+                                {{ $ubicacion->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('ubicacion_id')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+
+
+
+
+                <div class="col-md-6">
+                    <label for="codigo">Código:</label>
+                    <input type="text" name="codigo" class="form-control @error('codigo') is-invalid @enderror"
+                        value="{{ old('codigo', $activo->codigo) }}" readonly>
+                    @error('codigo')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+                <div class="col-md-6">
                     <label for="observacion">Observación:</label>
                     <input type="text" name="observacion" class="form-control @error('observacion') is-invalid @enderror"
                         value="{{ old('observacion', $activo->observacion) }}">

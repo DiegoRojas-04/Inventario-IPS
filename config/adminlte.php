@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Title
@@ -11,7 +10,7 @@ return [
     |
     | For detailed instructions you can look the title section here:
     | https://github.com/jeroennoten/Laravel-AdminLTE/wiki/Basic-Configuration
-    |
+    |   
     */
 
     'title' => '',
@@ -70,7 +69,7 @@ return [
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'MEDICARE IPS',
- 
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Logo
@@ -134,7 +133,7 @@ return [
     |
     */
 
-   
+
     'usermenu_enabled' => true,
     'usermenu_header' => true,
     'usermenu_header_class' => 'bg-white',
@@ -327,10 +326,19 @@ return [
             'can' => 'Administrador',
         ],
 
-        ['header' => 'Administracion',
+        [   
+            'text' => 'Alertas',
+            'url' => 'alerta',
+            'icon' => 'fas fa-exclamation-triangle',
+            'label' => "M",
+            'label_color' => 'danger',
+        ],
+            
+        [
+            'header' => 'Administracion',
             'can' => 'Administrador',
         ],
-        
+
         [
             'text' => 'Usuarios',
             'url' => 'usuario',
@@ -346,15 +354,16 @@ return [
         ],
 
         [
-            'text' => 'Roles',
+            'text' => 'Roles',  
             'url' => 'rol',
             'icon' => 'far fa fa-address-card',
-        'can' => 'Administrador'
+            'can' => 'Administrador'
         ],
 
-        ['header' => 'Gestion',
-        'can' => 'Administrador',
-    ],
+        [
+            'header' => 'Gestion',
+            'can' => 'Administrador',
+        ],
 
         [
             'text' => 'Proveedores',
@@ -392,8 +401,8 @@ return [
                 ],
             ],
 
-            
-           
+
+
         ],
 
         [
@@ -432,7 +441,7 @@ return [
                 ],
             ],
 
-        ],      
+        ],
 
         [
             'text' => 'Presentaciones',
@@ -451,7 +460,7 @@ return [
                 ],
             ],
 
-        ], 
+        ],
 
         [
             'text' => 'Insumos',
@@ -475,19 +484,20 @@ return [
             'text' => 'Kardex',
             'url' => 'kardex',
             'icon' => 'far fa fa-book',
-            'can' => ['Kardex', 'Laboratorio'],     
-        
+            'can' => ['Kardex', 'Laboratorio'],
+
         ],
 
-        ['header' => 'Acciones',
-        'can' => 'Administrador',
-    ],
+        [
+            'header' => 'Acciones',
+            'can' => 'Administrador',
+        ],
 
-       [
+        [
             'text' => 'Compras',
             'url' => 'compra',
             'icon' => 'far fa fa-shopping-cart',
-            'can' => ['Compras', 'Laboratorio'],     
+            'can' => ['Compras', 'Laboratorio'],
             'submenu' => [
                 [
                     'text' => 'Compra',
@@ -499,13 +509,13 @@ return [
                 ],
             ],
 
-        ], 
+        ],
 
         [
             'text' => 'Entregas',
             'url' => 'entrega',
             'icon' => 'far fa fa-cart-arrow-down',
-            'can' => ['Entregas', 'Laboratorio'],     
+            'can' => ['Entregas', 'Laboratorio'],
 
             'submenu' => [
                 [
@@ -518,8 +528,8 @@ return [
                 ],
             ],
 
-        ], 
-        
+        ],
+
         [
             'text' => 'Pedidos',
             'url' => 'pedido',
@@ -527,7 +537,7 @@ return [
             'can' => 'Entregas',
 
         ],
-        
+
         [
             'text' => 'Home',
             'url' => 'home',
@@ -535,7 +545,7 @@ return [
             'can' => '',
 
         ],
-             
+
         [
             'text' => 'Realizar Pedido',
             'url' => 'pedido/create',
@@ -573,12 +583,16 @@ return [
             'can' => 'Activos',
             'submenu' => [
                 [
-                    'text' => 'Crear Categoria',
+                    'text' => 'Categoria',
                     'url' => 'categoriasAct',
                 ],
                 [
-                    'text' => 'Crear Activo',
+                    'text' => 'Activo',
                     'url' => 'activo/create',
+                ],
+                [
+                    'text' => 'Ubicacion',
+                    'url' => 'ubicaciones',
                 ],
                 [
                     'text' => 'Lisa de Activos',

@@ -4,18 +4,32 @@
 
 @section('content_header')
 
-    <a href="{{ url('/insumo/create') }}" class="text-decoration-none text-white">
-        <button type="submit" class="btn btn-primary">Agregar Insumos</button>
-    </a>
-
-    <button type="button" class="btn btn-primary">
-        <a href="{{ route('insumos.exportToPdf', ['id_categoria' => request('id_categoria')]) }}"
-            style="color: white; text-decoration: none;">
-            <i class="fa fa-file-pdf" aria-hidden="true"></i>
-        </a>
-    </button>
-
-    <a href="{{ route('generar.codigos.barras') }}" class="btn btn-primary">Códigos de Barras</a>
+    <div style="display: flex; justify-content: space-between; align-items:center;">
+        <div>
+            <a href="{{ url('/insumo/create') }}" class="text-decoration-none text-white">
+                <button type="submit" class="btn btn-primary">Agregar Insumos</button>
+            </a>
+            <a href="{{ route('insumos.analisisPrecios') }}" class="btn btn-primary">
+                Análisis <i class="fa fa-signal" aria-hidden="true"></i>
+            </a>
+        </div>
+        <div>
+            <button type="button" class="btn btn-danger">
+                <a href="{{ route('insumos.exportToPdf', ['id_categoria' => request('id_categoria')]) }}"
+                    style="color: white; text-decoration: none;">Inventario
+                    <i class="fa fa-file-pdf" aria-hidden="true"></i>
+                </a>
+            </button>
+            <button type="button" class="btn btn-success">
+                <a href="{{ route('insumos.exportToExcel', ['id_categoria' => request('id_categoria')]) }}"
+                    style="color: white; text-decoration: none;">Inventario
+                    <i class="fa fa-file-excel" aria-hidden="true"></i>
+                </a>
+            </button>
+            
+            <a href="{{ route('generar.codigos.barras') }}" class="btn btn-info">Códigos <i class="fa fa-barcode" aria-hidden="true"></i> </a>
+        </div>
+    </div>
 
     @if (session('Mensaje'))
         <script>
@@ -255,34 +269,51 @@
                         </label>
 
                         <div class="mb-3 border-b pb-3"
-                            style="display: flex; justify-content: space-between; align-items: stretch; border: 1px solid #ccc; padding: 10px;">
-                            <div style="flex: 0 0 70%; border-right: 1px solid #ccc; padding-right: 10px;">
-                                <label class="block font-bold" for="descripcion">Descripción:</label>
-                                <span id="descripcion" style="word-wrap: break-word; text-align: left;">
-                                    {{ $insumo->descripcion }}
+                        style="display: flex; justify-content: space-between; align-items: stretch; border: 1px solid #ccc; padding: 10px;">
+                        
+                        <div style="flex: 0 0 55%; border-right: 1px solid #ccc; padding-right: 10px;">
+                            <label class="block font-bold" for="descripcion">Descripción:</label>
+                            <span id="descripcion" style="word-wrap: break-word; text-align: left;">
+                                {{ $insumo->descripcion }}
+                            </span>
+                        </div>
+                        
+                        <div style="flex: 0 0 15%; border-right: 1px solid #ccc; padding-right: 10px; display: flex; align-items: center; justify-content: center;">
+                            <div>
+                                <label class="block font-bold" for="vida_util" style="text-align: center;">Vida Útil:</label>
+                                <span id="vida_util" style="text-align: center;">
+                                    {{ $insumo->vida_util }}
                                 </span>
                             </div>
-                            <div
-                                style="flex: 0 0 15%; border-right: 1px solid #ccc; padding-right: 10px; display: flex; align-items: center; justify-content: center;">
-                                <div>
-                                    <label class="block font-bold" for="vida_util" style="text-align: center;">Vida
-                                        Útil:</label>
-                                    <span id="vida_util" style="text-align: center;">
-                                        {{ $insumo->vida_util }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div style="flex: 0 0 15%; display: flex; align-items: center; justify-content: center;">
-                                <div>
-                                    <label class="block font-bold" for="riesgo"
-                                        style="text-align: center;">Riesgo:</label>
-                                    <span id="riesgo" style="text-align: center;">
-                                        {{ $insumo->riesgo }}
-                                    </span>
-                                </div>
+                        </div>
+                        
+                        <div style="flex: 0 0 15%; border-right: 1px solid #ccc; padding-right: 10px; display: flex; align-items: center; justify-content: center;">
+                            <div>
+                                <label class="block font-bold" for="riesgo" style="text-align: center;">Riesgo:</label>
+                                <span id="riesgo" style="text-align: center;">
+                                    {{ $insumo->riesgo }}
+                                </span>
                             </div>
                         </div>
-
+                    
+                        <div style="flex: 0 0 15%; display: flex; align-items: center; justify-content: center;">
+                            <div>
+                                <label class="block font-bold" for="ubicacion" style="text-align: center;">Ubicación:</label>
+                                <span id="ubicacion" style="text-align: center;">
+                                    @if ($insumo->ubicacion == 1)
+                                        Insumos
+                                    @elseif ($insumo->ubicacion == 2)
+                                        Bodega Principal
+                                    @elseif ($insumo->ubicacion == 3)
+                                        Laboratorio
+                                    @else
+                                        Desconocido
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
                         <div class="mb-3">
                             <table class="table">
                                 <thead class="thead-dark">

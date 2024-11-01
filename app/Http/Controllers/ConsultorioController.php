@@ -25,14 +25,20 @@ class ConsultorioController extends Controller
     {
         $consultorio = Consultorio::create($request->validated());
         $elementos = Elemento::all();
-    
+
+        // Asociar todos los elementos al nuevo consultorio con una observación predeterminada de 1
         foreach ($elementos as $elemento) {
-            $consultorio->elementos()->attach($elemento->id, ['cantidad' => 0, 'estado' => 'bueno']);
+            $consultorio->elementos()->attach($elemento->id, [
+                'cantidad' => 0,
+                'observacion' => 1 // Valor predeterminado para la observación
+            ]);
         }
-    
+
         return redirect()->route('consultorios.index')->with('Mensaje', 'Consultorio Agregado');
     }
-    
+
+
+
 
     // Muestra los detalles de un consultorio específico
     public function show($id)

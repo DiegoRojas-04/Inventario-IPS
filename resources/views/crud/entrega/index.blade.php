@@ -22,11 +22,15 @@
             });
         </script>
     @endif
-    <div class="form-row">
-        <div class="col-sm-12 d-flex align-items-center justify-content-between">
+    <div class="form-row d-flex justify-content-between">
+        <div>
             <a href="{{ url('/entrega/create') }}" class="text-decoration-none text-white">
                 <button type="submit" class="btn btn-primary">Agregar Entrega</button>
             </a>
+        </div>
+
+        <div>
+            <a href="{{ route('entregas.estadisticas') }}" class="btn btn-primary">Estadísticas Entrega</a>
         </div>
     </div>
 @stop

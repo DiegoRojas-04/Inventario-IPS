@@ -28,6 +28,7 @@ class StoreInsumoRequest extends FormRequest
             'stock' => 'required | numeric | min:0',
             'riesgo' => 'required',
             'vida_util' => 'required',
+            'ubicacion' => 'required',
             'codigo' => 'nullable|string|max:255|unique:insumos',
             'id_categoria' => 'required',
             // 'id_marca' => 'required',

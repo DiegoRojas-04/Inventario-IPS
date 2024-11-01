@@ -12,7 +12,7 @@
     @stop
 
     @section('content')
-        <div class="container w-100 border border-3 rounded p-4 mt-3">
+        <div class="container-fluid w-100 border border-3 rounded p-4 mt-3">
             <div class="row mb-2">
                 <div class="col-sm-4">
                     <div class="input-group mb-3">
@@ -70,7 +70,7 @@
                 <div class="card-header text-center">
                     <h4>Detalle de Compra</h4>
                 </div>
-                <div class="card-body table-responsive">
+                <div class="card-body table-responsive" style="font-size: 15px">
                     <div class="mb-3">
                         <button type="button" class="btn btn-success">
                             <i class="fa fa-file-excel" aria-hidden="true"></i>
@@ -92,7 +92,9 @@
                                 <th>Invima</th>
                                 <th>Lote</th>
                                 <th>Vencimiento</th>
+                                <th>Valor</th>
                                 <th>Cantidad</th>
+                                <th>SubTotal</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -105,24 +107,30 @@
                                         <td>{{ $caracteristica->invima }}</td>
                                         <td>{{ $caracteristica->lote }}</td>
                                         <td>{{ $caracteristica->vencimiento }}</td>
+                                        <td>{{ number_format($caracteristica->valor_unitario) }}</td>
                                         <td>{{ $caracteristica->cantidad_compra }}</td>
+                                        <td>{{ number_format($caracteristica->valor_unitario * $caracteristica->cantidad_compra) }}
+                                        </td>
                                     </tr>
                                 @endforeach
                             @endforeach
                         </tbody>
                     </table>
-
+                    <div class="d-flex justify-content-end mt-3">
+                        <h5>Total de la compra: <span class="text">{{ number_format($totalCompra) }}</span></h5>
+                    </div>
                 </div>
             </div>
         </div>
-    @stop
+    </div>
+@stop
 
-    @section('css')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @stop
+@section('css')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@stop
 
-    @section('js')
-        <script>
-            console.log("Hi, I'm using the Laravel-AdminLTE package!");
-        </script>
-    @stop
+@section('js')
+    <script>
+        console.log("Hi, I'm using the Laravel-AdminLTE package!");
+    </script>
+@stop

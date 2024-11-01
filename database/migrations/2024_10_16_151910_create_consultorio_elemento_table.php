@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -17,7 +18,6 @@ return new class extends Migration
             $table->foreignId('elemento_id')->constrained()->onDelete('cascade');
             $table->integer('cantidad')->default(0);
             $table->string('observacion')->nullable();
-            $table->string('estado')->default('bueno');
             $table->timestamps();
         });
     }

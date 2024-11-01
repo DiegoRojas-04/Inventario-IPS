@@ -22,11 +22,14 @@
             });
         </script>
     @endif
-    <div class="form-row">
-        <div class="col-sm-12 d-flex align-items-center justify-content-between">
+    <div class="form-row d-flex justify-content-between">
+        <div>
             <a href="{{ url('/compra/create') }}" class="text-decoration-none text-white">
                 <button type="submit" class="btn btn-primary">Agregar Compra</button>
             </a>
+        </div>
+        <div>
+            <a href="{{ route('compras.estadisticas') }}" class="btn btn-primary">Estadísticas Compra</a>
         </div>
     </div>
 @stop
@@ -46,7 +49,7 @@
                         <input type="date" name="fecha_fin" id="fecha_fin" class="form-control">
                     </div>
                     <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                        <button type="submit" class="btn btn-secondary">Filtrar</button>
                     </div>
                 </div>
             </form>
@@ -66,6 +69,7 @@
                             <th>Comprobante</th>
                             <th>Fecha</th>
                             <th>Hora</th>
+                            <th>Valor Total</th>    
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -77,8 +81,8 @@
                                 <td>{{ $item->comprobante->tipo_comprobante }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('H:i:s') }}</td>
-                                <td>
-
+                                <td>{{ number_format($item->total, 2) }}</td> <!-- Mostrar el valor total -->
+                                <td>    
                                     <div class="btn-group" role="group">
                                         <form action="{{ route('compra.show', ['compra' => $item]) }}" method="get">
                                             <button type="submit" class="btn btn-primary"><i class="fa fa-eye"
@@ -90,6 +94,7 @@
                         @endforeach
                     </tbody>
                 </table>
+
                 {{ $compras->appends(request()->query())->links() }}
             @endif
         </div>

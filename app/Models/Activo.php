@@ -19,6 +19,7 @@ class Activo extends Model
         'cantidad',
         'medida',
         'estado',
+        'ubicacion_id',
         'observacion',
         'condicion',
     ];
@@ -27,4 +28,11 @@ class Activo extends Model
     {
         return $this->belongsTo(CategoriaActivo::class);
     }
+
+    public function ubicacion()
+{
+    return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
 }
+
+}
+

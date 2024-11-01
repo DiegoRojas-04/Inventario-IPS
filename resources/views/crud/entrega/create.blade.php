@@ -36,11 +36,16 @@
                                         class="form-control selectpicker show-tick">
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-2">
+                                <div class="col-md-4 mb-2">
                                     <label class="form-label">En Stock:</label>
                                     <input type="text" class="form-control" id="stock_actual" readonly>
                                 </div>
-                                <div class="col-md-6 mb-2">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">Valor Unitario:</label>
+                                    <input type="text" name="valor_unitario" id="valor_unitario" class="form-control"
+                                        placeholder="0.00" readonly>
+                                </div>
+                                <div class="col-md-4 mb-2">
                                     <label class="form-label">Cantidad:</label>
                                     <input type="number" name="stock" id="stock" class="form-control"
                                         placeholder="0">
@@ -266,15 +271,19 @@
                                     });
                                 if (caracteristica) {
                                     stockInput.val(caracteristica.cantidad);
+                                    // Actualizar el precio unitario
+                                    $('#valor_unitario').val(caracteristica.valor_unitario);
                                 }
                             });
 
                             caracteristicasDisponibles.forEach(function(caracteristica) {
                                 $('#variante').append('<option value="' + caracteristica.id +
                                     '" data-marca-id="' + (caracteristica.marca ? caracteristica
-                                        .marca.id : '') + '" data-presentacion-id="' + (
-                                        caracteristica.presentacion ? caracteristica
-                                        .presentacion.id : '') + '">' +
+                                        .marca.id : '') +
+                                    '" data-presentacion-id="' + (caracteristica.presentacion ?
+                                        caracteristica.presentacion.id : '') +
+                                    '" data-precio-unitario="' + caracteristica
+                                    .valor_unitario + '">' +
                                     caracteristica.invima + ' - ' + caracteristica.lote +
                                     ' - ' + caracteristica.vencimiento +
                                     ' - ' + (caracteristica.marca ? caracteristica.marca
@@ -284,11 +293,11 @@
                                     '</option>');
                             });
 
-
                             $('#variante').selectpicker();
                         } else { // Si el insumo no tiene variantes
                             // Mostrar el stock general del insumo en el input de stock
                             stockInput.prop('readonly', false);
+
 
                             // Actualizar el valor del input de stock con el stock general del insumo
                             $.ajax({
@@ -317,7 +326,7 @@
                     $('#variante').selectpicker('val', '');
                 });
             });
-            
+
             // Función para agregar un insumo a la lista de detalles
             $('#btn_agregar').click(function() {
                 agregarInsumo();
@@ -333,6 +342,7 @@
                 let cantidad = parseInt($('#stock').val());
                 let variante = $('#variante').val();
                 let stockActual = parseInt($('#stock_actual').val());
+                let precioUnitario = parseFloat($('#valor_unitario').val()) || 0; // Valor unitario
 
                 // Capturar las características de la variante seleccionada
                 let varianteText = $('#variante option:selected').text();
@@ -353,7 +363,7 @@
                                 if (idInsumoTabla === idInsumo && varianteTabla === variante) {
                                     encontrado = true;
                                     let cantidadExistente = parseInt($(this).find('input[name="arraycantidad[]"]')
-                                    .val());
+                                        .val());
                                     let nuevaCantidad = cantidadExistente + cantidad;
                                     if (nuevaCantidad <= stockActual) {
                                         $(this).find('input[name="arraycantidad[]"]').val(nuevaCantidad);
@@ -369,7 +379,7 @@
 
                             if (!encontrado) {
                                 agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad,
-                                    stockActual, marcaId, marcaNombre, presentacionId, presentacionNombre);
+                                    stockActual, marcaId, marcaNombre, presentacionId, presentacionNombre, precioUnitario);
                                 limpiarCampos();
                             }
                         } else {
@@ -383,10 +393,9 @@
                 }
             }
 
-
             function agregarNuevaFila(idInsumo, nombreInsumo, variante, invima, lote, vencimiento, cantidad, stockActual,
-                marcaId, marcaNombre, presentacionId, presentacionNombre) {
-                let fila = '<tr id="fila' + cont + '">' +
+                marcaId, marcaNombre, presentacionId, presentacionNombre, precioUnitario) {
+                let fila = '<tr id="fila' + cont + '" style="font-size: 14px; text-align:center">' +
                     '<td><input type="hidden" name="arrayidinsumo[]" value="' + idInsumo + '">' +
                     nombreInsumo + '</td>' +
                     '<td><input type="hidden" name="arrayvariante[]" value="' + variante + '">' +
@@ -396,13 +405,15 @@
                     '<td><input type="hidden" name="arraymarca[]" value="' + marcaId + '">' + marcaNombre + '</td>' +
                     '<td><input type="hidden" name="arraypresentacion[]" value="' + presentacionId + '">' + presentacionNombre +
                     '</td>' +
+                    // Oculta el valor unitario en la tabla, pero lo envía en un campo oculto
+                    '<input type="hidden" name="arrayvalor[]" value="' + precioUnitario + '">' +
                     '<td id="centrar">' +
                     '<div class="input-group">' +
-                    '<button class="btn btn-outline-danger btn-sm" type="button" onClick="restarCantidad(' + cont +
+                    '<button class="btn btn-outline-danger btn-xs p-1" type="button" onClick="restarCantidad(' + cont +
                     ')"><i class="fa fa-minus"></i></button>' +
                     '<input type="number" name="arraycantidad[]" id="cantidad' + cont + '" value="' + cantidad +
                     '" class="form-control" readonly>' +
-                    '<button class="btn btn-outline-success btn-sm" type="button" onClick="sumarCantidad(' + cont + ', ' +
+                    '<button class="btn btn-outline-success btn-xs p-1" type="button" onClick="sumarCantidad(' + cont + ', ' +
                     stockActual + ')"><i class="fa fa-plus"></i></button>' +
                     '</div>' +
                     '</td>' +
@@ -460,7 +471,7 @@
                 $('#variante').selectpicker('val', ''); // Limpiar el select de variantes
                 $('#stock_actual').val(''); // Limpiar el input de stock actual
                 $('#stock').val(''); // Limpiar el input de cantidad
-
+                $('#valor_unitario').val(''); // Limpiar también el precio unitario
                 // Refrescar select pickers después de limpiar los valores
                 $('#nombre').selectpicker('val', '');
                 $('#variante').selectpicker('val', '');

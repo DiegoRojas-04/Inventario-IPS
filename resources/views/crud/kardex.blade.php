@@ -48,7 +48,7 @@
         <div class="card-body">
 
             <div class="mb-2 row">
-                <div class="col-md-11">
+                <div class="col-md-7">
                     <div class="">
                         <button type="button" class="btn btn-success">
                             <a href="{{ route('export.excel', ['mes' => $selectedMonth, 'anno' => $selectedYear, 'id_categoria' => request('id_categoria')]) }}"
@@ -69,6 +69,12 @@
                             </a>
                         </button>
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <form method="GET" action="{{ route('kardex.index') }}">
+                        <input class="form-control" type="text" name="search" placeholder="Buscar insumos"
+                            value="{{ request('search') }}">
+                    </form>
                 </div>
                 <div class="col-md-1">
                     <div class="form-group">

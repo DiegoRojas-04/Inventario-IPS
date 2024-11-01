@@ -21,6 +21,7 @@ class ElementoController extends Controller
 
     public function index(Request $request)
     {
+
         $consultorios = Consultorio::all(); // Obtener todos los consultorios
         $elementos = []; // Inicializar como vacío si no se ha seleccionado
         $todosLosElementos = Elemento::orderBy('nombre', 'asc')->get(); // Obtener todos los elementos ordenados alfabéticamente
@@ -32,7 +33,8 @@ class ElementoController extends Controller
                 ->get()
                 ->map(function ($elemento) {
                     // Sumar la cantidad de cada elemento en todos los consultorios
-                    $cantidadTotal = $elemento->consultorios->sum('pivot.cantidad');
+                    $cantidadTotal = $elemento->consultorios->sum('pivot.cantidad'); // Asegúrate de que 'cantidad' sea la columna que quieres
+
                     return [
                         'nombre' => $elemento->nombre,
                         'cantidad_total' => $cantidadTotal,
@@ -56,17 +58,23 @@ class ElementoController extends Controller
             'nombre' => 'required|string|max:255|unique:elementos,nombre',
             'categoria' => 'required|string|in:Equipos,Insumos,Papeleria',
             'descripcion' => 'nullable|string|max:500',
+            'cantidad_necesaria' => 'required|integer',
         ]);
 
         $elemento = Elemento::create($request->all());
         $consultorios = Consultorio::all();
 
+        // Asociar el elemento a los consultorios con una observación predeterminada de 1
         foreach ($consultorios as $consultorio) {
-            $consultorio->elementos()->attach($elemento->id, ['cantidad' => 0, 'estado' => 'bueno']);
+            $consultorio->elementos()->attach($elemento->id, [
+                'cantidad' => 0,
+                'observacion' => 1 // Valor predeterminado para la observación
+            ]);
         }
 
         return redirect()->route('elementos.create')->with('Mensaje', 'Elemento Agregado');
     }
+
 
     public function create(Request $request)
     {
@@ -132,39 +140,30 @@ class ElementoController extends Controller
         }
     }
 
-
-    public function updateEstado(Request $request, $id)
+    public function actualizarCantidades(Request $request, $consultorioId)
     {
-        // Validar la entrada
-        $request->validate([
-            'consultorio_id' => 'required|exists:consultorios,id', // Validar el ID del consultorio
+        $data = $request->validate([
+            'cantidades.*' => 'required|integer|min:0',
+            'observaciones.*' => 'required|integer|in:1,2,3,4', // Ajusta según tus opciones válidas
         ]);
 
-        // Obtener el elemento
-        $elemento = Elemento::findOrFail($id);
-        $consultorioId = $request->input('consultorio_id'); // Obtener el consultorio ID desde el formulario
+        foreach ($data['cantidades'] as $elementoId => $cantidad) {
+            // Suponiendo que hay una relación many-to-many entre Consultorio y Elemento
+            $consultorioElemento = Consultorio::find($consultorioId)
+                ->elementos()
+                ->where('elemento_id', $elementoId)
+                ->first();
 
-        // Obtener el estado actual del elemento en la relación con el consultorio
-        $estadoActual = $elemento->consultorios()
-            ->where('consultorio_id', $consultorioId)
-            ->first()
-            ->pivot
-            ->estado;
+            if ($consultorioElemento) {
+                $consultorioElemento->pivot->cantidad = $cantidad;
+                $consultorioElemento->pivot->observacion = $data['observaciones'][$elementoId];
+                $consultorioElemento->pivot->save();
+            }
+        }
 
-        // Determinar el nuevo estado
-        $nuevoEstado = ($estadoActual === 'bueno') ? 'malo' : 'bueno';
+        return redirect()->back()->with('Success', 'Actualizado Correctamente');
 
-        // Actualizar el estado en la tabla pivote
-        $elemento->consultorios()->updateExistingPivot($consultorioId, ['estado' => $nuevoEstado]);
-
-        // Redirigir a la vista de elementos con un mensaje de éxito
-        return redirect()->route('elementos.index', ['consultorio_id' => $consultorioId])
-            ->with('success', 'Estado actualizado exitosamente.');
     }
-
-
-
-
     // Muestra el formulario para editar un elemento existente
     public function edit($id)
     {
@@ -180,6 +179,7 @@ class ElementoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string|max:500',
             'categoria' => 'required|string|in:Equipos,Insumos,Pepeleria',
+            'cantidad_necesaria' => 'required|integer',
         ]);
 
         $elemento = Elemento::findOrFail($id);

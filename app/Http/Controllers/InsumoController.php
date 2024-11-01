@@ -13,6 +13,10 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Dompdf\Dompdf;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -198,6 +202,7 @@ class InsumoController extends Controller
       'nombre' => 'required|max:60|unique:insumos,nombre,' . $id,
       'descripcion' => 'nullable|max:255',
       'codigo' => 'nullable|numeric',
+      'ubicacion' => 'nullable|numeric',
     ]);
     $insumo = Insumo::findOrFail($id);
     $insumo->fill([
@@ -210,12 +215,57 @@ class InsumoController extends Controller
       // 'id_presentacion' => $request->input('id_presentacion'),
       'riesgo' => $request->input('riesgo'),
       'vida_util' => $request->input('vida_util'),
+      'ubicacion' => $request->input('ubicacion'),
       'codigo' => $request->input('codigo'),
       // 'stock' => $request->input('stock'),
     ]);
     $insumo->save();
     return redirect('insumo')->with('Mensaje2', 'Insumo Actualizada Correctamente');
   }
+
+
+  public function analisisPrecios(Request $request)
+  {
+    $insumos = Insumo::with(['caracteristicas', 'caracteristicas.compra.proveedor'])
+      ->get()
+      ->map(function ($insumo) {
+        $caracteristicas = $insumo->caracteristicas->sortByDesc('created_at');
+
+        $ultimaCompra = $caracteristicas->first();
+        $penultimaCompra = $caracteristicas->skip(1)->first();
+
+        $diferenciaPorcentaje = null;
+        if ($ultimaCompra && $penultimaCompra && $penultimaCompra->valor_unitario != 0) {
+          $diferenciaPorcentaje = ($ultimaCompra->valor_unitario - $penultimaCompra->valor_unitario) / $penultimaCompra->valor_unitario * 100;
+        }
+
+        return [
+          'nombre' => $insumo->nombre,
+          'proveedor_ultima' => $ultimaCompra?->compra->proveedor->nombre,
+          'fecha_penultima' => $penultimaCompra ? \Carbon\Carbon::parse($penultimaCompra->compra->fecha_hora)->format('d-m-Y') : null,
+          'valor_penultima' => $penultimaCompra?->valor_unitario,
+          'proveedor_penultima' => $penultimaCompra?->compra->proveedor->nombre,
+          'fecha_ultima' => $ultimaCompra ? \Carbon\Carbon::parse($ultimaCompra->compra->fecha_hora)->format('d-m-Y') : null,
+          'valor_ultima' => $ultimaCompra?->valor_unitario,
+          'diferencia_porcentaje' => $diferenciaPorcentaje
+        ];
+      })
+      ->filter(function ($insumo) use ($request) {
+        // Aplicar el filtro de cambio de precio
+        if ($request->price_change === 'up') {
+          return $insumo['diferencia_porcentaje'] > 0;
+        } elseif ($request->price_change === 'down') {
+          return $insumo['diferencia_porcentaje'] < 0;
+        } elseif ($request->price_change === 'equal') {
+          return $insumo['diferencia_porcentaje'] == 0;
+        }
+        return true; // No aplicar filtro si no se selecciona opción
+      })
+      ->sortBy('nombre'); // Ordenar por el nombre del insumo
+
+    return view('crud.insumo.porcentaje', compact('insumos'));
+  }
+
 
 
   /**
@@ -241,44 +291,64 @@ class InsumoController extends Controller
     }
   }
 
+
   public function exportToPdf(Request $request)
   {
     // Obtener el id de la categoría seleccionada
     $idCategoria = $request->input('id_categoria');
     $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : 'Todas las categorías';
 
-    // Obtener insumos y sus características filtrando por categoría
+    // Obtener insumos y sus características filtrando por categoría y ordenando alfabéticamente
     $insumos = Insumo::with(['caracteristicas.marca', 'caracteristicas.presentacion'])
       ->when($idCategoria, function ($query, $id) {
-        return $query->where('id_categoria', $id); // Asegúrate de que 'categoria_id' es la columna correcta
+        return $query->where('id_categoria', $id);
       })
+      ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por el nombre del insumo
       ->get();
 
-    // Crear el HTML para el PDF
-    $html = '<style>
-                    body { font-family: Arial, sans-serif; }
-                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-                    th, td { border: 1px solid black; text-align: left; padding: 8px; }
-                    th { background-color: #f2f2f2; }
-                </style>';
+    // Calcular el valor total de todos los insumos
+    $valorTotal = 0;
+    foreach ($insumos as $insumo) {
+      foreach ($insumo->caracteristicas as $caracteristica) {
+        if ($caracteristica->cantidad > 0) {
+          $valorTotal += $caracteristica->cantidad * $caracteristica->valor_unitario;
+        }
+      }
+    }
 
-    // Agregar el título con el nombre de la categoría
+    // Crear el HTML para el PDF con ajustes de estilo
+    $html = '<style>
+                  body { font-family: Arial, sans-serif; }
+                  table { width: 100%; border-collapse: collapse; font-size: 10px; } /* Reducido a 10px */
+                  th, td { border: 1px solid black; text-align: left; padding: 4px; } /* Padding reducido */
+                  th { background-color: #f2f2f2; font-size: 9px; } /* Tamaño de fuente más pequeño para el encabezado */
+                  h6 { font-size: 12px; margin: 0; }
+                  p { font-size: 12px; margin: 5px 0; }
+              </style>';
+
+    // Agregar el título con el nombre de la categoría y el valor total
     $html .= '<h6 style="text-align: center;">Categoría: ' . $categoriaNombre . '</h6>';
+    $html .= '<p style="text-align: center; font-weight: bold;">Valor Total de los Insumos: $' . number_format(floor($valorTotal), 0) . '</p>'; // Sin decimales
     $html .= '<table>';
-    $html .= '<tr><th>Nombre del Insumo</th><th>INVIMA</th><th>Lote</th><th>Fecha</th><th>Marca</th><th>Presentación</th><th>Cantidad</th></tr>';
+    $html .= '<tr><th>Nombre del Insumo</th><th>INVIMA</th><th>Lote</th><th>Fecha</th><th>Marca</th><th>Presentación</th><th>Cantidad</th><th>Unitario</th><th>Subtotal</th></tr>';
 
     // Iterar sobre cada insumo y sus características
     foreach ($insumos as $insumo) {
       foreach ($insumo->caracteristicas as $caracteristica) {
-        $html .= '<tr>';
-        $html .= '<td>' . $insumo->nombre . '</td>';
-        $html .= '<td>' . $caracteristica->invima . '</td>';
-        $html .= '<td>' . $caracteristica->lote . '</td>';
-        $html .= '<td>' . $caracteristica->vencimiento . '</td>';
-        $html .= '<td>' . ($caracteristica->marca ? $caracteristica->marca->nombre : 'Sin Marca') . '</td>'; // Cambiado aquí
-        $html .= '<td>' . ($caracteristica->presentacion ? $caracteristica->presentacion->nombre : 'Sin Presentación') . '</td>'; // Cambiado aquí
-        $html .= '<td>' . $caracteristica->cantidad . '</td>';
-        $html .= '</tr>';
+        if ($caracteristica->cantidad > 0) {
+          $subtotal = $caracteristica->cantidad * $caracteristica->valor_unitario;
+          $html .= '<tr>';
+          $html .= '<td>' . $insumo->nombre . '</td>';
+          $html .= '<td>' . $caracteristica->invima . '</td>';
+          $html .= '<td>' . $caracteristica->lote . '</td>';
+          $html .= '<td>' . $caracteristica->vencimiento . '</td>';
+          $html .= '<td>' . ($caracteristica->marca ? $caracteristica->marca->nombre : 'Sin Marca') . '</td>';
+          $html .= '<td>' . ($caracteristica->presentacion ? $caracteristica->presentacion->nombre : 'Sin Presentación') . '</td>';
+          $html .= '<td>' . $caracteristica->cantidad . '</td>';
+          $html .= '<td>$' . number_format(floor($caracteristica->valor_unitario), 0) . '</td>'; // Sin decimales
+          $html .= '<td>$' . number_format(floor($subtotal), 0) . '</td>'; // Sin decimales
+          $html .= '</tr>';
+        }
       }
     }
     $html .= '</table>';
@@ -287,13 +357,178 @@ class InsumoController extends Controller
     $dompdf = new Dompdf();
     $dompdf->loadHtml($html);
 
-    // Renderizar PDF
+    // Ajustar el tamaño del papel y la orientación
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
 
     // Descargar PDF
     return $dompdf->stream('Insumos_y_Caracteristicas.pdf');
   }
+  public function exportToExcel(Request $request)
+  {
+    // Obtener el id de la categoría seleccionada
+    $idCategoria = $request->input('id_categoria');
+    $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : 'Todas las categorías';
+
+    // Obtener insumos y sus características filtrando por categoría
+    $insumos = Insumo::with(['caracteristicas.marca', 'caracteristicas.presentacion'])
+      ->when($idCategoria, function ($query, $id) {
+        return $query->where('id_categoria', $id);
+      })
+      ->orderBy('nombre', 'asc')
+      ->get();
+
+    // Calcular el valor total de todos los insumos
+    $valorTotal = 0;
+    foreach ($insumos as $insumo) {
+      foreach ($insumo->caracteristicas as $caracteristica) {
+        if ($caracteristica->cantidad > 0) {
+          $valorTotal += $caracteristica->cantidad * $caracteristica->valor_unitario;
+        }
+      }
+    }
+
+    // Crear un nuevo Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Establecer el título
+    $sheet->setCellValue('B2', 'Valor TotaL de Inventario: $' . number_format(floor($valorTotal), 0));
+
+    // Encabezados de las columnas para la tabla de categorías
+    $sheet->setCellValue('B4', 'Categoría');
+    $sheet->setCellValue('C4', 'Valor');
+
+    // Estilo para los encabezados de la tabla de categorías
+    $headerStyle = [
+      'font' => ['bold' => true],
+      'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER
+      ],
+      'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+      'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => ['argb' => 'FFADD8E6'], // Cambia el color si lo deseas
+      ],
+    ];
+    $sheet->getStyle('B4:C4')->applyFromArray($headerStyle);
+
+    // Calcular los valores por categoría
+    $row = 5; // Empezar en la fila 5 para los datos
+    $categorias = Categoria::all(); // Obtener todas las categorías
+    $valorPorCategoria = [];
+
+    foreach ($categorias as $categoria) {
+      $valorPorCategoria[$categoria->nombre] = 0; // Inicializar el valor de la categoría
+
+      // Calcular el valor total de los insumos de esta categoría
+      foreach ($insumos as $insumo) {
+        if ($insumo->id_categoria == $categoria->id) {
+          foreach ($insumo->caracteristicas as $caracteristica) {
+            if ($caracteristica->cantidad > 0) {
+              $valorPorCategoria[$categoria->nombre] += $caracteristica->cantidad * $caracteristica->valor_unitario;
+            }
+          }
+        }
+      }
+
+      // Escribir el valor en la hoja de cálculo
+      $sheet->setCellValue('B' . $row, $categoria->nombre);
+      $sheet->setCellValue('C' . $row, number_format(floor($valorPorCategoria[$categoria->nombre]), 0));
+      $row++;
+    }
+
+    // Sumar los valores de todas las categorías
+    $totalCategorias = array_sum($valorPorCategoria);
+
+    // Escribir el total al final de la tabla de categorías
+    $sheet->setCellValue('B' . $row, 'Total');
+    $sheet->setCellValue('C' . $row, number_format(floor($totalCategorias), 0));
+
+    // Estilo para la fila de total
+    $totalStyle = [
+      'font' => ['bold' => true],
+      'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+    ];
+    $sheet->getStyle('B' . $row . ':C' . $row)->applyFromArray($totalStyle);
+
+    // Encabezados de las columnas para la tabla principal
+    $sheet->setCellValue('A' . ($row + 2), 'Nombre del Insumo');
+    $sheet->setCellValue('B' . ($row + 2), 'INVIMA');
+    $sheet->setCellValue('C' . ($row + 2), 'Lote');
+    $sheet->setCellValue('D' . ($row + 2), 'Fecha');
+    $sheet->setCellValue('E' . ($row + 2), 'Marca');
+    $sheet->setCellValue('F' . ($row + 2), 'Presentación');
+    $sheet->setCellValue('G' . ($row + 2), 'Cantidad');
+    $sheet->setCellValue('H' . ($row + 2), 'Unitario');
+    $sheet->setCellValue('I' . ($row + 2), 'Subtotal');
+
+    // Aplicar estilo a los encabezados de la tabla principal
+    $sheet->getStyle('A' . ($row + 2) . ':I' . ($row + 2))->applyFromArray($headerStyle);
+
+    // Ajustar el estilo de la tabla de categorías para centrar el contenido y agregar bordes
+    $styleCategoria = [
+      'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER
+      ],
+      'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+    ];
+
+    // Aplicar el estilo a las celdas de categorías
+    for ($i = 5; $i <= $row; $i++) {
+      $sheet->getStyle('B' . $i . ':C' . $i)->applyFromArray($styleCategoria);
+    }
+
+    // Iterar sobre cada insumo y sus características
+    $row += 3; // Empezar en la fila 8 para los datos
+    foreach ($insumos as $insumo) {
+      foreach ($insumo->caracteristicas as $caracteristica) {
+        if ($caracteristica->cantidad > 0) {
+          $subtotal = $caracteristica->cantidad * $caracteristica->valor_unitario;
+
+          $sheet->setCellValue('A' . $row, $insumo->nombre);
+          $sheet->setCellValue('B' . $row, $caracteristica->invima);
+          $sheet->setCellValue('C' . $row, $caracteristica->lote);
+          $sheet->setCellValue('D' . $row, $caracteristica->vencimiento);
+          $sheet->setCellValue('E' . $row, $caracteristica->marca ? $caracteristica->marca->nombre : 'Sin Marca');
+          $sheet->setCellValue('F' . $row, $caracteristica->presentacion ? $caracteristica->presentacion->nombre : 'Sin Presentación');
+          $sheet->setCellValue('G' . $row, $caracteristica->cantidad);
+          $sheet->setCellValue('H' . $row, number_format(floor($caracteristica->valor_unitario), 0));
+          $sheet->setCellValue('I' . $row, number_format(floor($subtotal), 0));
+
+          // Estilo para las celdas de datos
+          $dataStyle = [
+            'alignment' => [
+              'horizontal' => Alignment::HORIZONTAL_CENTER,
+              'vertical' => Alignment::VERTICAL_CENTER
+            ],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+          ];
+          $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray($dataStyle);
+
+          // Ajustar el tamaño de las columnas automáticamente
+          foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+          }
+
+          $row++;
+        }
+      }
+    }
+
+    // Establecer el nombre del archivo
+    $fileName = 'Inventario_Insumos.xlsx';
+
+    // Crear el escritor y guardar el archivo
+    $writer = new Xlsx($spreadsheet);
+    $writer->save($fileName);
+
+    // Descargar el archivo Excel
+    return response()->download($fileName)->deleteFileAfterSend(true);
+  }
+
 
   public function generarCodigoBarrasPDF($id)
   {

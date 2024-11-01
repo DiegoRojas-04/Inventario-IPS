@@ -2,32 +2,36 @@
 function updateCountdown() {
     var now = new Date();
     var currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-    var allowOrder = (currentDay === 4 && now.getHours() >= 6 && now.getHours() <
-        18); // Permitir pedidos solo los jueves entre las 6 AM y las 4 PM
+    var currentHour = now.getHours();
+
+    // Definir los horarios permitidos
+    var startWednesday = new Date(); // Miércoles a las 12 PM
+    startWednesday.setDate(now.getDate() - (now.getDay() <= 3 ? now.getDay() - 3 : 7 + now.getDay() - 3)); // Ajustar al último miércoles
+    startWednesday.setHours(12, 0, 0, 0);
+
+    var endThursday = new Date(); // Jueves a las 4 PM
+    endThursday.setDate(startWednesday.getDate() + 1); // El día siguiente (jueves)
+    endThursday.setHours(16, 0, 0, 0);
+
+    var allowOrder = (now >= startWednesday && now <= endThursday);
 
     if (allowOrder) {
-        var deadline = new Date();
-        deadline.setHours(18, 0, 0, 0); // Establecer la fecha límite a las 4 PM
-        var diff = deadline - now;
+        var diff = endThursday - now;
 
         if (diff > 0) {
             var hours = Math.floor(diff / (1000 * 60 * 60));
             var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            document.getElementById("countdown").innerHTML = "Tiempo restante: " + hours + "h " + minutes + "m " +
-                seconds + "s";
-            document.getElementById("pedido-btn").disabled =
-                false; // Habilitar el botón cuando está dentro del horario permitido
+            document.getElementById("countdown").innerHTML = "Tiempo restante: " + hours + "h " + minutes + "m " + seconds + "s";
+            document.getElementById("pedido-btn").disabled = false; // Habilitar el botón
         } else {
             document.getElementById("countdown").innerHTML = "Tiempo de pedido finalizado";
-            document.getElementById("pedido-btn").disabled =
-                true; // Deshabilitar el botón cuando se haya pasado el horario permitido
+            document.getElementById("pedido-btn").disabled = true; // Deshabilitar el botón
         }
     } else {
         document.getElementById("countdown").innerHTML = "No es momento de realizar pedidos";
-        document.getElementById("pedido-btn").disabled =
-            true; // Deshabilitar el botón cuando no esté dentro del horario permitido
+        document.getElementById("pedido-btn").disabled = true; // Deshabilitar el botón
     }
 }
 

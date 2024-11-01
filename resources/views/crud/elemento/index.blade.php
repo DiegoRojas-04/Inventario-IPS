@@ -11,7 +11,7 @@
         <div class="form-row align-items-center">
             <div class="col-auto">
                 <select data-size="10" title="Seleccionar Consultorio..." data-live-search="true"
-                class="form-control selectpicker show-tick"  id="consultorio_id" name="consultorio_id">
+                    class="form-control selectpicker show-tick" id="consultorio_id" name="consultorio_id">
                     @foreach ($consultorios as $consultorio)
                         <option value="{{ $consultorio->id }}"
                             {{ request('consultorio_id') == $consultorio->id ? 'selected' : '' }}>
@@ -32,32 +32,29 @@
             <div class="text-center p-1">
                 <h4>{{ $consultorio->nombre }}</h4>
             </div>
-            <table class="table table-striped">
-                <thead class="thead-dark text-center">
-                    <tr class="text-center">
-                        <th>Nombre</th>
-                        <th>Cantidad</th>
-                        <th>Observación</th>
-                        <th>Actualizar</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($consultorio->elementos as $elemento)
+            <form action="{{ route('elementos.actualizar.cantidades', $consultorio->id) }}" method="POST">
+                @csrf
+                <table class="table table-striped">
+                    <thead class="thead-dark text-center">
                         <tr class="text-center">
-                            <td>{{ $elemento->nombre }}</td>
-                            <td class="center">
-                                <form action="{{ route('elementos.update.cantidad', $elemento->id) }}" method="POST"
-                                    style="display:inline;">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="consultorio_id" value="{{ $consultorio->id }}">
+                            <th>Nombre</th>
+                            <th>Necesario</th>
+                            <th>Cantidad</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($consultorio->elementos as $elemento)
+                            <tr class="text-center">
+                                <td>{{ $elemento->nombre }}</td>
+                                <td>{{ $elemento->cantidad_necesaria }}</td>
+                                <td class="center">
                                     <div class="input-group">
                                         <button class="btn btn-outline-danger btn-sm" type="button"
                                             onclick="disminuirCantidad({{ $loop->index }})">
                                             <i class="fa fa-minus"></i>
                                         </button>
-                                        <input type="number" id="cantidad_{{ $loop->index }}" name="cantidad"
+                                        <input type="number" id="cantidad_{{ $loop->index }}" name="cantidades[{{ $elemento->id }}]"
                                             value="{{ $elemento->pivot->cantidad }}" min="0" required
                                             class="form-control text-center" style="width: 60px;">
                                         <button class="btn btn-outline-success btn-sm" type="button"
@@ -65,89 +62,38 @@
                                             <i class="fa fa-plus"></i>
                                         </button>
                                     </div>
-                            </td>
-                            <td>
-                                <input type="text" name="observacion" class="form-control"
-                                    value="{{ $elemento->pivot->observacion }}" placeholder="Escribe una observación">
-                            </td>
-                            
-
-                            <td>
-                                <button type="submit" class="btn btn-primary btn-sm"
-                                    style="margin-left: 5px;">Actualizar</button>
-                                </form>
-                            </td>
-                            <td>
-                                <span
-                                    class="badge {{ $elemento->pivot->estado === 'bueno' ? 'badge-success' : 'badge-danger' }}"
-                                    style="padding: 10px;">
-                                    {{ ucfirst($elemento->pivot->estado) }}
-                                </span>
-                                <div class="btn-group" role="group">
-                                    @if ($elemento->pivot->estado === 'bueno')
-                                        <button type="button" class="btn btn-danger" data-toggle="modal"
-                                            data-target="#cambiarEstado-{{ $elemento->id }}">
-                                            <i class="fa fa-share" aria-hidden="true"></i>
-                                        </button>
-                                    @else
-                                        <button type="button" class="btn btn-success" data-toggle="modal"
-                                            data-target="#cambiarEstado-{{ $elemento->id }}">
-                                            <i class="fa fa-share" aria-hidden="true"></i>
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        <div class="modal fade" id="cambiarEstado-{{ $elemento->id }}" tabindex="-1" role="dialog"
-                            aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">
-                                            {{ $elemento->pivot->estado === 'bueno' ? 'Cambiar Estado a Malo' : 'Cambiar Estado a Bueno' }}
-                                        </h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        {{ $elemento->pivot->estado === 'bueno' ? '¿Estás seguro que quieres cambiar el estado a malo?' : '¿Estás seguro que quieres cambiar el estado a bueno?' }}
-                                        <br>
-                                        <h5>{{ $elemento->nombre }}</h5>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal">Cerrar</button>
-                                        <form action="{{ route('elementos.update.estado', $elemento->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="consultorio_id" value="{{ $consultorio->id }}">
-                                            <input type="hidden" name="nuevo_estado"
-                                                value="{{ $elemento->pivot->estado === 'bueno' ? 'malo' : 'bueno' }}">
-                                            <button type="submit" class="btn btn-primary">Confirmar</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        </td>
-                    @endforeach
-                </tbody>
-            </table>
+                                </td>
+                                <td>
+                                    <select name="observaciones[{{ $elemento->id }}]" class="form-control">
+                                        <option value="1" {{ $elemento->pivot->observacion == 1 ? 'selected' : '' }}>Buen Estado</option>
+                                        <option value="2" {{ $elemento->pivot->observacion == 2 ? 'selected' : '' }}>Mal estado</option>
+                                        <option value="3" {{ $elemento->pivot->observacion == 3 ? 'selected' : '' }}>Incompleto</option>
+                                        <option value="4" {{ $elemento->pivot->observacion == 4 ? 'selected' : '' }}>No hay</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Actualizar Cantidades</button>
+                </div>
+            </form>
         @else
+            {{-- Aquí puedes manejar el caso en el que no hay consultorio seleccionado --}}
         @endif
     </div>
 
     {{-- Tabla de elementos con cantidades totales --}}
     <div class="card mt-3">
         <div class="text-center p-1">
-            <h4>Cantidad Total de Elementos</h4>
+            <h4>Cantidad Necesaria Total de Elementos</h4>
         </div>
         <table class="table table-striped">
             <thead class="thead-dark text-center">
                 <tr>
                     <th>Nombre</th>
+                    <th>Cantidad Necesaria</th>
                     <th>Cantidad Total</th>
                 </tr>
             </thead>
@@ -155,6 +101,7 @@
                 @foreach ($todosLosElementos as $elemento)
                     <tr class="text-center">
                         <td>{{ $elemento->nombre }}</td>
+                        <td>{{ $elemento->cantidad_necesaria * $elemento->consultorios->count() }}</td>
                         <td>{{ $elemento->consultorios->sum('pivot.cantidad') }}</td>
                     </tr>
                 @endforeach
@@ -170,7 +117,7 @@
 </style>
 
 @section('css')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
@@ -178,7 +125,7 @@
 @stop
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 
     <script>
         function aumentarCantidad(index) {

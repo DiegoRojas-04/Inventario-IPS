@@ -24,55 +24,62 @@ class KardexController extends Controller
      * Display a listing of the resource.
      */
 
-    public function index(Request $request)
-    {
-        // Obtener el mes y el año seleccionados en el formulario
-        $selectedMonth = $request->input('mes', date('n')); // Mes actual por defecto
-        $selectedYear = $request->input('anno', date('Y')); // Año actual por defecto
-
-        // Obtener todas las categorías
-        $categorias = Categoria::all();
-
-        // Obtener el usuario autenticado
-        $user = auth()->user(); // Asumiendo que estás usando el sistema de autenticación de Laravel
-
-        // Inicializar variable para la categoría seleccionada
-        $selectedCategory = $request->input('id_categoria');
-
-        // Filtrar por categoría según el rol del usuario
-        if ($user->roles->contains('name', 'Administrador')) {
-            // Si es Administrador, se respeta la selección del usuario
-            // No se necesita hacer nada, ya que ya se están seleccionando todos
-        } elseif ($user->roles->contains('name', 'Laboratorio')) {
-            // Si es Laboratorio, forzar la categoría 12 como seleccionada
-            $selectedCategory = 12;
-        } else {
-            // Si es otro rol, puedes manejarlo según tu necesidad
-        }
-
-        // Obtener los insumos con paginación, filtrando por la categoría si está seleccionada
-        $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
-
-        if ($selectedCategory) {
-            $query->where('id_categoria', $selectedCategory);
-        }
-
-        // Aplicar paginación
-        $insumos = $query->paginate(50);
-
-        // Calcular los datos del Kardex para cada insumo
-        $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
-            $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
-            $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
-            $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
-            $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
-
-            return $insumo;
-        });
-
-        // Pasar los datos a la vista, incluyendo la categoría seleccionada
-        return view('crud.kardex', compact('insumos', 'selectedMonth', 'selectedYear', 'categorias', 'selectedCategory'));
-    }
+     public function index(Request $request)
+     {
+         // Obtener el mes y el año seleccionados en el formulario
+         $selectedMonth = $request->input('mes', date('n')); // Mes actual por defecto
+         $selectedYear = $request->input('anno', date('Y')); // Año actual por defecto
+     
+         // Obtener todas las categorías
+         $categorias = Categoria::all();
+     
+         // Obtener el usuario autenticado
+         $user = auth()->user();
+     
+         // Inicializar variable para la categoría seleccionada
+         $selectedCategory = $request->input('id_categoria');
+     
+         // Filtrar por categoría según el rol del usuario
+         if ($user->roles->contains('name', 'Administrador')) {
+             // Si es Administrador, se respeta la selección del usuario
+         } elseif ($user->roles->contains('name', 'Laboratorio')) {
+             // Si es Laboratorio, forzar la categoría 12 como seleccionada
+             $selectedCategory = 12;
+         }
+     
+         // Obtener el término de búsqueda
+         $search = $request->input('search');
+     
+         // Obtener los insumos con paginación, filtrando por la categoría y el término de búsqueda
+         $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
+     
+         // Filtrar por categoría si está seleccionada
+         if ($selectedCategory) {
+             $query->where('id_categoria', $selectedCategory);
+         }
+     
+         // Filtrar por término de búsqueda si está presente
+         if ($search) {
+             $query->where('nombre', 'LIKE', '%' . $search . '%');
+         }
+     
+         // Aplicar paginación
+         $insumos = $query->paginate(50);
+     
+         // Calcular los datos del Kardex para cada insumo
+         $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
+             $insumo->cantidad_inicial_mes = $insumo->getCantidadInicialMes($selectedMonth, $selectedYear);
+             $insumo->ingresos_mes = $insumo->ingresosDelMes($selectedMonth, $selectedYear);
+             $insumo->egresos_mes = $insumo->egresosDelMes($selectedMonth, $selectedYear);
+             $insumo->saldo_final_mes = $insumo->cantidad_inicial_mes + $insumo->ingresos_mes - $insumo->egresos_mes;
+     
+             return $insumo;
+         });
+     
+         // Pasar los datos a la vista, incluyendo la categoría seleccionada
+         return view('crud.kardex', compact('insumos', 'selectedMonth', 'selectedYear', 'categorias', 'selectedCategory', 'search'));
+     }
+     
 
     public function ObtenerDatosParaExportar($request)
     {

@@ -44,6 +44,24 @@
                     </select>
                 </div>
 
+                <div class="form-group col-md-4">
+                    <label for="invima">Invima:</label>
+                    <input type="text" class="form-control" id="invima" name="invima"
+                        value="{{ $caracteristica->invima }}">
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="lote">Lote:</label>
+                    <input type="text" class="form-control" id="lote" name="lote"
+                        value="{{ $caracteristica->lote }}">
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="vencimiento">Fecha de Vencimiento:</label>
+                    <input type="date" class="form-control" id="vencimiento" name="vencimiento"
+                        value="{{ $caracteristica->vencimiento }}">
+                </div>
+
                 <div class="form-group col-md-6">
                     <label for="cantidad">Cantidad:</label>
                     <input type="text" id="cantidad" name="cantidad" value="{{ $caracteristica->cantidad }}"
@@ -54,21 +72,12 @@
                 </div>
 
                 <div class="form-group col-md-6">
-                    <label for="invima">Invima:</label>
-                    <input type="text" class="form-control" id="invima" name="invima"
-                        value="{{ $caracteristica->invima }}">
-                </div>
-
-                <div class="form-group col-md-6">
-                    <label for="lote">Lote:</label>
-                    <input type="text" class="form-control" id="lote" name="lote"
-                        value="{{ $caracteristica->lote }}">
-                </div>
-
-                <div class="form-group col-md-6">
-                    <label for="vencimiento">Fecha de Vencimiento:</label>
-                    <input type="date" class="form-control" id="vencimiento" name="vencimiento"
-                        value="{{ $caracteristica->vencimiento }}">
+                    <label for="valor_unitario">Valor unitario:</label>
+                    <input type="text" id="valor_unitario" name="valor_unitario" value="{{ $caracteristica->valor_unitario }}"
+                        class="form-control  @error('valor_unitario') is-invalid @enderror" readonly>
+                    @error('valor_unitario')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
                 </div>
 
                 <div class="col-12">

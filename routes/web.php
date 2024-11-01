@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivoController;
+use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CategoriaActivoController;
 use App\Http\Controllers\CategoriaController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\UsuarioController;
 use App\Models\CategoriaActivo;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('permiso', PermisoController::class);
         Route::resource('kardex', KardexController::class);
         Route::get('/pedido', [PedidoController::class, 'index'])->name('pedido');
+        Route::get('/compras/estadisticas', [CompraController::class, 'estadisticas'])->name('compras.estadisticas');
+        Route::get('/entregas/estadisticas', [EntregaController::class, 'estadisticas'])->name('entregas.estadisticas');
+
     });
 });
 
@@ -79,6 +84,7 @@ Route::middleware(['auth', 'role:Laboratorio'])->group(function () {
     Route::resource('insumo', InsumoController::class);
 });
 
+Route::get('/insumos/export/excel', [InsumoController::class, 'exportToExcel'])->name('insumos.exportToExcel');
 
 Route::get('/export/compra/pdf/{id}', [CompraController::class, 'exportToPdf'])->name('export.compra.pdf');
 // Route::get('/export-order-pdf', [KardexController::class, 'exportOrderToPdf'])->name('generate.order');
@@ -103,16 +109,25 @@ Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCara
 Route::patch('/insumo/{insumoId}/caracteristica/{caracteristicaId}', [InsumoCaracteristicaController::class, 'update'])->name('caracteristica.update');
 Route::resource('elementos', ElementoController::class);
 Route::resource('consultorios', ConsultorioController::class);
+Route::resource('ubicaciones', UbicacionController::class);
 Route::resource('categoriasAct', CategoriaActivoController::class);
 Route::resource('activo', ActivoController::class);
+Route::resource('alerta', AlertaController::class);
 Route::get('consultorios/{consultorioId}/elementos', [ElementoController::class, 'elementosPorConsultorio'])->name('consultorios.elementos');
 Route::patch('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.updateCantidad');
 Route::put('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.update.cantidad');
 Route::put('elementos/{id}/estado', [ElementoController::class, 'updateEstado'])->name('elementos.update.estado');
 Route::get('/usuario/{id}/asignar-rol', [UsuarioController::class, 'asignarRol'])->name('usuario.asignarRol');
 Route::patch('/activo/{id}/update-estado', [ActivoController::class, 'updateEstado']);
+Route::patch('/activo/{id}/update-ubicacion', [ActivoController::class, 'updateUbicacion']);
 Route::put('/elementos/{id}/observacion', [ActivoController::class, 'updateObservacion'])->name('elementos.update.observacion');
 Route::get('/activo/{id}/codigo-barras/pdf', [ActivoController::class, 'generarCodigoBarrasPDF'])->name('activo.codigoBarras.pdf');
 Route::get('insumo/{id}/codigo-barras', [InsumoController::class, 'generarCodigoBarrasPDF'])->name('insumo.generarCodigoBarrasPDF');
 Route::get('/insumos/generar-codigos-barras', [InsumoController::class, 'generarCodigosBarrasPDF'])->name('generar.codigos.barras');
 Route::get('insumo/codigo-barras/{id}', [InsumoController::class, 'generarCodigoBarrasPorInsumoPDF'])->name('insumo.generarCodigoBarrasPorInsumoPDF');
+Route::get('/activos/codigos-barras', [ActivoController::class, 'generarCodigosBarrasActivosPDF'])->name('activo.generarCodigosBarras');
+Route::get('/activos/{id}/codigo-barras', [ActivoController::class, 'generarCodigoBarrasPorActivoPDF'])->name('activo.generarCodigoBarrasPorActivo');
+Route::get('/alerta/count', [AlertaController::class, 'getAlertCount']);
+Route::post('/elementos/actualizar-cantidades/{consultorioId}', [ElementoController::class, 'actualizarCantidades'])
+    ->name('elementos.actualizar.cantidades');
+Route::get('/insumos/analisis-precios', [InsumoController::class, 'analisisPrecios'])->name('insumos.analisisPrecios');

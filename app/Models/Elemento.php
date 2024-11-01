@@ -9,12 +9,12 @@ class Elemento extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nombre', 'descripcion', 'categoria', 'estado']; 
+    protected $fillable = ['nombre', 'cantidad_necesaria', 'descripcion', 'categoria', 'estado']; 
 
     public function consultorios()
     {
         return $this->belongsToMany(Consultorio::class, 'consultorio_elemento')
-            ->withPivot('cantidad', 'estado', 'observacion');
+            ->withPivot('cantidad', 'observacion');
     }
 
     

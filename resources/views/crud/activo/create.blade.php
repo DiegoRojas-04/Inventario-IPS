@@ -21,11 +21,10 @@
                 title: "{{ session('Mensaje') }}"
             });
         </script>
-        
     @endif
     <a href="{{ url('/activo') }}" class="text-decoration-none text-white">
         <button type="submit" class="btn btn-primary ">Ver Activos</button></a>
- @stop
+@stop
 
 @section('content')
     <div class="card">
@@ -49,8 +48,10 @@
                     <label for="categoria_id">Categoría:</label>
                     <select name="categoria_id" class="form-control @error('categoria_id') is-invalid @enderror">
                         <option value="">Seleccionar categoría...</option>
-                        @foreach($categorias as $categoria)
-                            <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>{{ $categoria->nombre }}</option>
+                        @foreach ($categorias as $categoria)
+                            <option value="{{ $categoria->id }}"
+                                {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>{{ $categoria->nombre }}
+                            </option>
                         @endforeach
                     </select>
                     @error('categoria_id')
@@ -104,12 +105,25 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label for="ubicacion_id">Ubicacion:</label>
+                    <select name="ubicacion_id" class="form-control @error('ubicacion_id') is-invalid @enderror">
+                        @foreach ($ubicaciones as $ubicacion)
+                            <option value="{{ $ubicacion->id }}"
+                                {{ old('ubicacion_id') == $ubicacion->id ? 'selected' : '' }}>{{ $ubicacion->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('ubicacion_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="col-md-4">
                     <label for="estado">Estado:</label>
                     <select name="estado" class="form-control @error('estado') is-invalid @enderror">
-                        <option value="">Seleccionar estado...</option>
-                        <option value="0" {{old('estado')  == 0 ? 'selected' : '' }}>En Uso</option>
-                        <option value="1" {{old('estado')  == 1 ? 'selected' : '' }}>Disponible</option>
-                        <option value="2" {{old('estado')  == 2 ? 'selected' : '' }}>Reparacion</option>
+                        <option value="0" {{ old('estado') == 0 ? 'selected' : '' }}>En Uso</option>
+                        <option value="1" {{ old('estado') == 1 ? 'selected' : '' }}>Disponible</option>
+                        <option value="2" {{ old('estado') == 2 ? 'selected' : '' }}>Reparacion</option>
                     </select>
                     @error('estado')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
@@ -134,8 +148,8 @@
 @stop
 
 @section('css')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
 @stop
 
 @section('js')

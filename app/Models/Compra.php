@@ -64,4 +64,5 @@ class Compra extends Model
     {
         return $this->hasMany(CompraInsumo::class, 'compra_id', 'id');
     }
+    
 }

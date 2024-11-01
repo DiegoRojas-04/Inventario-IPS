@@ -31,7 +31,7 @@ class EntregaInsumo extends Model
     public function insumo()
     {
         return $this->belongsTo(Insumo::class, 'insumo_id');
-    } 
+    }
 
     public function marca()
     {
@@ -46,11 +46,10 @@ class EntregaInsumo extends Model
     public function entregas()
     {
         return $this->hasMany(Entrega::class, 'id', 'entrega_id'); // Aquí la clave foránea es 'compra_id' de la tabla insumo_caracteristica
-    }   
-
-    public function compraInsumos()
-{
-    return $this->hasMany(CompraInsumo::class, 'entrega_id', 'id');
-}
+    }
     
+    public function compraInsumos()
+    {
+        return $this->hasMany(CompraInsumo::class, 'entrega_id', 'id');
+    }
 }

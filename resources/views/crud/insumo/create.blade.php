@@ -99,9 +99,21 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label id="label-ubicacion">Ubicación:</label>
+                    <select name="ubicacion" class="form-control @error('ubicacion') is-invalid @enderror">
+                        <option value="1" {{ old('ubicacion') == 1 ? 'selected' : '' }}>Insumos</option>
+                        <option value="2" {{ old('ubicacion') == 2 ? 'selected' : '' }}>Bodega Principal</option>
+                        <option value="3" {{ old('ubicacion') == 3 ? 'selected' : '' }}>Laboratorio</option>
+                    </select>
+                    @error('ubicacion')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+
+                <div class="col-md-4">
                     <label>Cantidad:</label>
-                    <input type="text" name="stock" class="form-control  @error('stock') is-invalid @enderror"
-                        value="{{ old('stock') }}">
+                    <input value="0" type="hidden" name="stock" class="form-control  @error('stock') is-invalid @enderror"
+                        value="{{ old('stock') }}" readonly>
                     @error('stock')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror

@@ -3,6 +3,16 @@
 @section('title', 'Activos')
 
 @section('content_header')
+
+    <div style="display: flex; justify-content: space-between; align-items:center;">
+
+        <a href="{{ url('/activo/create') }}" class="text-decoration-none text-white">
+            <button type="submit" class="btn btn-primary">Agregar Activo</button>
+        </a>
+
+        <a href="{{ route('activo.generarCodigosBarras') }}" class="btn btn-primary">Códigos de Barras</a>
+
+    </div>
     @if (session('Mensaje'))
         <script>
             const Toast = Swal.mixin({
@@ -61,13 +71,7 @@
             });
         </script>
     @endif
-    <div class="form-row">
-        <div class="col-sm-12 d-flex align-items-center justify-content-between">
-            <a href="{{ url('/activo/create') }}" class="text-decoration-none text-white">
-                <button type="submit" class="btn btn-primary">Agregar Activo</button>
-            </a>
-        </div>
-    </div>
+
 @stop
 
 @section('content')
@@ -97,7 +101,7 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
 
                 </div>
             </form>
@@ -108,7 +112,7 @@
             <table class="table">
                 <thead class="thead-dark">
                     <tr class="text-center">
-                        <th scope="col">Codigo</th>
+                        {{-- <th scope="col">Codigo</th> --}}
                         <th scope="col">Nombre</th>
                         <th scope="col">Modelo</th>
                         <th scope="col">Serie</th>
@@ -116,6 +120,7 @@
                         <th scope="col">Medida</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Estado</th>
+                        <th scope="col">Ubicación</th>
                         <th scope="col">Accion</th>
 
                     </tr>
@@ -123,7 +128,7 @@
                 <tbody class="text-center">
                     @foreach ($activos as $activo)
                         <tr>
-                            <td>{{ $activo->codigo }}</td>
+                            {{-- <td>{{ $activo->codigo }}</td> --}}
                             <td>{{ $activo->nombre }}</td>
                             <td>{{ $activo->modelo }}</td>
                             <td>{{ $activo->serie }}</td>
@@ -138,8 +143,23 @@
                                         <option value="0" {{ $activo->estado == 0 ? 'selected' : '' }}>En Uso</option>
                                         <option value="1" {{ $activo->estado == 1 ? 'selected' : '' }}>Disponible
                                         </option>
-                                        <option value="2" {{ $activo->estado == 2 ? 'selected' : '' }}>Reparacion
+                                        <option value="2" {{ $activo->estado == 2 ? 'selected' : '' }}>Reparación
                                         </option>
+                                    </select>
+                                </form>
+                            </td>
+
+                            <td>
+                                <form action="{{ url('/activo/' . $activo->id . '/update-ubicacion') }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="ubicacion_id" class="form-control" onchange="this.form.submit()">
+                                        @foreach ($ubicaciones as $ubicacion)
+                                            <option value="{{ $ubicacion->id }}"
+                                                {{ $activo->ubicacion_id == $ubicacion->id ? 'selected' : '' }}>
+                                                {{ $ubicacion->nombre }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </form>
                             </td>
@@ -210,11 +230,18 @@
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div style="display: flex; justify-content: center; margin-bottom: 20px;"> <a
-                                                href="{{ route('activo.codigoBarras.pdf', $activo->id) }}"
-                                                class="btn btn-primary">Código de Barras <i class="fa fa-barcode"
-                                                    aria-hidden="true"></i></a>
+                                    <div class="modal-body text-center">
+                                        <div
+                                            style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+                                            <a href="{{ route('activo.codigoBarras.pdf', $activo->id) }}"
+                                                class="btn btn-primary" style="margin-right: 15px;">
+                                                Código de Barras <i class="fa fa-barcode" aria-hidden="true"></i></a>
+
+                                            <a href="{{ route('activo.generarCodigoBarrasPorActivo', $activo->id) }}"
+                                                class="btn btn-primary" style="margin-right: 15px;">
+                                                Varios <i class="fa fa-barcode" aria-hidden="true"></i>
+                                            </a>
+                                            <h4 style="margin: 0;">{{ $activo->codigo }}</h4>
                                         </div>
                                         <form action="{{ route('elementos.update.observacion', $activo->id) }}"
                                             method="POST">

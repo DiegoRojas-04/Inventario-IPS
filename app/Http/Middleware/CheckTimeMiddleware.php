@@ -14,9 +14,16 @@ class CheckTimeMiddleware
             return $next($request); // Permitir el pedido especial sin restricciones
         }
 
-        // Verificar si es el día y la hora permitidos para realizar pedidos normales
+        // Obtener el día y la hora actuales
         $currentDay = now()->dayOfWeek; // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-        $allowOrder = ($currentDay === 4 && now()->hour >= 6 && now()->hour < 18); // Jueves de 6 AM a 4 PM
+        $currentHour = now()->hour;
+        $currentMinute = now()->minute;
+
+        // Permitir pedidos desde el miércoles (día 3) a las 12 PM hasta el jueves (día 4) a las 4 PM
+        $allowOrder = (
+            ($currentDay === 3 && $currentHour >= 12) || // Miércoles desde las 12 PM
+            ($currentDay === 4 && $currentHour < 16) // Jueves hasta las 4 PM
+        );
 
         if (!$allowOrder) {
             return redirect()->route('home')->with('error', 'No es momento de realizar pedidos.');

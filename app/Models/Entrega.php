@@ -19,6 +19,10 @@ class Entrega extends Model
 
     ];
 
+    public function entregaInsumos()
+    {
+        return $this->hasMany(EntregaInsumo::class); // Asegúrate de que el modelo EntregaInsumo está correctamente referenciado
+    }
 
     public function servicio()
     {
@@ -70,13 +74,19 @@ class Entrega extends Model
     }
 
     public function marca()
-{
-    return $this->belongsTo(Marca::class, 'id_marca');
-}
+    {
+        return $this->belongsTo(Marca::class, 'id_marca');
+    }
 
-public function presentacion()
-{
-    return $this->belongsTo(Presentacione::class, 'id_presentacion');
-}
-    
+    public function presentacion()
+    {
+        return $this->belongsTo(Presentacione::class, 'id_presentacion');
+    }
+    // Dentro del modelo Entrega o en un modelo dedicado a estadísticas, dependiendo de tu arquitectura
+    public function calcularTotalEntrega()
+    {
+        return $this->entregaInsumos->sum(function ($entregaInsumo) {
+            return $entregaInsumo->cantidad * $entregaInsumo->valor_unitario;
+        });
+    }
 }

@@ -17,7 +17,7 @@
 
                 <div class="col-md-4">
                     <label>Nombre:</label>
-                    <input type="text" name="nombre"  value="{{ old('nombre', $insumo->nombre)}}"
+                    <input type="text" name="nombre" value="{{ old('nombre', $insumo->nombre) }}"
                         class="form-control  @error('nombre') is-invalid @enderror">
                     @error('nombre')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
@@ -57,7 +57,7 @@
                         @endforeach
                     </select>
                 </div>
-                
+
                 {{-- <div class="col-md-4">
                     <label>Marca:</label>
                     <select data-live-search="true" name="id_marca" id="id_marca"
@@ -96,13 +96,26 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label>Ubicación:</label>
+                    <select name="ubicacion" class="form-control">
+                        <option value="1" {{ old('ubicacion', $insumo->ubicacion) == 1 ? 'selected' : '' }}>Insumos
+                        </option>
+                        <option value="2" {{ old('ubicacion', $insumo->ubicacion) == 2 ? 'selected' : '' }}>Bodega Principal
+                        </option>
+                        <option value="3" {{ old('ubicacion', $insumo->ubicacion) == 3 ? 'selected' : '' }}>Laboratorio
+                        </option>
+                    </select>
+                </div>
+
+
+                <div class="col-md-4">
                     <label>Cantidad:</label>
-                    <input type="text" class="form-control bg-white" value="{{ $insumo->stock }}" readonly>  
+                    <input type="text" class="form-control bg-white" value="{{ $insumo->stock }}" readonly>
                 </div>
 
                 <div class="col-md-4">
                     <label>Codigo:</label>
-                    <input type="text" name="codigo"  value="{{ old('codigo', $insumo->codigo)}}" readonly 
+                    <input type="text" name="codigo" value="{{ old('codigo', $insumo->codigo) }}" readonly
                         class="form-control  @error('codigo') is-invalid @enderror">
                     @error('codigo')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
