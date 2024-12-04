@@ -9,6 +9,8 @@ class EntregaInsumo extends Model
 {
     use HasFactory;
 
+    
+    public $timestamps = true; 
     protected $table = 'entrega_insumo';
 
     protected $fillable = [
@@ -20,6 +22,7 @@ class EntregaInsumo extends Model
         'invima',
         'lote',
         'vencimiento',
+        'created_at',
 
     ];
 

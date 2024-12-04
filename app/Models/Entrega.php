@@ -16,6 +16,10 @@ class Entrega extends Model
         'servicio_id',
         'user_id',
         'comprobante_id',
+        'valor_total',
+        'created_at',
+        'updated_at',
+
 
     ];
 

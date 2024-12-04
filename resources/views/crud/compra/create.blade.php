@@ -167,13 +167,10 @@
 
                             <div class="col-md-12 mb-2">
                                 <label>Fecha:</label>
-                                <input readonly type="date" name="fecha" id="fecha" class="form-control"
+                                <input type="date" name="fecha" id="fecha" class="form-control"
                                     value="<?php echo date('Y-m-d'); ?>">
-                                <?php
-                                use Carbon\Carbon;
-                                $fecha_hora = Carbon::now()->toDateTimeString();
-                                ?>
-                                <input type="hidden" name="fecha_hora" value="{{ $fecha_hora }}">
+
+                                <input type="hidden" name="fecha_hora" id="fecha_hora">
                             </div>
 
                             <div class="col-md-12 mb-2 text-center">
@@ -202,6 +199,28 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fechaInput = document.getElementById('fecha');
+            const fechaHoraInput = document.getElementById('fecha_hora');
+
+            function actualizarFechaHora() {
+                const fechaSeleccionada = fechaInput.value;
+                if (fechaSeleccionada) {
+                    const ahora = new Date();
+                    const horaActual = ahora.toTimeString().split(' ')[0]; // Obtiene la hora en formato HH:mm:ss
+                    fechaHoraInput.value = `${fechaSeleccionada} ${horaActual}`;
+                }
+            }
+
+            // Actualiza el campo oculto al cambiar la fecha
+            fechaInput.addEventListener('change', actualizarFechaHora);
+
+            // Actualiza el campo oculto al cargar la página
+            actualizarFechaHora();
+        });
+    </script>
+    
     <script>
         $(document).ready(function() {
             // Función para manejar el cambio en el select
@@ -298,12 +317,13 @@
                     let presentacionNombre = presentaciones.find(p => p.id == presentacionId).nombre;
 
                     let fila = '<tr id="fila' + cont + '" style="font-size: 14px; text-align:center">' +
-                        '<th>' + (cont + 1) + '</th>' + 
+                        '<th>' + (cont + 1) + '</th>' +
                         '<td><input type="hidden" name="arrayidinsumo[' + cont + ']" value="' + id_insumo + '">' +
                         nameinsumo + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][invima]" value="' + invima +
                         '">' + invima + '</td>' +
-                        '<td hidden><input type="hidden" name="arraycaracteristicas[' + cont + '][valor_unitario]" value="' +
+                        '<td hidden><input type="hidden" name="arraycaracteristicas[' + cont +
+                        '][valor_unitario]" value="' +
                         unitario +
                         '">' + unitario + '</td>' +
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][lote]" value="' + lote + '">' +
@@ -315,12 +335,14 @@
                         '<td><input type="hidden" name="arraycaracteristicas[' + cont + '][id_presentacion]" value="' +
                         presentacionId + '">' + presentacionNombre + '</td>' +
                         '<td>' +
-                        '<div class="input-group">' +                        
-                        '<button class="btn btn-outline-danger btn-xs p-1" type="button" onclick="disminuirCantidad(' + cont +
+                        '<div class="input-group">' +
+                        '<button class="btn btn-outline-danger btn-xs p-1" type="button" onclick="disminuirCantidad(' +
+                        cont +
                         ')"><i class="fa fa-minus"></i></button>' +
                         '<input type="number" name="arraycantidad[' + cont + ']" value="' + cantidad +
                         '" class="form-control text-center" readonly>' +
-                        '<button class="btn btn-outline-success btn-xs p-1" type="button" onclick="aumentarCantidad(' + cont +
+                        '<button class="btn btn-outline-success btn-xs p-1" type="button" onclick="aumentarCantidad(' +
+                        cont +
                         ')"><i class="fa fa-plus"></i></button>' +
                         '</div>' +
                         '</td>' +

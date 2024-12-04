@@ -35,7 +35,7 @@
             <form action="{{ url('/insumo') }}" method="POST" class="row g-3">
                 @csrf
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label id="label-nombre">Nombre:</label>
                     <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
                         value="{{ old('nombre') }}">
@@ -44,7 +44,7 @@
                     @enderror
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label id="label-descripcion">Descripcion:</label>
                     <input type="text" name="descripcion" class="form-control @error('descripcion') is-invalid @enderror"
                         value="{{ old('descripcion') }}">
@@ -52,6 +52,13 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
+
+                <div class="col-md-2 text-center">
+                    <label>IVA</label>
+                    <input type="checkbox" name="iva" class="form-control" value="1"
+                        {{ old('iva') ? 'checked' : '' }}>
+                </div>
+
                 <div class="col-md-2 text-center">
                     <label>Invima</label>
                     <input type="checkbox" name="requiere_invima" class="form-control" value="1"
@@ -65,7 +72,7 @@
                 </div>
 
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label>Categoria:</label>
                     <select data-size="10" title="Seleccionar Categoria..." data-live-search="true" name="id_categoria"
                         id="id_categoria"
@@ -111,7 +118,6 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label>Cantidad:</label>
                     <input value="0" type="hidden" name="stock" class="form-control  @error('stock') is-invalid @enderror"
                         value="{{ old('stock') }}" readonly>
                     @error('stock')

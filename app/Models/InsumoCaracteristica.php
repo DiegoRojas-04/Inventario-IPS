@@ -9,6 +9,8 @@ class InsumoCaracteristica extends Model
 {
     use HasFactory;
 
+    public $timestamps = true;
+
     protected $fillable = [
         'insumo_id',
         'compra_id', // Asegúrate de tener esta clave foránea
@@ -20,6 +22,8 @@ class InsumoCaracteristica extends Model
         'id_marca',
         'id_presentacion',
         'valor_unitario',
+        'created_at',
+        'updated_at',
     ];
 
     public function insumo()

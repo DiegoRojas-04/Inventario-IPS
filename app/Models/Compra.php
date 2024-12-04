@@ -17,6 +17,8 @@ class Compra extends Model
         'proveedor_id',
         'user_id',
         'comprobante_id',
+        'valor_total',
+        'created_at',
 
     ];
     public function proveedor()

@@ -69,7 +69,7 @@
                             <th>Comprobante</th>
                             <th>Fecha</th>
                             <th>Hora</th>
-                            <th>Valor Total</th>    
+                            <th>Valor Total</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -81,8 +81,8 @@
                                 <td>{{ $item->comprobante->tipo_comprobante }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('H:i:s') }}</td>
-                                <td>{{ number_format($item->total, 2) }}</td> <!-- Mostrar el valor total -->
-                                <td>    
+                                <td>{{ number_format($item->valor_total) }}</td>
+                                <td>
                                     <div class="btn-group" role="group">
                                         <form action="{{ route('compra.show', ['compra' => $item]) }}" method="get">
                                             <button type="submit" class="btn btn-primary"><i class="fa fa-eye"
@@ -94,7 +94,6 @@
                         @endforeach
                     </tbody>
                 </table>
-
                 {{ $compras->appends(request()->query())->links() }}
             @endif
         </div>

@@ -330,6 +330,7 @@ return [
             'text' => 'Alertas',
             'url' => 'alerta',
             'icon' => 'fas fa-exclamation-triangle',
+            'can' => 'Administrador',
             'label' => "M",
             'label_color' => 'danger',
         ],

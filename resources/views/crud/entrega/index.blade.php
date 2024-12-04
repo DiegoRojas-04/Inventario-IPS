@@ -70,6 +70,7 @@
                             <th>Numero Comprobante</th>
                             <th>Fecha</th>
                             <th>Hora</th>
+                            {{-- <th>Valor Total</th> --}}
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -81,6 +82,7 @@
                                 <td>{{ $item->numero_comprobante }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->fecha_hora)->format('H:i:s') }}</td>
+                                {{-- <td>{{ number_format($item->valor_total) }}</td> --}}
                                 <td>
                                     <div class="btn-group" role="group">
                                         <form action="{{ route('entrega.show', ['entrega' => $item]) }}" method="get">

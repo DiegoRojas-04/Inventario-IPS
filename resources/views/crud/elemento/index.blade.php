@@ -44,8 +44,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($consultorio->elementos as $elemento)
-                            <tr class="text-center">
+                        @foreach ($consultorio->elementos->sortBy('nombre') as $elemento)
+                                <tr class="text-center">
                                 <td>{{ $elemento->nombre }}</td>
                                 <td>{{ $elemento->cantidad_necesaria }}</td>
                                 <td class="center">

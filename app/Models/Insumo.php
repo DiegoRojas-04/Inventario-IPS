@@ -18,6 +18,7 @@ class Insumo extends Model
         'requiere_invima',
         'riesgo',
         'vida_util',
+        'iva', 
         'codigo',
         'ubicacion',
         'id_categoria',

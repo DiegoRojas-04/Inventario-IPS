@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="card-body">
-            <table class="table table-striped" style="font-size: 14px" id="datos">
+            <table class="table table-striped text-center align-middle" style="font-size: 14px" id="datos">
                 <thead class="thead-dark">
                     <tr class="text-center">
                         <th rowspan="2">Nombre</th>
@@ -57,27 +57,34 @@
                         <th>Valor</th>
                     </tr>
                 </thead>
-                <tbody class="text-center">
+                <tbody>
                     @foreach ($insumos as $insumo)
                         <tr>
-                            <td class="nombre-ajustable">{{ $insumo['nombre'] }}</td>
-                            <td>{{ $insumo['proveedor_penultima'] ?? 'NR' }}</td>
-                            <td>{{ isset($insumo['fecha_penultima']) ? \Carbon\Carbon::parse($insumo['fecha_penultima'])->format('d-m-Y') : 'NR' }}
+                            <td class="nombre-ajustable align-middle">{{ $insumo['nombre'] }}</td>
+                            <td class="align-middle">{{ $insumo['proveedor_penultima'] ?? 'NR' }}</td>
+                            <td class="align-middle">
+                                {{ isset($insumo['fecha_penultima']) ? \Carbon\Carbon::parse($insumo['fecha_penultima'])->format('d-m-Y') : 'NR' }}
                             </td>
-                            <td>{{ isset($insumo['valor_penultima']) ? number_format($insumo['valor_penultima'], 0, ',', '.') : 'NR' }}
+                            <td class="align-middle">
+                                {{ isset($insumo['valor_penultima']) ? number_format($insumo['valor_penultima'], 0, ',', '.') : 'NR' }}
                             </td>
-                            <td>{{ $insumo['proveedor_ultima'] ?? 'NR' }}</td>
-                            <td>{{ isset($insumo['fecha_ultima']) ? \Carbon\Carbon::parse($insumo['fecha_ultima'])->format('d-m-Y') : 'NR' }}
+                            <td class="align-middle">{{ $insumo['proveedor_ultima'] ?? 'NR' }}</td>
+                            <td class="align-middle">
+                                {{ isset($insumo['fecha_ultima']) ? \Carbon\Carbon::parse($insumo['fecha_ultima'])->format('d-m-Y') : 'NR' }}
                             </td>
-                            <td>{{ isset($insumo['valor_ultima']) ? number_format($insumo['valor_ultima'], 0, ',', '.') : 'NR' }}
+                            <td class="align-middle">
+                                {{ isset($insumo['valor_ultima']) ? number_format($insumo['valor_ultima'], 0, ',', '.') : 'NR' }}
                             </td>
-                            <td>
+                            <td
+                                class="align-middle
+                                @if ($insumo['diferencia_porcentaje'] > 0) bg-danger text-white;
+                                @elseif ($insumo['diferencia_porcentaje'] < 0) bg-success text-white @endif">
                                 @if ($insumo['diferencia_porcentaje'] !== null)
                                     {{ number_format($insumo['diferencia_porcentaje'], 2) }}%
                                     @if ($insumo['diferencia_porcentaje'] > 0)
-                                        <i class="fa fa-arrow-up text-danger" aria-hidden="true"></i>
+                                        <i class="fa fa-arrow-up" aria-hidden="true"></i>
                                     @elseif ($insumo['diferencia_porcentaje'] < 0)
-                                        <i class="fa fa-arrow-down text-success" aria-hidden="true"></i>
+                                        <i class="fa fa-arrow-down" aria-hidden="true"></i>
                                     @endif
                                 @else
                                     NR
@@ -89,52 +96,48 @@
             </table>
         </div>
     </div>
-    @stop
+@stop
 
-    @section('css')
-        <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
-        <style>
-            /* Reduce el ancho máximo de la columna del nombre */
-            .nombre-ajustable {
-                white-space: normal;
-                word-wrap: break-word;
-                max-width: 200px;
-                /* Ajusta este valor según el ancho deseado */
-            }
-        </style>
-    @stop
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
+    <style>
+        .nombre-ajustable {
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            vertical-align: middle;
+        }
 
-    @section('js')
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#price_change').on('change', function() {
-                    $('#filterForm').submit();
+        .table td,
+        .table th {
+            vertical-align: middle;
+            /* Centra verticalmente */
+        }
+    </style>
+@stop
+
+@section('js')
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#price_change').on('change', function() {
+                $('#filterForm').submit();
+            });
+        });
+
+        // Buscador automático
+        $(document).ready(function() {
+            $("#search").keyup(function() {
+                _this = this;
+                $.each($("#datos tbody tr"), function() {
+                    if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+                        $(this).hide();
+                    else
+                        $(this).show();
                 });
             });
-
-
-            //buscador automatic
-            $(document).ready(function() {
-
-                $("#search").keyup(function() {
-
-                    _this = this;
-
-                    $.each($("#datos tbody tr"), function() {
-
-                        if ($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
-
-                            $(this).hide();
-
-                        else
-
-                            $(this).show();
-                    });
-                });
-            });
-        </script>
-
-
-    @stop
+        });
+    </script>
+@stop

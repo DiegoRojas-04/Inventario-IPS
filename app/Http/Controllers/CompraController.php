@@ -29,23 +29,29 @@ class CompraController extends Controller
 
     public function index(Request $request)
     {
-        $query = Compra::query();
-
-        // Filtra las compras por el usuario autenticado
-        $query->where('user_id', auth()->id());
+        $query = Compra::with(['insumos.caracteristicas' => function ($query) {
+            $query->whereNotNull('valor_unitario');
+        }])->where('user_id', auth()->id());
 
         // Verifica si se enviaron fechas en la solicitud
         if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
-            // Convierte las fechas de texto en objetos Carbon para poder compararlas
             $fechaInicio = Carbon::createFromFormat('Y-m-d', $request->input('fecha_inicio'))->startOfDay();
             $fechaFin = Carbon::createFromFormat('Y-m-d', $request->input('fecha_fin'))->endOfDay();
-
-            // Filtra las compras dentro del rango de fechas seleccionado
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        // Obtener las compras paginadas
         $compras = $query->latest()->paginate(20);
+
+        // Calcular el valor total para cada compra
+        foreach ($compras as $compra) {
+            $compra->total_compra = $compra->insumos->flatMap(function ($insumo) use ($compra) {
+                // Filtrar las características que pertenecen a la compra actual
+                return $insumo->caracteristicas->where('compra_id', $compra->id)->map(function ($caracteristica) {
+                    return $caracteristica->valor_unitario * $caracteristica->cantidad_compra;
+                });
+            })->sum();
+        }
+
 
         return view('crud.compra.index', compact('compras'));
     }
@@ -88,14 +94,24 @@ class CompraController extends Controller
      */
     public function store(StoreCompraRequest $request)
     {
-        // dd($request);
         try {
             DB::beginTransaction();
 
-            // Crear la compra
-            $compra = Compra::create(array_merge($request->validated(), ['user_id' => auth()->id()]));
+            // Crear la compra con los datos validados y el usuario autenticado
+            $compra = new Compra(array_merge($request->validated(), ['user_id' => auth()->id()]));
 
-            // Obtener los arrays de insumos, cantidades y características
+            // Deshabilitar las marcas de tiempo automáticas
+            $compra->timestamps = false;
+
+            // Sobrescribir el campo created_at con la fecha y hora proporcionada
+            $compra->created_at = $request->input('fecha_hora');
+
+            // Guardar la compra con la fecha personalizada
+            $compra->save();
+
+            // Reactivar las marcas de tiempo automáticas
+            $compra->timestamps = true;
+
             $arrayInsumo = $request->get('arrayidinsumo');
             $arrayCantidad = $request->get('arraycantidad');
             $arrayCaracteristicas = $request->get('arraycaracteristicas');
@@ -105,19 +121,23 @@ class CompraController extends Controller
                 return redirect()->back()->withErrors(['error' => 'Los datos de entrada son inconsistentes.']);
             }
 
+            // Inicializar la variable para calcular el valor total de la compra
+            $valorTotal = 0;
+
             // Recorrer cada insumo y actualizar su información
             foreach ($arrayInsumo as $key => $insumoId) {
                 $insumo = Insumo::find($insumoId);
 
-                // Verificar si el insumo tiene características
                 $tieneCaracteristicas = isset($arrayCaracteristicas[$key]) && is_array($arrayCaracteristicas[$key])
                     && !empty(array_filter($arrayCaracteristicas[$key]));
 
+                $valorUnitario = $arrayCaracteristicas[$key]['valor_unitario'] ?? 0;
+
+                $valorTotal += $valorUnitario * $arrayCantidad[$key];
+
                 if (!$tieneCaracteristicas) {
-                    // Relación sin características
                     $compra->insumos()->attach($insumoId, ['cantidad' => $arrayCantidad[$key]]);
                 } else {
-                    // Relación con características
                     $compra->insumos()->syncWithoutDetaching([$insumoId => ['cantidad' => $arrayCantidad[$key]]]);
 
                     $insumo->caracteristicas()->create([
@@ -128,17 +148,20 @@ class CompraController extends Controller
                         'id_presentacion' => $arrayCaracteristicas[$key]['id_presentacion'] ?? null,
                         'cantidad' => $arrayCantidad[$key],
                         'cantidad_compra' => $arrayCantidad[$key],
-                        'valor_unitario' => $arrayCaracteristicas[$key]['valor_unitario'],
+                        'valor_unitario' => $valorUnitario,
                         'compra_id' => $compra->id,
+                        'created_at' => $request->input('fecha_hora'), // Sobrescribe created_at
                     ]);
+                    
                 }
 
-                // Incrementar el stock del insumo
                 $insumo->increment('stock', intval($arrayCantidad[$key]));
 
-                // Agregar la entrada al Kardex
                 $this->agregarEntradaKardex($insumo->id, $request->input('fecha'), intval($arrayCantidad[$key]));
             }
+
+            $compra->valor_total = $valorTotal;
+            $compra->save();
 
             DB::commit();
             return redirect('compra')->with('Mensaje', 'Compra registrada con éxito.');
@@ -147,6 +170,7 @@ class CompraController extends Controller
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al procesar la solicitud.']);
         }
     }
+
 
     /**
      * Agregar una entrada al Kardex para un insumo específico.

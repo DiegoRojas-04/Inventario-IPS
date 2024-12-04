@@ -104,7 +104,19 @@ class EntregaController extends Controller
     {
         try {
             DB::beginTransaction();
-            $entrega = Entrega::create($request->validated());
+
+            // Crear la fecha de la entrega desde el formulario
+            $fechaEntrega = Carbon::createFromFormat('Y-m-d H:i:s', $request->get('fecha_hora'));
+
+            // Crear la entrega
+            $entrega = Entrega::create([
+                ...$request->validated(),  // los datos validados del formulario
+                'fecha_hora' => $fechaEntrega, // Aseguramos que 'fecha_hora' se guarde correctamente
+                'created_at' => $fechaEntrega,  // Asignamos la fecha_hora seleccionada por el usuario a created_at
+                'updated_at' => Carbon::now(),  // De igual forma, el updated_at se debe actualizar
+            ]);
+
+            // Variables para el cálculo
             $arrayInsumo = $request->get('arrayidinsumo');
             $arrayCantidad = $request->get('arraycantidad');
             $arrayVariante = $request->get('arrayvariante');
@@ -114,8 +126,11 @@ class EntregaController extends Controller
             $arrayMarca = $request->get('arraymarca');
             $arrayPresentacion = $request->get('arraypresentacion');
             $arrayValor = $request->get('arrayvalor');
-            $totalCantidadEntregada = 0;
 
+            $totalCantidadEntregada = 0;
+            $valorTotalEntrega = 0; // Variable para acumular el valor total
+
+            // Procesamos cada insumo entregado
             foreach ($arrayInsumo as $key => $insumoId) {
                 $variante = $arrayVariante[$key];
                 $cantidad = $arrayCantidad[$key];
@@ -125,23 +140,27 @@ class EntregaController extends Controller
                 $marca = $arrayMarca[$key];
                 $presentacion = $arrayPresentacion[$key];
                 $valor = $arrayValor[$key];
+
                 // Asociar insumo a la entrega con los detalles adicionales
-                $entrega->insumos()->attach([
-                    $insumoId => [
-                        'cantidad' => $cantidad,
-                        'invima' => $invima,
-                        'lote' => $lote,
-                        'vencimiento' => $vencimiento,
-                        'id_marca' => $marca,
-                        'id_presentacion' => $presentacion,
-                        'valor_unitario' => $valor,
-                    ]
+                $entrega->insumos()->attach($insumoId, [
+                    'cantidad' => $cantidad,
+                    'invima' => $invima,
+                    'lote' => $lote,
+                    'vencimiento' => $vencimiento,
+                    'id_marca' => $marca,
+                    'id_presentacion' => $presentacion,
+                    'valor_unitario' => $valor,
+                    'created_at' => $fechaEntrega,  // Registrar la fecha_hora en created_at
+                    'updated_at' => Carbon::now(),  // Registrar el updated_at
                 ]);
 
                 // Actualizar stock del insumo
                 $insumo = Insumo::find($insumoId);
-                $insumo->stock -= intval($cantidad); // Actualizar stock
+                $insumo->stock -= intval($cantidad); // Decrementar el stock
                 $insumo->save();
+
+                // Calcular el valor total de este insumo y acumularlo
+                $valorTotalEntrega += $cantidad * $valor;
 
                 // Obtener características del insumo
                 $caracteristicas = DB::table('insumo_caracteristicas')
@@ -155,74 +174,75 @@ class EntregaController extends Controller
 
                 $cantidadRestante = intval($cantidad);
 
+                // Actualizamos las características del insumo
                 foreach ($caracteristicas as $caracteristica) {
                     if ($cantidadRestante <= 0) {
-                        break; // Si ya se ha restado la cantidad total, salir del bucle
+                        break; // Si ya hemos actualizado toda la cantidad, salir del bucle
                     }
 
                     if ($caracteristica->cantidad >= $cantidadRestante) {
-                        // Si hay suficiente cantidad, simplemente resta y actualiza
+                        // Actualizar la cantidad en insumo_caracteristicas
                         DB::table('insumo_caracteristicas')
                             ->where('id', $caracteristica->id)
                             ->decrement('cantidad', $cantidadRestante);
 
-                        // Actualiza el timestamp si la cantidad llega a 0
-                        $nuevaCantidad = $caracteristica->cantidad - $cantidadRestante;
-                        if ($nuevaCantidad == 0) {
-                            DB::table('insumo_caracteristicas')
-                                ->where('id', $caracteristica->id)
-                                ->update(['updated_at' => Carbon::now()]);
-                        }
+                        // Actualizamos el `updated_at` para reflejar la fecha de entrega
+                        DB::table('insumo_caracteristicas')
+                            ->where('id', $caracteristica->id)
+                            ->update(['updated_at' => $fechaEntrega]);
 
-                        $cantidadRestante = 0; // Ya se ha restado toda la cantidad
+                        // Restar la cantidad entregada
+                        $cantidadRestante = 0;
                     } else {
-                        // Resta lo que haya y continua al siguiente
+                        // Si la cantidad restante es mayor que la cantidad de la característica
                         $cantidadRestante -= $caracteristica->cantidad;
+
+                        // Actualizamos la cantidad a 0
                         DB::table('insumo_caracteristicas')
                             ->where('id', $caracteristica->id)
                             ->update([
                                 'cantidad' => 0,
-                                'updated_at' => Carbon::now() // Actualiza la fecha si la cantidad llega a 0
+                                'updated_at' => $fechaEntrega, // Usamos la fecha_hora de entrega
                             ]);
                     }
                 }
 
-
-                // Si hay alguna cantidad que no se pudo restar, podrías manejarlo aquí, si es necesario
                 if ($cantidadRestante > 0) {
-                    // Manejar la cantidad restante (por ejemplo, mostrar un error o mensaje)
+                    // Manejar la cantidad restante si es necesario (según lógica de negocio)
                 }
 
-                // Obtener la fecha de entrega
-                $fechaEntrega = Carbon::createFromFormat('Y-m-d H:i:s', $entrega->fecha_hora);
+                // Buscar o crear un nuevo registro en el Kardex
                 $mesEntrega = $fechaEntrega->month;
                 $annoEntrega = $fechaEntrega->year;
 
-                // Buscar o crear un nuevo registro en el Kardex para el insumo, mes y año correspondientes
                 $kardex = Kardex::firstOrNew([
                     'insumo_id' => $insumoId,
                     'mes' => $mesEntrega,
                     'anno' => $annoEntrega
                 ]);
 
-                // Sumar el nuevo egreso al egreso existente
+                // Actualizar el Kardex
                 $kardex->egresos += intval($cantidad);
-                // Restar la cantidad al saldo
                 $kardex->saldo -= intval($cantidad);
-                $kardex->save(); // Guardar el Kardex actualizado
+                $kardex->save();
 
-                // Acumular la cantidad total entregada
+                // Acumular la cantidad entregada
                 $totalCantidadEntregada += $cantidad;
             }
 
-            DB::commit(); // Confirmar la transacción
+            // Actualizar el valor total de la entrega
+            $entrega->valor_total = $valorTotalEntrega;
+
+            // Guardamos los cambios en la entrega
+            $entrega->save();
+
+            DB::commit();
+            return redirect('entrega')->with('Mensaje', 'Entrega registrada con éxito.');
         } catch (Exception $e) {
             Log::error('Ocurrió un error al procesar la solicitud: ' . $e->getMessage());
-            DB::rollBack(); // Revertir la transacción en caso de error
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Ocurrió un error al procesar la solicitud.']);
         }
-
-        return redirect('entrega')->with('Mensaje', 'Entrega registrada con éxito.');
     }
 
 

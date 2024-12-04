@@ -21,7 +21,7 @@ class CheckTimeMiddleware
 
         // Permitir pedidos desde el miércoles (día 3) a las 12 PM hasta el jueves (día 4) a las 4 PM
         $allowOrder = (
-            ($currentDay === 3 && $currentHour >= 12) || // Miércoles desde las 12 PM
+            ($currentDay === 3 && $currentHour >= 8) || // Miércoles desde las 12 PM
             ($currentDay === 4 && $currentHour < 16) // Jueves hasta las 4 PM
         );
 

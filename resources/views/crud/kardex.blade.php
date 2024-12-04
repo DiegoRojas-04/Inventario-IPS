@@ -74,6 +74,9 @@
                     <form method="GET" action="{{ route('kardex.index') }}">
                         <input class="form-control" type="text" name="search" placeholder="Buscar insumos"
                             value="{{ request('search') }}">
+                        <input type="hidden" name="mes" value="{{ $selectedMonth }}">
+                        <input type="hidden" name="anno" value="{{ $selectedYear }}">
+                        <input type="hidden" name="id_categoria" value="{{ request('id_categoria') }}">
                     </form>
                 </div>
                 <div class="col-md-1">

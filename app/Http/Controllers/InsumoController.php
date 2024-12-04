@@ -210,6 +210,7 @@ class InsumoController extends Controller
       'descripcion' => $request->input('descripcion'),
       'requiere_invima' => $request->filled('requiere_invima')  ? 1 : 0,
       'requiere_lote' => $request->filled('requiere_lote') ? 1 : 0,
+      'iva' => $request->filled('iva') ? 1 : 0,
       'id_categoria' => $request->input('id_categoria'),
       // 'id_marca' => $request->input('id_marca'),
       // 'id_presentacion' => $request->input('id_presentacion'),
@@ -364,13 +365,12 @@ class InsumoController extends Controller
     // Descargar PDF
     return $dompdf->stream('Insumos_y_Caracteristicas.pdf');
   }
+
   public function exportToExcel(Request $request)
   {
-    // Obtener el id de la categoría seleccionada
     $idCategoria = $request->input('id_categoria');
     $categoriaNombre = $idCategoria ? Categoria::find($idCategoria)->nombre : 'Todas las categorías';
 
-    // Obtener insumos y sus características filtrando por categoría
     $insumos = Insumo::with(['caracteristicas.marca', 'caracteristicas.presentacion'])
       ->when($idCategoria, function ($query, $id) {
         return $query->where('id_categoria', $id);
@@ -378,7 +378,6 @@ class InsumoController extends Controller
       ->orderBy('nombre', 'asc')
       ->get();
 
-    // Calcular el valor total de todos los insumos
     $valorTotal = 0;
     foreach ($insumos as $insumo) {
       foreach ($insumo->caracteristicas as $caracteristica) {
@@ -388,41 +387,52 @@ class InsumoController extends Controller
       }
     }
 
-    // Crear un nuevo Spreadsheet
+    $ivaGeneral = $valorTotal * 0.19;
+    $valorConIvaGeneral = $valorTotal + $ivaGeneral;
+
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
 
-    // Establecer el título
-    $sheet->setCellValue('B2', 'Valor TotaL de Inventario: $' . number_format(floor($valorTotal), 0));
+    // Títulos principales
+    $sheet->setCellValue('B2', 'Valor Total de Inventario: $' . number_format(floor($valorTotal), 0));
+    $sheet->setCellValue('B3', 'IVA (19%): $' . number_format(floor($ivaGeneral), 0));
+    $sheet->setCellValue('B4', 'Total con IVA: $' . number_format(floor($valorConIvaGeneral), 0));
 
-    // Encabezados de las columnas para la tabla de categorías
-    $sheet->setCellValue('B4', 'Categoría');
-    $sheet->setCellValue('C4', 'Valor');
+    // Estilo para títulos principales
+    $titleStyle = [
+      'font' => ['bold' => true, 'size' => 14],
+      'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+    ];
+    $sheet->mergeCells('B2:D2');
+    $sheet->mergeCells('B3:D3');
+    $sheet->mergeCells('B4:D4');
+    $sheet->getStyle('B2:D4')->applyFromArray($titleStyle);
 
-    // Estilo para los encabezados de la tabla de categorías
+    // Encabezados para la tabla de categorías
+    $sheet->setCellValue('B6', 'Categoría');
+    $sheet->setCellValue('C6', 'Valor');
+    $sheet->setCellValue('D6', 'IVA (19%)');
+    $sheet->setCellValue('E6', 'Total');
+
+    // Estilo para los encabezados
     $headerStyle = [
       'font' => ['bold' => true],
-      'alignment' => [
-        'horizontal' => Alignment::HORIZONTAL_CENTER,
-        'vertical' => Alignment::VERTICAL_CENTER
-      ],
+      'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
       'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
       'fill' => [
         'fillType' => Fill::FILL_SOLID,
-        'startColor' => ['argb' => 'FFADD8E6'], // Cambia el color si lo deseas
+        'startColor' => ['argb' => 'FFADD8E6'], // Color celeste claro
       ],
     ];
-    $sheet->getStyle('B4:C4')->applyFromArray($headerStyle);
+    $sheet->getStyle('B6:E6')->applyFromArray($headerStyle);
 
-    // Calcular los valores por categoría
-    $row = 5; // Empezar en la fila 5 para los datos
-    $categorias = Categoria::all(); // Obtener todas las categorías
+    $row = 7;
+    $categorias = Categoria::all();
     $valorPorCategoria = [];
 
     foreach ($categorias as $categoria) {
-      $valorPorCategoria[$categoria->nombre] = 0; // Inicializar el valor de la categoría
+      $valorPorCategoria[$categoria->nombre] = 0;
 
-      // Calcular el valor total de los insumos de esta categoría
       foreach ($insumos as $insumo) {
         if ($insumo->id_categoria == $categoria->id) {
           foreach ($insumo->caracteristicas as $caracteristica) {
@@ -433,27 +443,51 @@ class InsumoController extends Controller
         }
       }
 
-      // Escribir el valor en la hoja de cálculo
+      $valor = $valorPorCategoria[$categoria->nombre];
+      $iva = $valor * 0.19;
+      $total = $valor + $iva;
+
       $sheet->setCellValue('B' . $row, $categoria->nombre);
-      $sheet->setCellValue('C' . $row, number_format(floor($valorPorCategoria[$categoria->nombre]), 0));
+      $sheet->setCellValue('C' . $row, number_format(floor($valor), 0));
+      $sheet->setCellValue('D' . $row, number_format(floor($iva), 0));
+      $sheet->setCellValue('E' . $row, number_format(floor($total), 0));
+
+      $dataStyle = [
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+      ];
+      $sheet->getStyle('B' . $row . ':E' . $row)->applyFromArray($dataStyle);
+
       $row++;
     }
 
-    // Sumar los valores de todas las categorías
-    $totalCategorias = array_sum($valorPorCategoria);
+    $sheet->setCellValue('B' . $row, 'Total General');
+    $sheet->setCellValue('C' . $row, number_format(floor($valorTotal), 0));
+    $sheet->setCellValue('D' . $row, number_format(floor($ivaGeneral), 0));
+    $sheet->setCellValue('E' . $row, number_format(floor($valorConIvaGeneral), 0));
 
-    // Escribir el total al final de la tabla de categorías
-    $sheet->setCellValue('B' . $row, 'Total');
-    $sheet->setCellValue('C' . $row, number_format(floor($totalCategorias), 0));
-
-    // Estilo para la fila de total
     $totalStyle = [
       'font' => ['bold' => true],
+      'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+      'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+      'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => ['argb' => 'FFFFE4B5'], // Color beige claro
+      ],
+    ];
+    $sheet->getStyle('B' . $row . ':E' . $row)->applyFromArray($totalStyle);
+    // Ajustar estilo para la tabla de categorías
+    // Ajustar columnas automáticamente
+    foreach (range('B', 'E') as $col) {
+      $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+    $categoryStyle = [
+      'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
       'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
     ];
-    $sheet->getStyle('B' . $row . ':C' . $row)->applyFromArray($totalStyle);
+    $sheet->getStyle('B7:E' . $row)->applyFromArray($categoryStyle);
 
-    // Encabezados de las columnas para la tabla principal
+    // Tabla principal
     $sheet->setCellValue('A' . ($row + 2), 'Nombre del Insumo');
     $sheet->setCellValue('B' . ($row + 2), 'INVIMA');
     $sheet->setCellValue('C' . ($row + 2), 'Lote');
@@ -464,25 +498,9 @@ class InsumoController extends Controller
     $sheet->setCellValue('H' . ($row + 2), 'Unitario');
     $sheet->setCellValue('I' . ($row + 2), 'Subtotal');
 
-    // Aplicar estilo a los encabezados de la tabla principal
     $sheet->getStyle('A' . ($row + 2) . ':I' . ($row + 2))->applyFromArray($headerStyle);
 
-    // Ajustar el estilo de la tabla de categorías para centrar el contenido y agregar bordes
-    $styleCategoria = [
-      'alignment' => [
-        'horizontal' => Alignment::HORIZONTAL_CENTER,
-        'vertical' => Alignment::VERTICAL_CENTER
-      ],
-      'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-    ];
-
-    // Aplicar el estilo a las celdas de categorías
-    for ($i = 5; $i <= $row; $i++) {
-      $sheet->getStyle('B' . $i . ':C' . $i)->applyFromArray($styleCategoria);
-    }
-
-    // Iterar sobre cada insumo y sus características
-    $row += 3; // Empezar en la fila 8 para los datos
+    $row += 3;
     foreach ($insumos as $insumo) {
       foreach ($insumo->caracteristicas as $caracteristica) {
         if ($caracteristica->cantidad > 0) {
@@ -498,17 +516,12 @@ class InsumoController extends Controller
           $sheet->setCellValue('H' . $row, number_format(floor($caracteristica->valor_unitario), 0));
           $sheet->setCellValue('I' . $row, number_format(floor($subtotal), 0));
 
-          // Estilo para las celdas de datos
           $dataStyle = [
-            'alignment' => [
-              'horizontal' => Alignment::HORIZONTAL_CENTER,
-              'vertical' => Alignment::VERTICAL_CENTER
-            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
           ];
           $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray($dataStyle);
 
-          // Ajustar el tamaño de las columnas automáticamente
           foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
           }
@@ -518,14 +531,10 @@ class InsumoController extends Controller
       }
     }
 
-    // Establecer el nombre del archivo
     $fileName = 'Inventario_Insumos.xlsx';
-
-    // Crear el escritor y guardar el archivo
     $writer = new Xlsx($spreadsheet);
     $writer->save($fileName);
 
-    // Descargar el archivo Excel
     return response()->download($fileName)->deleteFileAfterSend(true);
   }
 

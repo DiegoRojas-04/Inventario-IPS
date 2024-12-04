@@ -132,14 +132,12 @@
 
                                 <div class="col-md-12 mb-2">
                                     <label>Fecha:</label>
-                                    <input readonly type="date" name="fecha" id="fecha" class="form-control"
+                                    <input type="date" name="fecha" id="fecha" class="form-control"
                                         value="<?php echo date('Y-m-d'); ?>">
-                                    <?php
-                                    use Carbon\Carbon;
-                                    $fecha_hora = Carbon::now()->toDateTimeString();
-                                    ?>
-                                    <input type="hidden" name="fecha_hora" value="{{ $fecha_hora }}">
+
+                                    <input type="hidden" name="fecha_hora" id="fecha_hora">
                                 </div>
+
 
                                 <input type="hidden" name="user_id" value="{{ auth()->id() }}">
 
@@ -169,7 +167,27 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     @section('js')
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fechaInput = document.getElementById('fecha');
+                const fechaHoraInput = document.getElementById('fecha_hora');
 
+                function actualizarFechaHora() {
+                    const fechaSeleccionada = fechaInput.value;
+                    if (fechaSeleccionada) {
+                        const ahora = new Date();
+                        const horaActual = ahora.toTimeString().split(' ')[0]; // Hora en formato HH:mm:ss
+                        fechaHoraInput.value = `${fechaSeleccionada} ${horaActual}`;
+                    }
+                }
+
+                // Actualizar el campo al cambiar la fecha
+                fechaInput.addEventListener('change', actualizarFechaHora);
+
+                // Actualizar el campo al cargar la página
+                actualizarFechaHora();
+            });
+        </script>
         <script>
             $(document).ready(function() {
                 let barcode = ''; // Variable para almacenar el código de barras

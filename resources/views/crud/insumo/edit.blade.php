@@ -15,7 +15,7 @@
                 {{ csrf_field() }}
                 {{ method_field('PATCH') }}
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label>Nombre:</label>
                     <input type="text" name="nombre" value="{{ old('nombre', $insumo->nombre) }}"
                         class="form-control  @error('nombre') is-invalid @enderror">
@@ -24,7 +24,7 @@
                     @enderror
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label>Descripcion:</label>
                     <input type="text" name="descripcion" value="{{ old('descripcion', $insumo->descripcion) }}"
                         class="form-control  @error('descripcion') is-invalid @enderror">
@@ -33,13 +33,19 @@
                     @enderror
                 </div>
 
-                <div class="col-md-2 text-center">
+                <div class="col-md-4 text-center">
+                    <label>IVA</label>
+                    <input type="checkbox" name="iva" class="form-control" value="1"
+                        {{ $insumo->iva ? 'checked' : '' }}>
+                </div>
+
+                <div class="col-md-4 text-center">
                     <label>Invima</label>
                     <input type="checkbox" name="requiere_invima" class="form-control" value="1"
                         {{ $insumo->requiere_invima ? 'checked' : '' }}>
                 </div>
 
-                <div class="col-md-2 text-center">
+                <div class="col-md-4 text-center">
                     <label>Lote Y Fecha</label>
                     <input type="checkbox" name="requiere_lote" class="form-control" value="1"
                         {{ $insumo->requiere_lote ? 'checked' : '' }}>
@@ -100,17 +106,13 @@
                     <select name="ubicacion" class="form-control">
                         <option value="1" {{ old('ubicacion', $insumo->ubicacion) == 1 ? 'selected' : '' }}>Insumos
                         </option>
-                        <option value="2" {{ old('ubicacion', $insumo->ubicacion) == 2 ? 'selected' : '' }}>Bodega Principal
+                        <option value="2" {{ old('ubicacion', $insumo->ubicacion) == 2 ? 'selected' : '' }}>Bodega
+                            Principal
                         </option>
-                        <option value="3" {{ old('ubicacion', $insumo->ubicacion) == 3 ? 'selected' : '' }}>Laboratorio
+                        <option value="3" {{ old('ubicacion', $insumo->ubicacion) == 3 ? 'selected' : '' }}>
+                            Laboratorio
                         </option>
                     </select>
-                </div>
-
-
-                <div class="col-md-4">
-                    <label>Cantidad:</label>
-                    <input type="text" class="form-control bg-white" value="{{ $insumo->stock }}" readonly>
                 </div>
 
                 <div class="col-md-4">
@@ -120,6 +122,11 @@
                     @error('codigo')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
+                </div>
+
+                <div class="col-md-4">
+                    <label>Cantidad:</label>
+                    <input type="text" class="form-control bg-white" value="{{ $insumo->stock }}" readonly>
                 </div>
 
                 <div class="col-12">
