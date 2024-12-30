@@ -6,7 +6,7 @@ function updateCountdown() {
 
     // Definir los horarios permitidos
     var startWednesday = new Date(); // Miércoles a las 12 PM
-    startWednesday.setDate(now.getDate() - (now.getDay() <= 3 ? now.getDay() - 3 : 7 + now.getDay() - 3)); // Ajustar al último miércoles
+    startWednesday.setDate(now.getDate() - (now.getDay() <= 5 ? now.getDay() - 5 : 7 + now.getDay() - 5)); // Ajustar al último miércoles
     startWednesday.setHours(8, 0, 0, 0);
 
     var endThursday = new Date(); // Jueves a las 4 PM

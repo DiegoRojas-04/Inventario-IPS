@@ -25,11 +25,25 @@
                         <div class="col-sm-6">
                             <div class="input-group mb-3">
                                 <span class="input-group-text"><i class="fa fa-users"></i></span>
-                                <input disabled type="text" class="form-control" value="Area">
+                                <input disabled type="text" class="form-control" value="Usuario">
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <input type="text" id="usuario" class="form-control" value="{{ auth()->user()->name }}"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- Aquí se agrega el campo de Área -->
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="fa fa-cogs"></i></span>
+                                <input disabled type="text" class="form-control" value="Área">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" value="{{ auth()->user()->servicio->nombre }}"
                                 readonly>
                         </div>
                     </div>
@@ -68,7 +82,7 @@
                         <div class="col-sm-12">
                             <label for="observacion">Observación:</label>
                             <textarea id="observacion" name="observacion" class="form-control" rows="3" required></textarea>
-                        </div>                          
+                        </div>
 
                     </div>
                     <div class="text-center">

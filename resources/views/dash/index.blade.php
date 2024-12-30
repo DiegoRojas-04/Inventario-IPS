@@ -181,8 +181,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 
 @stop
@@ -198,7 +196,7 @@
 
     <script>
         $(document).ready(function() {
-            
+
             //1
             const comprasYEntregas = @json($comprasYEntregasMensuales);
             const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre",
@@ -378,7 +376,37 @@
             const totalInventario = categoriaValues.reduce((sum, value) => sum + parseFloat(value), 0);
 
             const ctxCategoria = document.getElementById('valorInventarioCategoriaChart').getContext('2d');
-            new Chart(ctxCategoria, {
+
+            // Definir el plugin para agregar texto al centro
+            const centerTextPlugin = {
+                id: 'centerTextPlugin',
+                beforeDraw(chart) {
+                    const {
+                        width,
+                        height
+                    } = chart;
+                    const ctx = chart.ctx;
+
+                    ctx.save();
+
+                    // Dibujar el texto "Valor total inventario"
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#000';
+                    ctx.fillText('Valor total inventario', width / 2, height / 2 - 10);
+
+                    // Dibujar el monto total del inventario
+                    const totalText = `$${totalInventario.toLocaleString()}`;
+                    ctx.font = 'bold 20px Arial';
+                    ctx.fillText(totalText, width / 2, height / 2 + 15);
+
+                    ctx.restore();
+                }
+            };
+
+            // Crear el gráfico y registrar el plugin
+            const valorInventarioChart = new Chart(ctxCategoria, {
                 type: 'doughnut',
                 data: {
                     labels: categoriaLabels,
@@ -394,7 +422,7 @@
                         ]
                     }]
                 },
-                options: {
+                options: {  
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -403,16 +431,13 @@
                                 },
                                 label: function(context) {
                                     const value = context.raw;
-                                    // Calcular el porcentaje correctamente
                                     const percentage = ((value / totalInventario) * 100).toFixed(2);
-                                    return `$${value.toLocaleString()} (${percentage}%)`;
+                                    return `$${parseInt(value).toLocaleString()} (${percentage}%)`;
                                 }
                             }
                         },
                         title: {
                             display: true,
-                            // Ahora mostramos el total correctamente en el título
-                            text: `Valor Inventario: $${totalInventario.toLocaleString()}`,
                             font: {
                                 size: 14
                             },
@@ -429,8 +454,9 @@
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                },
+                plugins: [centerTextPlugin] // Registrar el plugin aquí
             });
         });
     </script>

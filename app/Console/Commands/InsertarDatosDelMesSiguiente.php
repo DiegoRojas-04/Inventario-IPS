@@ -15,7 +15,7 @@ class InsertarDatosDelMesSiguiente extends Command
         $hoy = Carbon::now();
         
         // Verifica si es el día 1, 2, 3, 4 o 5 del mes
-        if ($hoy->day >= 1 && $hoy->day <= 5) {
+        if ($hoy->day >= 1 && $hoy->day <= 9) {
             
             // Verifica si ya se ha insertado en el mes actual
             $yaInsertadoEsteMes = Kardex::where('mes', $hoy->month)

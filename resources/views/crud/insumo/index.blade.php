@@ -111,17 +111,17 @@
 
                     <div class="col-md-3">
                         <select data-size="5" title="Seleccionar Categoria" data-live-search="true" name="id_categoria"
-                            id="id_categoria" class="form-control selectpicker show-tick">
+                                id="id_categoria" class="form-control selectpicker show-tick">
                             <option value="">Seleccionar Categoría</option>
                             @foreach ($categorias as $categoria)
                                 <option value="{{ $categoria->id }}"
-                                    {{ request('id_categoria') == $categoria->id ? 'selected' : '' }}>
+                                        {{ request('id_categoria') == $categoria->id ? 'selected' : '' }}>
                                     {{ $categoria->nombre }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-
+                    
                     <div class="col-md-3">
                     </div>
 
@@ -156,8 +156,6 @@
                     <tr class="text-center">
                         <th scope="col">#</th>
                         <th scope="col">Nombre</th>
-                        {{-- <th scope="col">Vida Util</th>
-                        <th scope="col">Clasif.Riesgo</th> --}}
                         <th scope="col">Cantidad</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -195,10 +193,6 @@
                                 <div class="status-circle {{ $estadoInsumo }}"></div>
                             </td>
                             <td>{{ $insumo->nombre }}</td>
-                            {{-- <td>{{ $insumo->marca->nombre }}</td>  --}}
-                            {{-- <td>{{ $insumo->presentacione->nombre }}</td>  --}}
-                            {{-- <td>{{ $insumo->vida_util }}</td>
-                            <td>{{ $insumo->riesgo }}</td> --}}
                             <td>{{ $insumo->stock }}</td>
                             <td>
                                 <div class="btn-group" role="group" style="gap: 5px;">
@@ -318,8 +312,8 @@
                             <table class="table">
                                 <thead class="thead-dark">
                                     <tr class="text-center">
-                                        <th scope="col" id="header-forma-farmaceutica">Marca</th>
-                                        <th scope="col" id="header-unidad-medida">Presentacion</th>
+                                        <th>Marca</th>
+                                        <th>Presentacion</th>
                                         <th>Invima</th>
                                         <th>Lote</th>
                                         <th>Vencimiento</th>
@@ -395,41 +389,4 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/insumos.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const categoriaSelect = document.getElementById('id_categoria');
-
-            // Función para actualizar los encabezados según el valor del select
-            function updateHeaders() {
-                const selectedValue = categoriaSelect.value;
-
-                // Obtenemos los elementos de los encabezados
-                const headerVidaUtil = document.getElementById('header-vida-util');
-                const headerClasifRiesgo = document.getElementById('header-clasif-riesgo');
-                const headerFormaFarmaceutica = document.getElementById('header-forma-farmaceutica');
-                const headerUnidadMedida = document.getElementById('header-unidad-medida');
-
-                // Verificamos si el valor seleccionado es 11 (Medicamentos)
-                if (selectedValue == '11') {
-                    headerVidaUtil.innerText = 'Código CUMS:';
-                    headerClasifRiesgo.innerText = 'Concentración:';
-                    headerFormaFarmaceutica.innerText = 'Forma Farmaceutica';
-                    headerUnidadMedida.innerText = 'Unidad Medida';
-
-                } else {
-                    headerVidaUtil.innerText = 'Vida Util:';
-                    headerClasifRiesgo.innerText = 'Clasif.Riesgo:';
-                    headerFormaFarmaceutica.innerText = 'Marca';
-                    headerUnidadMedida.innerText = 'Presentacion';
-                }
-            }
-
-            // Llama a la función para actualizar los encabezados al cargar la página
-            updateHeaders();
-
-            // Escucha el evento de cambio en el select
-            categoriaSelect.addEventListener('change', updateHeaders);
-        });
-    </script>
-
 @stop

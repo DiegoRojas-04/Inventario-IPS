@@ -15,11 +15,17 @@ class RedirectIfNoRole
         if ($user) {
             // Verificar si el usuario tiene roles asignados
             if ($user->roles->isNotEmpty()) {
+                // Permitir acceso a la creación y almacenamiento de pedidos si tiene cualquier rol
+                if ($request->routeIs('pedido.create') || $request->routeIs('pedido.store')) {
+                    return $next($request);
+                }
+
                 // Comprobar si tiene el rol de 'Administrador'
                 if ($user->roles->contains('name', 'Administrador')) {
                     // Si tiene el rol de Administrador, permitir acceso
                     return $next($request);
                 }
+
                 // Comprobar si tiene el rol de 'Laboratorio' y si la ruta es permitida
                 if ($user->roles->contains('name', 'Laboratorio') && $this->isLaboratorioRoute($request)) {
                     // Si es una ruta permitida para Laboratorio, permitir acceso

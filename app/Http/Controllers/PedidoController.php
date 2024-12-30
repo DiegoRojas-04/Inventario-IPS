@@ -25,7 +25,7 @@ class PedidoController extends Controller
     {
         $pedido = Pedido::with('insumos', 'user')->findOrFail($id);
         $servicio = $pedido->user->servicio;
-        $observacion = $pedido->observacion; 
+        $observacion = $pedido->observacion;
 
         // Verificar que el usuario tenga un servicio
         if (!$servicio) {
@@ -48,7 +48,7 @@ class PedidoController extends Controller
             return $insumo;
         });
 
-        return view('crud.pedido.show', compact('pedido', 'insumosConUltimaEntrega','observacion'));
+        return view('crud.pedido.show', compact('pedido', 'insumosConUltimaEntrega', 'observacion'));
     }
 
     public function store(Request $request)
@@ -61,13 +61,10 @@ class PedidoController extends Controller
             'esPedidoEspecial' => 'nullable|boolean', // Validar si es un pedido especial
         ]);
 
-        // Obtener si es un pedido especial desde el checkbox
-        $esPedidoEspecial = $request->input('esPedidoEspecial', false); // False si no está presente
-
         $insumos = json_decode($data['insumos'], true);
         $cantidades = json_decode($data['cantidades'], true);
         $restantes = json_decode($data['restantes'], true);
-
+        
         if (!is_array($insumos) || !is_array($cantidades) || !is_array($restantes)) {
             return redirect()->back()->withErrors(['msg' => 'Los datos de insumos, cantidades y restantes no son válidos.']);
         }
@@ -77,14 +74,7 @@ class PedidoController extends Controller
         $pedido->user_id = auth()->id();
         $pedido->estado = 1;
         $pedido->observacion = $data['observacion'];
-
-        // Establecer el tipo de pedido basado en el valor del checkbox
-        if ($esPedidoEspecial) {
-            $pedido->tipo = 'Pedido Especial';
-        } else {
-            $pedido->tipo = 'Pedido';
-        }
-
+        $pedido->tipo = $request->input('esPedidoEspecial', false) ? 'Pedido Especial' : 'Pedido';
         $pedido->save();
 
         for ($i = 0; $i < count($insumos); $i++) {
@@ -94,8 +84,9 @@ class PedidoController extends Controller
             ]);
         }
 
-        return redirect('home')->with('Mensaje', 'Pedido guardado exitosamente.');
+        return redirect()->route('home')->with('Mensaje', 'Pedido realizado con éxito.');
     }
+
 
     public function create(Request $request)
     {

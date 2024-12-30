@@ -94,6 +94,7 @@ class CompraController extends Controller
      */
     public function store(StoreCompraRequest $request)
     {
+        // dd($request);
         try {
             DB::beginTransaction();
 
