@@ -129,9 +129,8 @@ class InsumoController extends Controller
     $presentaciones = Presentacione::where('estado', 1)->get();
 
     // Obtener todas las características disponibles de los insumos
-    $variantes = Caracteristica::all();
 
-    return view('crud.insumo.create', compact('categorias', 'presentaciones', 'marcas', 'variantes'));
+    return view('crud.insumo.create', compact('categorias', 'presentaciones', 'marcas',));
   }
 
   /**

@@ -24,7 +24,7 @@ class StoreActivoRequest extends FormRequest
         $activoId = $this->route('activo') ? $this->route('activo') : null;
         return [
             'codigo' => 'nullable|string|max:255|unique:activos,codigo,' . $activoId,
-            'nombre' => 'required|string|max:255',
+            'ubicacion_general' => 'required|string|max:255',
             'categoria_id' => 'required|exists:categoria_activos,id',
             'modelo' => 'nullable|string|max:255',
             'serie' => 'nullable|string|max:255',

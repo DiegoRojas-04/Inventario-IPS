@@ -102,6 +102,28 @@
                         </select>
                     </div>
 
+                    <div class="col-md-3">
+                        <select data-size="5" title="Seleccionar Ubicación" data-live-search="true" name="ubicacion"
+                            id="ubicacion" class="form-control selectpicker show-tick" onchange="this.form.submit()">
+                            <option value="">Seleccionar Ubicación</option>
+                            @foreach ($ubicaciones as $ubicacion)
+                                <option value="{{ $ubicacion->id }}"
+                                    {{ request('ubicacion') == $ubicacion->id ? 'selected' : '' }}>
+                                    {{ $ubicacion->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-5 input-group">
+                        <input type="text" class="form-control" placeholder="Buscar Codigo" id="search" name="search"
+                            value="{{ request('search') }}">
+                        <div class="input-group-prepend">
+                            <button type="submit" class="btn" aria-disabled="true" style="pointer-events: none;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
 
                 </div>
             </form>
@@ -113,7 +135,7 @@
                 <thead class="thead-dark">
                     <tr class="text-center">
                         {{-- <th scope="col">Codigo</th> --}}
-                        <th scope="col">Nombre</th>
+                        <th scope="col">Categoria</th>
                         <th scope="col">Modelo</th>
                         <th scope="col">Serie</th>
                         <th scope="col">Marca</th>
@@ -128,8 +150,7 @@
                 <tbody class="text-center">
                     @foreach ($activos as $activo)
                         <tr>
-                            {{-- <td>{{ $activo->codigo }}</td> --}}
-                            <td>{{ $activo->nombre }}</td>
+                            <td>{{ $activo->categoria->nombre }}</td>
                             <td>{{ $activo->modelo }}</td>
                             <td>{{ $activo->serie }}</td>
                             <td>{{ $activo->marca }}</td>
@@ -140,10 +161,10 @@
                                     @csrf
                                     @method('PATCH')
                                     <select name="estado" class="form-control" onchange="this.form.submit()">
-                                        <option value="0" {{ $activo->estado == 0 ? 'selected' : '' }}>En Uso</option>
-                                        <option value="1" {{ $activo->estado == 1 ? 'selected' : '' }}>Disponible
+                                        <option value="0" {{ $activo->estado == 0 ? 'selected' : '' }}>EN USO</option>
+                                        <option value="1" {{ $activo->estado == 1 ? 'selected' : '' }}>DISPONIBLE
                                         </option>
-                                        <option value="2" {{ $activo->estado == 2 ? 'selected' : '' }}>Reparación
+                                        <option value="2" {{ $activo->estado == 2 ? 'selected' : '' }}>REPARACION
                                         </option>
                                     </select>
                                 </form>
@@ -279,39 +300,37 @@
 @stop
 
 @section('js')
+    <script src="{{ asset('js/insumos.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectPageSize = document.getElementById('pageSize');
-            const filterForm = document.getElementById('filterForm');
+        $(document).ready(function() {
+            let barcode = ''; // Variable para almacenar el código de barras
+            let isBarcodeProcessing = false; // Controla si se está procesando un código de barras
 
-            // Cambiar el tamaño de página
-            selectPageSize.addEventListener('change', function() {
-                filterForm.submit();
-            });
+            // Capturar el evento de keydown en todo el documento
+            $(document).keydown(function(e) {
+                // Verificar si no se está procesando un código de barras
+                if (!isBarcodeProcessing) {
+                    // Verificar si el foco no está en un campo de entrada o textarea
+                    if (!$('input, textarea').is(':focus')) {
+                        if (e.key === 'Enter') {
+                            // Cuando se presiona Enter, procesar el código de barras
+                            isBarcodeProcessing = true;
 
-            // Capturar clic en enlaces de paginación
-            const paginationLinks = document.querySelectorAll('.pagination a');
+                            // Colocar el código capturado en el campo de búsqueda
+                            $('#search').val(barcode);
 
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault(); // Prevenir el comportamiento por defecto
-                    const pageUrl = this.getAttribute('href');
-                    const pageSize = selectPageSize.value; // Obtener el tamaño de página actual
+                            // Enviar el formulario automáticamente
+                            $('#search').closest('form').submit();
 
-                    // Crear un formulario para enviar los datos
-                    const form = document.createElement('form');
-                    form.method = 'GET';
-                    form.action = pageUrl;
-
-                    const pageSizeInput = document.createElement('input');
-                    pageSizeInput.type = 'hidden';
-                    pageSizeInput.name = 'page_size';
-                    pageSizeInput.value = pageSize;
-
-                    form.appendChild(pageSizeInput);
-                    document.body.appendChild(form);
-                    form.submit(); // Enviar el formulario
-                });
+                            // Limpiar la variable y reactivar el evento
+                            barcode = '';
+                            isBarcodeProcessing = false;
+                        } else {
+                            // Agregar la tecla presionada al código de barras
+                            barcode += e.key;
+                        }
+                    }
+                }
             });
         });
     </script>

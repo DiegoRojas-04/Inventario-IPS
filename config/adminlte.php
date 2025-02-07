@@ -351,7 +351,7 @@ return [
             'text' => 'Permisos',
             'url' => 'permiso',
             'icon' => 'far fa fa-cog',
-            'can' => 'Administrador'
+            'can' => 'nadie'
         ],
 
         [
@@ -584,16 +584,20 @@ return [
             'can' => 'Activos',
             'submenu' => [
                 [
+                    'text' => 'Panel de Control',
+                    'url' => 'controlActivos',
+                ],
+                [
                     'text' => 'Categoria',
                     'url' => 'categoriasAct',
                 ],
                 [
-                    'text' => 'Activo',
-                    'url' => 'activo/create',
-                ],
-                [
                     'text' => 'Ubicacion',
                     'url' => 'ubicaciones',
+                ],
+                [
+                    'text' => 'Activo',
+                    'url' => 'activo/create',
                 ],
                 [
                     'text' => 'Lisa de Activos',

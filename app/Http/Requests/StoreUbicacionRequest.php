@@ -17,7 +17,7 @@ class StoreUbicacionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|unique:ubicaiones,nombre|max:60', // Nombre obligatorio y único
+            'nombre' => 'required|unique:ubicacions,nombre|max:60', // Nombre obligatorio y único
             'descripcion' => 'nullable|max:255', // Descripción opcional con un máximo de 255 caracteres
         ];
     }

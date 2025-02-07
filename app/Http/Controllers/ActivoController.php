@@ -10,6 +10,7 @@ use App\Models\Ubicacion;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ActivoController extends Controller
@@ -17,31 +18,67 @@ class ActivoController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function control()
+    {
+        $categorias = CategoriaActivo::withCount('activos')->get();
+        return view('crud.activo.control', compact('categorias'));
+    }
+
+
+    public function filtrarPorCategoria($categoriaId)
+    {
+        $categorias = CategoriaActivo::withCount('activos')->get();
+
+        // Obtener los activos agrupados por ubicación y sumar sus cantidades
+        $activos = Activo::where('categoria_id', $categoriaId)
+            ->selectRaw("
+            CASE 
+                WHEN ubicacions.nombre LIKE 'Consultorio%' THEN 'CONSULTORIOS'
+                ELSE ubicacions.nombre 
+            END as ubicacion_nombre,
+            SUM(cantidad) as total_cantidad
+        ")
+            ->join('ubicacions', 'activos.ubicacion_id', '=', 'ubicacions.id') // Para obtener el nombre de la ubicación
+            ->groupBy('ubicacion_nombre')
+            ->get();
+
+        // Obtener la categoría seleccionada
+        $categoriaSeleccionada = CategoriaActivo::find($categoriaId);
+
+        return view('crud.activo.control', compact('categorias', 'activos', 'categoriaSeleccionada'));
+    }
+
+
     public function index(Request $request)
     {
         $query = Activo::query();
 
-        // Filtrado por categoría usando el ID
+        // Filtrado por ubicación
+        if ($request->filled('ubicacion')) {
+            $query->where('ubicacion_id', $request->ubicacion);
+        }
+
+        // Filtrado por categoría
         if ($request->filled('categoria')) {
             $query->where('categoria_id', $request->categoria);
         }
 
-        // Búsqueda
+        // Búsqueda solo por código
         if ($request->filled('search')) {
-            $query->where('nombre', 'like', '%' . $request->search . '%');
+            $query->where('codigo', 'like', '%' . $request->search . '%');
         }
 
         // Paginación
         $pageSize = $request->input('pageSize', 15);
         $activos = $query->paginate($pageSize);
 
-        // Obtener todas las categorías para mostrarlas en el filtro
-        $ubicaciones = Ubicacion::all(); // Obtén todas las ubicaciones
-        $categorias = CategoriaActivo::all();
+        // Obtener todas las categorías y ubicaciones
+        $categorias = CategoriaActivo::orderBy('nombre', 'asc')->get();
+        $ubicaciones = Ubicacion::orderBy('nombre', 'asc')->get();
 
         return view('crud.activo.index', compact('activos', 'categorias', 'ubicaciones'));
     }
-
 
 
     /**
@@ -194,7 +231,7 @@ class ActivoController extends Controller
     public function edit($id)
     {
         $ubicaciones = Ubicacion::orderBy('nombre', 'asc')->get();
-        $categorias = CategoriaActivo::all();
+        $categorias = CategoriaActivo::orderBy('nombre', 'asc')->get();
         $activo = Activo::findOrFail($id); // Encuentra el activo por ID o lanza un error 404
         return view('crud.activo.edit', compact('activo', 'categorias', 'ubicaciones')); // Pasa el activo a la vista
     }
@@ -226,7 +263,7 @@ class ActivoController extends Controller
     {
         $activo = Activo::findOrFail($id);
         $codigo = $activo->codigo;
-        $nombreActivo = $activo->nombre; // Obtener el nombre del activo
+        $nombreCategoria = $activo->categoria->nombre; // Aquí obtienes el nombre de la categoría
 
         // Genera el código de barras
         $generator = new BarcodeGeneratorPNG();
@@ -235,10 +272,8 @@ class ActivoController extends Controller
         // Crea una nueva instancia de Dompdf
         $options = new Options();
         $options->set('defaultFont', 'Arial');
-        $options->set('isRemoteEnabled', true); // Permitir imágenes remotas
-        $options->set('isHtml5ParserEnabled', true); // Habilitar el analizador HTML5
-
-        // Configurar márgenes a 0
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
         $options->set('marginTop', 0);
         $options->set('marginBottom', 0);
         $options->set('marginLeft', 0);
@@ -255,36 +290,46 @@ class ActivoController extends Controller
                 display: flex;
                 justify-content: center;
                 text-align: center;
-                margin: 0; /* Elimina el margen */
-                padding: 0; /* Elimina el padding */
+                margin: 0;
+                padding: 0;
             }
             .logo {
                 text-align: center;
                 width: 100%;
-                height: auto; 
+                height: auto;
                 font-size: 24px;
-                margin: 0; /* Elimina el margen */
-                padding: 0; /* Elimina el padding */
+                margin: 0;
+                padding: 0;
                 margin-bottom: 20px;
+                font-weight: bold; 
+            }
+                .logo2 {    
+                text-align: center;
+                width: 100%;
+                height: auto;
+                font-size: 22px;
+                margin: 0;
+                padding: 0;
                 font-weight: bold; 
             }
             .barcode {
                 width: 100%;
-                height: 30%; /* Cambiar a auto para mantener la proporción */
-                margin: 0; /* Elimina el margen */
-                padding: 0; /* Elimina el padding */
+                height: 30%;
+                margin: 0;
+                padding: 0;
             }
             .codigo {
                 font-size: 32px;
                 font-weight: bold;
-                letter-spacing: 35px; /* Reduce el espaciado */
-                margin: 5px 0; /* Ajusta el margen superior e inferior */
+                letter-spacing: 35px;
+                margin: 5px 0;
                 font-weight: bold; 
             }
         </style>
     
         <div class="sticker">
-            <p class="logo">' . $nombreActivo . '</p> <!-- Cambiar a nombre del activo -->
+         <p class="logo2">MEDICARE IPS</p>    
+        <p class="logo">' . $nombreCategoria . '</p>
             <img class="barcode" src="data:image/png;base64,' . base64_encode($barcode) . '" alt="Código de Barras">
             <p class="codigo">' . $codigo . '</p>
         </div>
@@ -294,14 +339,14 @@ class ActivoController extends Controller
         $dompdf->loadHtml($html);
 
         // Configura el tamaño del papel A6 y la orientación a horizontal
-        $dompdf->setPaper('A6', 'landscape'); // Cambiar a landscape para orientación horizontal
+        $dompdf->setPaper('A6', 'landscape');
 
         // Renderiza el PDF
         $dompdf->render();
 
         // Envía el PDF al navegador para descargar
         return $dompdf->stream('codigo_barras.pdf', [
-            'Attachment' => true // Esto hace que el PDF se descargue en lugar de mostrarse en el navegador
+            'Attachment' => true
         ]);
     }
 
@@ -309,7 +354,7 @@ class ActivoController extends Controller
     public function generarCodigosBarrasActivosPDF()
     {
         // Obtener todos los activos y ordenarlos alfabéticamente por nombre
-        $activos = Activo::orderBy('nombre')->get();
+        $activos = Activo::orderBy('categoria_id')->get();
 
         // Parámetros de tamaño de cada código de barras (en milímetros)
         $barcodeWidth = 45; // Ancho del código de barras

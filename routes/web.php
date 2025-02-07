@@ -112,6 +112,10 @@ Route::resource('consultorios', ConsultorioController::class);
 Route::resource('ubicaciones', UbicacionController::class);
 Route::resource('categoriasAct', CategoriaActivoController::class);
 Route::resource('activo', ActivoController::class);
+
+Route::get('/controlActivos', [ActivoController::class, 'control'])->name('control');
+Route::get('/controlActivos/{categoria}', [ActivoController::class, 'filtrarPorCategoria'])->name('control.filtrar');
+
 Route::resource('alerta', AlertaController::class);
 Route::get('consultorios/{consultorioId}/elementos', [ElementoController::class, 'elementosPorConsultorio'])->name('consultorios.elementos');
 Route::patch('elementos/{id}/cantidad', [ElementoController::class, 'updateCantidad'])->name('elementos.updateCantidad');

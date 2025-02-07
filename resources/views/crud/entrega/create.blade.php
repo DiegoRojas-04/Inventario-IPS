@@ -133,9 +133,9 @@
                                 <div class="col-md-12 mb-2">
                                     <label>Fecha:</label>
                                     <input type="date" name="fecha" id="fecha" class="form-control"
-                                        value="<?php echo date('Y-m-d'); ?>">
+                                        value="<?php echo date('Y-m-d'); ?>" readonly>
 
-                                    <input type="hidden" name="fecha_hora" id="fecha_hora">
+                                    <input type="hidden" name="fecha_hora" id="fecha_hora" readonly>
                                 </div>
 
 

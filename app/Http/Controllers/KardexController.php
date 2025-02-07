@@ -51,7 +51,7 @@ class KardexController extends Controller
          $search = $request->input('search');
      
          // Obtener los insumos con paginación, filtrando por la categoría y el término de búsqueda
-         $query = Insumo::with('detallesTransaccion', 'compras', 'entregas')->orderBy('nombre', 'asc');
+         $query = Insumo::with('compras', 'entregas')->orderBy('nombre', 'asc');
      
          // Filtrar por categoría si está seleccionada
          if ($selectedCategory) {
@@ -87,7 +87,7 @@ class KardexController extends Controller
         $selectedYear = $request->input('anno');
         $idCategoria = $request->input('id_categoria');
 
-        $query = Insumo::with('detallesTransaccion', 'compras', 'entregas', 'caracteristicas.compras')
+        $query = Insumo::with('compras', 'entregas', 'caracteristicas.compras')
             ->orderBy('nombre', 'asc');
 
         if ($idCategoria) {

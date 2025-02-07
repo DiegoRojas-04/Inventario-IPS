@@ -37,15 +37,7 @@
                 @csrf
                 @method('PUT') <!-- Se usa PUT para la actualización -->
 
-                <div class="col-md-4">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
-                        value="{{ old('nombre', $activo->nombre) }}">
-                    @error('nombre')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-
+                
                 <div class="col-md-4">
                     <label for="categoria_id">Categoría</label>
                     <select name="categoria_id" id="categoria_id" class="form-control" required>
@@ -60,6 +52,20 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
+
+                <div class="col-md-4">
+                    <label for="ubicacion_general">Ubicación:</label>
+                    <select name="ubicacion_general" class="form-control @error('ubicacion_general') is-invalid @enderror">
+                        <option value="">Seleccionar</option>
+                        <option value="1" {{ old('ubicacion_general', $activo->ubicacion_general) == '1' ? 'selected' : '' }}>La Dorada</option>
+                        <option value="2" {{ old('ubicacion_general', $activo->ubicacion_general) == '2' ? 'selected' : '' }}>Manizales</option>
+                    </select>
+                    @error('ubicacion_general')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+                
+
 
                 <div class="col-md-4">
                     <label for="modelo">Modelo:</label>
@@ -91,7 +97,7 @@
                 <div class="col-md-4">
                     <label for="cantidad">Cantidad:</label>
                     <input type="number" name="cantidad" class="form-control @error('cantidad') is-invalid @enderror"
-                        value="{{ old('cantidad', $activo->cantidad) }}">
+                        value="{{ old('cantidad', $activo->cantidad) }}" readonly>
                     @error('cantidad')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
@@ -121,7 +127,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="ubicacion_id">Ubicación:</label>
+                    <label for="ubicacion_id">Ubicación Especifica:</label>
                     <select name="ubicacion_id" id="ubicacion_id"
                         class="form-control @error('ubicacion_id') is-invalid @enderror">
                         @foreach ($ubicaciones as $ubicacion)
@@ -135,9 +141,6 @@
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
-
-
-
 
                 <div class="col-md-6">
                     <label for="codigo">Código:</label>

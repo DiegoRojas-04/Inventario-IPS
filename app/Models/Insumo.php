@@ -84,10 +84,10 @@ class Insumo extends Model
         return $this->hasMany(EntregaInsumo::class, 'insumo_id');
     }
 
-    public function detallesTransaccion()
-    {
-        return $this->hasMany(DetalleTransaccion::class, 'insumo_id');
-    }
+    // public function detallesTransaccion()
+    // {
+    //     return $this->hasMany(DetalleTransaccion::class, 'insumo_id');
+    // }
 
     public function pedidos()
     {

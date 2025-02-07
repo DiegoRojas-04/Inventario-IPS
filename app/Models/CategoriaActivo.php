@@ -11,9 +11,19 @@ class CategoriaActivo extends Model
 
     protected $fillable = ['nombre', 'descripcion'];
 
+    public function setNombreAttribute($value)
+    {
+        $this->attributes['nombre'] = strtoupper($value);
+    }
+
+    public function setDescripcionAttribute($value)
+    {
+        $this->attributes['descripcion'] = strtoupper($value);
+    }
+    
     // Relación con los activos
     public function activos()
     {
-        return $this->hasMany(Activo::class);
+        return $this->hasMany(Activo::class, 'categoria_id'); // La clave correcta es 'categoria_id'
     }
 }

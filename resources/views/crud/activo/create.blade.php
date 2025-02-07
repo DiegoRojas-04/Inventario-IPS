@@ -36,15 +36,6 @@
                 @csrf
 
                 <div class="col-md-4">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror"
-                        value="{{ old('nombre') }}">
-                    @error('nombre')
-                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
                     <label for="categoria_id">Categoría:</label>
                     <select name="categoria_id" class="form-control @error('categoria_id') is-invalid @enderror">
                         <option value="">Seleccionar categoría...</option>
@@ -55,10 +46,23 @@
                         @endforeach
                     </select>
                     @error('categoria_id')
-                        <span class="invalid-feedback">{{ $message }}</span>
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
                 </div>
 
+                
+                <div class="col-md-4">
+                    <label for="ubicacion_general">Ubicación:</label>
+                    <select name="ubicacion_general" class="form-control @error('ubicacion_general') is-invalid @enderror">
+                        <option value="">Seleccionar</option>
+                        <option value="1" {{ old('ubicacion_general') == '1' ? 'selected' : '' }}>La Dorada</option>
+                        <option value="2" {{ old('ubicacion_general') == '2' ? 'selected' : '' }}>Manizales</option>
+                    </select>
+                    @error('ubicacion_general')
+                        <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                    @enderror
+                </div>
+                
                 <div class="col-md-4">
                     <label for="modelo">Modelo:</label>
                     <input type="text" name="modelo" class="form-control @error('modelo') is-invalid @enderror"
@@ -69,7 +73,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="serie">Número de Serie:</label>
+                    <label for="serie">Numero de Serie:</label>
                     <input type="text" name="serie" class="form-control @error('serie') is-invalid @enderror"
                         value="{{ old('serie') }}">
                     @error('serie')
@@ -89,7 +93,7 @@
                 <div class="col-md-4">
                     <label for="cantidad">Cantidad:</label>
                     <input type="number" name="cantidad" class="form-control @error('cantidad') is-invalid @enderror"
-                        value="{{ old('cantidad') }}">
+                        value="1" readonly>
                     @error('cantidad')
                         <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                     @enderror
@@ -105,7 +109,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="ubicacion_id">Ubicacion:</label>
+                    <label for="ubicacion_id">Ubicacion Especifica:</label>
                     <select name="ubicacion_id" class="form-control @error('ubicacion_id') is-invalid @enderror">
                         @foreach ($ubicaciones as $ubicacion)
                             <option value="{{ $ubicacion->id }}"
@@ -142,6 +146,9 @@
                     <br>
                     <button type="submit" class="btn btn-primary">Agregar Activo</button>
                 </div>
+    </div>
+
+
             </form>
         </div>
     </div>

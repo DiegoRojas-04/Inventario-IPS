@@ -16,9 +16,10 @@
         </div>
         <div class="form-group">
             <label for="descripcion">Descripción</label>
-            <input type="text" class="form-control" id="descripcion" name="descripcion" value="{{ $categoria->descripcion }}">
+            <input type="text" class="form-control" id="descripcion" name="descripcion"
+                value="{{ $categoria->descripcion }}">
         </div>
-        <button type="submit" class="btn btn-success">Actualizar</button>
+        <button type="submit" class="btn btn-primary">Actualizar</button>
         <a href="{{ route('categoriasAct.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 @stop

@@ -21,6 +21,7 @@
                 $table->string('riesgo');
                 $table->string('vida_util');
                 $table->tinyInteger('estado')->default(1);
+                $table->string('ubicacion', 255)->nullable();
                 $table->foreignId('id_categoria')->nullable()->constrained('categorias')->cascadeOnDelete()->nullOnDelete();
                 $table->timestamps();   
             });

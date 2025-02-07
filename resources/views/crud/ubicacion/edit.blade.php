@@ -21,7 +21,7 @@
             <input type="text" class="form-control" id="descripcion" name="descripcion" value="{{ old('descripcion', $ubicacion->descripcion) }}">
         </div>
 
-        <button type="submit" class="btn btn-success">Actualizar</button>
+        <button type="submit" class="btn btn-primary">Actualizar</button>
         <a href="{{ route('ubicaciones.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 @stop

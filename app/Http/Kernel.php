@@ -66,6 +66,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'check.time' => \App\Http\Middleware\CheckTimeMiddleware::class,    
         'role' => \App\Http\Middleware\RedirectIfNoRole::class,
+        'uppercase' => \App\Http\Middleware\UppercaseInput::class,
     ];
     
 }

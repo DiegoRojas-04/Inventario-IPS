@@ -11,7 +11,7 @@ class Activo extends Model
 
     protected $fillable = [
         'codigo',
-        'nombre',
+        'ubicacion_general',
         'categoria_id',
         'modelo',
         'serie',
@@ -24,10 +24,12 @@ class Activo extends Model
         'condicion',
     ];
 
-    public function categoria()
-    {
-        return $this->belongsTo(CategoriaActivo::class);
-    }
+
+public function categoria()
+{
+    return $this->belongsTo(CategoriaActivo::class, 'categoria_id'); // 'categoria_id' es la clave foránea
+}
+
 
     public function ubicacion()
 {

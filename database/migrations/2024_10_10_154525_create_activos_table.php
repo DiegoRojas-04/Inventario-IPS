@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('estado'); // Estado del activo (en uso, en reparación, etc.)
             $table->text('observacion')->nullable(); // Observaciones (nullable)
             $table->tinyInteger('condicion')->default(1);
+            $table->foreignId('ubicacion_id')->constrained('ubicaciones')->onDelete('cascade');
             $table->timestamps(); // Created at y Updated at
         });
     }

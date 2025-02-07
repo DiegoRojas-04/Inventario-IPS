@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUbicacionRequest;
 use App\Models\Ubicacion;
 use Illuminate\Http\Request;
 
@@ -10,9 +11,10 @@ class UbicacionController extends Controller
     // Mostrar una lista de ubicaciones
     public function index()
     {
-        $ubicaciones = Ubicacion::all();
+        $ubicaciones = Ubicacion::orderBy('nombre', 'asc')->get();
         return view('crud.ubicacion.index', compact('ubicaciones'));
     }
+    
 
     // Mostrar el formulario para crear una nueva ubicación
     public function create()
@@ -21,13 +23,8 @@ class UbicacionController extends Controller
     }
 
     // Almacenar una nueva ubicación
-    public function store(Request $request)
+    public function store(StoreUbicacionRequest $request)
     {
-        $request->validate([
-            'nombre' => 'required|max:255',
-            'descripcion' => 'nullable|max:255',
-        ]);
-
         Ubicacion::create($request->all());
         return redirect()->route('ubicaciones.index')->with('Mensaje', 'Ubicaion Agregada');
     }

@@ -19,14 +19,16 @@
                         @csrf
                         <div class="form-group">
                             <label for="nombre">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required
+                                value="{{ old('nombre') }}">
                             @error('nombre')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="form-group">
                             <label for="descripcion">Descripción</label>
-                            <input type="text" class="form-control" id="descripcion" name="descripcion">
+                            <input type="text" class="form-control" id="descripcion" name="descripcion"
+                                value="{{ old('descripcion') }}">
                             @error('descripcion')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
@@ -61,7 +63,7 @@
                                         <td>
                                             <a href="{{ route('ubicaciones.edit', $ubicacion->id) }}"
                                                 class="btn btn-warning"><i class="fa fa-file" aria-hidden="true"></i></a>
-                                            </td>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
