@@ -16,6 +16,14 @@ class CategoriaController extends Controller
   public function index(Request $request)
   {
       $query = Categoria::query();
+      
+        // Filtrar por búsqueda si hay un término ingresado
+        if ($request->has('search') && !empty($request->search)) {
+          $query->where('nombre', 'LIKE', "%{$request->search}%")
+                ->orWhere('descripcion', 'LIKE', "%{$request->search}%");
+      }
+  
+      
       $categorias = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 10));
       return view('crud.categoria.index', compact('categorias'));
   }

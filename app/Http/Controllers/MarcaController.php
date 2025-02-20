@@ -16,12 +16,20 @@ class MarcaController extends Controller
     {
         $query = Marca::query();
     
-        // Filtrar y ordenar por estado (primero estado 1, luego estado 0)
-        $marcas = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 40));
+        // Filtrar por búsqueda si hay un término ingresado
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('nombre', 'LIKE', "%{$request->search}%")
+                  ->orWhere('descripcion', 'LIKE', "%{$request->search}%");
+        }
+    
+        // Ordenar por estado (activos primero) y nombre
+        $marcas = $query->orderBy('estado', 'desc')
+                        ->orderBy('nombre', 'asc')
+                        ->paginate($request->input('page_size', 40));
     
         return view('crud.marca.index', compact('marcas'));
     }
-
+    
     /**
      * Show the form for creating a new resource.
      */

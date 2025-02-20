@@ -13,6 +13,15 @@ class ServicioController extends Controller
     public function index(Request $request)
     {
         $query = Servicio::query();
+
+        
+        // Filtrar por búsqueda si hay un término ingresado
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('nombre', 'LIKE', "%{$request->search}%")
+                  ->orWhere('descripcion', 'LIKE', "%{$request->search}%");
+        }
+    
+        
         $servicios = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 15));
         return view('crud.servicio.index', compact('servicios'));
     }

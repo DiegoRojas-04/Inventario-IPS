@@ -15,6 +15,13 @@ class ProveedorController extends Controller
     {
         $query = Proveedore::query();
     
+        
+        // Filtrar por búsqueda si hay un término ingresado
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('nombre', 'LIKE', "%{$request->search}%")
+                  ->orWhere('descripcion', 'LIKE', "%{$request->search}%");
+        }
+    
         // Filtrar y ordenar por estado (primero estado 1, luego estado 0)
         $proveedores = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 15));
     

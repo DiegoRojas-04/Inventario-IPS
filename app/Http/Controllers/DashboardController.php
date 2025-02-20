@@ -54,20 +54,22 @@ class DashboardController extends Controller
             ->limit(7)
             ->get();
 
-        $topInsumosMes = DB::table('entrega_insumo')
+            $topInsumosMes = DB::table('entrega_insumo')
             ->select('insumos.nombre', DB::raw('SUM(entrega_insumo.cantidad) as total_entregado'))
             ->join('insumos', 'entrega_insumo.insumo_id', '=', 'insumos.id')
+            ->join('entregas', 'entrega_insumo.entrega_id', '=', 'entregas.id') // Relación con la tabla entregas
+            ->where('entregas.servicio_id', '!=', 13) // Excluir el servicio "AJUSTE DE INVENTARIO"
             ->whereMonth('entrega_insumo.created_at', now()->month)
             ->whereYear('entrega_insumo.created_at', now()->year)
             ->groupBy('insumos.nombre')
             ->orderByDesc('total_entregado')
             ->limit(7)
             ->get();
-
+        
         // Pasar los nombres y cantidades a la vista
         $topNombres = $topInsumosMes->pluck('nombre')->toArray();
         $topCantidades = $topInsumosMes->pluck('total_entregado')->toArray();
-
+        
 
         // Calcular el valor total de inventario por categoría
         $categoriasValores = [];
@@ -97,11 +99,13 @@ class DashboardController extends Controller
 
             $entregasTotales = Entrega::whereMonth('created_at', $mes->month)
                 ->whereYear('created_at', $mes->year)
+                ->whereNotIn('servicio_id', [13]) // Excluir entregas al servicio con ID 13
                 ->sum('valor_total');
 
             $comprasYEntregasMensuales['compras'][] = $comprasTotales;
             $comprasYEntregasMensuales['entregas'][] = $entregasTotales;
         }
+
 
         // Obtener evolución del inventario con cierre al último día de cada mes
         $evolucionInventario = $this->obtenerEvolucionInventarioUltimosMeses();

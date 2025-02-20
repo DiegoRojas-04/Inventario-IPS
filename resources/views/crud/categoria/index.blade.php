@@ -97,10 +97,12 @@
 
 
                 <div class="col-md-5 input-group">
-                    <input type="text" class="form-control" placeholder="Buscar" id="search">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    </div>
+                    <form id="searchForm" method="GET" action="{{ url('/categoria') }}" class="d-flex w-100">
+                        <input type="text" class="form-control" name="search" placeholder="Buscar Categoria..." value="{{ request('search') }}">
+                        <div class="input-group-prepend">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        </div>
+                    </form>
                 </div>
 
             </div>

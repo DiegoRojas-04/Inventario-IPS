@@ -13,6 +13,14 @@ class PresentacionController extends Controller
     public function index(Request $request)
     {
         $query = Presentacione::query();
+
+        
+        // Filtrar por búsqueda si hay un término ingresado
+        if ($request->has('search') && !empty($request->search)) {
+          $query->where('nombre', 'LIKE', "%{$request->search}%")
+                ->orWhere('descripcion', 'LIKE', "%{$request->search}%");
+      }
+  
     
         // Filtrar y ordenar por estado (primero estado 1, luego estado 0)
         $presentaciones = $query->orderBy('estado', 'desc')->orderBy('nombre', 'asc')->paginate($request->input('page_size', 40));
