@@ -65,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('entrega', EntregaController::class);
         Route::resource('proveedor', ProveedorController::class);
         Route::resource('compra', CompraController::class);
-        Route::resource('profile', PerfilController::class);
+        // Route::resource('profile', PerfilController::class);
         Route::resource('usuario', UsuarioController::class);
         Route::resource('rol', RolController::class);
         Route::resource('permiso', PermisoController::class);
