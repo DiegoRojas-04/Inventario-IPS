@@ -51,7 +51,7 @@ class EntregaController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $entregas = $query->latest()->paginate(20);
+        $entregas = $query->latest()->paginate(10);
         return view('crud.entrega.index', compact('entregas'));
     }
 
@@ -298,7 +298,7 @@ class EntregaController extends Controller
         }
 
         // Obtener las entregas y paginarlas
-        $entregas = $query->paginate(100);
+        $entregas = $query->paginate(20);
 
         // Calcular el valor total de entrega
         $valorTotalEntrega = $entregas->sum(function ($entrega) {

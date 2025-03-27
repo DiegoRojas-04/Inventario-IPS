@@ -40,7 +40,7 @@ class CompraController extends Controller
             $query->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
         }
 
-        $compras = $query->latest()->paginate(20);
+        $compras = $query->latest()->paginate(10);
 
         // Calcular el valor total para cada compra
         foreach ($compras as $compra) {
@@ -261,7 +261,7 @@ class CompraController extends Controller
         }
 
         // Obtener los insumos y paginarlos
-        $insumos = $query->paginate(100);
+        $insumos = $query->paginate(20);
 
         // Calcular el valor total de compra
         $valorTotalCompra = $insumos->sum(function ($insumo) {

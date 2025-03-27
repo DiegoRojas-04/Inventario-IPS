@@ -31,13 +31,12 @@ class InsumoController extends Controller
 
   public function index(Request $request)
   {
-    // Obtener el usuario autenticado
     $user = auth()->user();
 
     // Crear la consulta base con relaciones
     $query = Insumo::with(['caracteristicas', 'marca', 'presentacion'])
-      ->orderBy('nombre', 'asc') // Ordenar alfabéticamente por nombre
-      ->orderBy('estado', 'desc'); // Ordenar por estado
+      ->orderBy('nombre', 'asc') 
+      ->orderBy('estado', 'desc'); 
 
     // Obtener todas las categorías
     $categorias = Categoria::all();
@@ -66,9 +65,9 @@ class InsumoController extends Controller
     $insumos = $query->get();
 
     // Definir el tamaño de la página y la página actual
-    $pageSize = (int) $request->input('page_size', 50);
+    $pageSize = (int) $request->input('page_size', 10);
     if ($pageSize <= 0) {
-      $pageSize = 50; // Asegúrate de que pageSize nunca sea 0
+      $pageSize = 10; // Asegúrate de que pageSize nunca sea 0
     }
 
     $currentPage = LengthAwarePaginator::resolveCurrentPage();

@@ -26,20 +26,16 @@ class KardexController extends Controller
 
      public function index(Request $request)
      {
-         // Obtener el mes y el año seleccionados en el formulario
          $selectedMonth = $request->input('mes', date('n')); // Mes actual por defecto
          $selectedYear = $request->input('anno', date('Y')); // Año actual por defecto
      
-         // Obtener todas las categorías
          $categorias = Categoria::all();
      
          // Obtener el usuario autenticado
          $user = auth()->user();
      
-         // Inicializar variable para la categoría seleccionada
          $selectedCategory = $request->input('id_categoria');
      
-         // Filtrar por categoría según el rol del usuario
          if ($user->roles->contains('name', 'Administrador')) {
              // Si es Administrador, se respeta la selección del usuario
          } elseif ($user->roles->contains('name', 'Laboratorio')) {
@@ -64,7 +60,7 @@ class KardexController extends Controller
          }
      
          // Aplicar paginación
-         $insumos = $query->paginate(50);
+         $insumos = $query->paginate(10);
      
          // Calcular los datos del Kardex para cada insumo
          $insumos->getCollection()->transform(function ($insumo) use ($selectedMonth, $selectedYear) {
